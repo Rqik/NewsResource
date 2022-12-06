@@ -1,0 +1,45 @@
+{
+  "name": "newsresource",
+  "version": "1.0.0",
+  "description": "My first api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "yarn watch && yarn dev",
+    "watch": "tsc -w",
+    "dev": "nodemon --inspect ./dist/index.js",
+    "build": "rimraf --inspect ./build && npx tsc",
+    "lint": "npx eslint ./src",
+    "lint:fix": "yarn lint --fix",
+    "dev2": "npx nodemon"
+  },
+  "keywords": [
+    "api",
+    "nodejs",
+    "RESTfull"
+  ],
+  "author": "Arsen Gadjiusmanov",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "pg": "^8.8.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.14",
+    "@types/node": "^18.11.11",
+    "@typescript-eslint/eslint-plugin": "^5.13.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.29.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "nodemon": "^2.0.20",
+    "prettier": "2.8.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.3"
+  }
+}
