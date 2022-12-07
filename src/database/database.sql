@@ -64,7 +64,7 @@ CREATE TABLE news (
 	tags int[],
 	body text,
 	main_img text,
-	other_imgs "text"[],
+	other_imgs text[],
 	comments text[],
 	fk_draft_id int,
 
@@ -84,5 +84,3 @@ CREATE TABLE news_comments (
 	CONSTRAINT PK_news_comments_comment_id PRIMARY KEY(comment_id),
 	CONSTRAINT FK_news_comments_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
 );
-
-
