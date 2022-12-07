@@ -10,7 +10,7 @@ CREATE TABLE users (
 	user_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	first_name varchar(128) NOT NULL,
 	last_name varchar(128),
-	avatar text,
+	avatar varchar(128),
 	login varchar(128) NOT NULL,
 	password text NOT NULL,
 	create_at timestamp with time zone DEFAULT NOW(),
@@ -44,40 +44,45 @@ CREATE TABLE tags (
 	CONSTRAINT PK_tags_tag_id PRIMARY KEY(tag_id)
 );
 
+CREATE TABLE drafts (
+	draft_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
+	create_at timestamp with time zone DEFAULT NOW(),
+	updated_at timestamp with time zone,
+	fk_user_id int,
+	body text,
+
+	CONSTRAINT PK_drafts_draft_id PRIMARY KEY(draft_id),
+	CONSTRAINT FK_drafts_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
+);
+
 CREATE TABLE news (
 	news_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	title varchar(512),
-	create_at varchar(512),
-	fk_author_id int,
+	create_at timestamp with time zone DEFAULT NOW(),
+	fk_author_id int NOT NULL,
 	fk_category_id int,
 	tags int[],
 	body text,
 	main_img text,
-	other_imgs text[],
+	other_imgs "text"[],
+	comments text[],
+	fk_draft_id int,
 
 	CONSTRAINT PK_news_news_id PRIMARY KEY(news_id),
-	CONSTRAINT FK_news_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id) NOT NULL,
-	CONSTRAINT FK_news_category_id FOREIGN KEY(fk_category_id) REFERENCES catagories(catagory_id),
-	CONSTRAINT FK_news_comments FOREIGN KEY(fk_comments) REFERENCES news_comments(author_id) NOT NULL
+	CONSTRAINT FK_news_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id),
+	CONSTRAINT FK_news_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id),
+	CONSTRAINT FK_news_draft_id FOREIGN KEY(fk_draft_id) REFERENCES drafts(draft_id)
 );
 
 CREATE TABLE news_comments (
 	comment_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	title varchar(512),
-	create_at varchar(512),
-	fk_user_id varchar(512),
+	create_at timestamp with time zone DEFAULT NOW(),
+	fk_user_id int,
 	body text,
 
 	CONSTRAINT PK_news_comments_comment_id PRIMARY KEY(comment_id),
 	CONSTRAINT FK_news_comments_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE drafts (
-	draft_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
-	create_at Ttimestamp with time zone DEFAULT NOW(),
-	updated_at timestamp with time zone,
-	fk_user_id varchar(512),
-	body text,
 
-	CONSTRAINT PK_drafts_draft_id PRIMARY KEY(draft_id)
-);
