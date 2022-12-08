@@ -21,7 +21,7 @@ CREATE TABLE users (
 
 CREATE TABLE authors (
 	author_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
-	fk_user_id int,
+	fk_user_id int NOT NULL,
 	description varchar(512),
 
 	CONSTRAINT PK_authors_author_id PRIMARY KEY(author_id),

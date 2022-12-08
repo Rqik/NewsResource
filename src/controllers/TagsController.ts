@@ -18,7 +18,6 @@ class TagsController {
     try {
       const { title } = req.body;
       const result: QueryResult<TagsRow> = await db.query(query, [title]);
-
       const data = result.rows[0];
 
       res.send({
@@ -55,7 +54,9 @@ class TagsController {
 
   static async get(req: Request, res: Response) {
     try {
-      const result = await db.query(`SELECT * FROM ${tableName}`);
+      const result: QueryResult<TagsRow> = await db.query(
+        `SELECT * FROM ${tableName}`,
+      );
 
       res.send(result.rows);
     } catch (e) {
@@ -67,9 +68,13 @@ class TagsController {
     const query = `SELECT * FROM ${tableName} WHERE tag_id = $1`;
     try {
       const { id } = req.params;
-      const result = await db.query(query, [id]);
+      const result: QueryResult<TagsRow> = await db.query(query, [id]);
+      const data = result.rows[0];
 
-      res.send(result.rows[0]);
+      res.send({
+        id: data.tag_id,
+        title: data.title,
+      });
     } catch (e) {
       res.send(e);
     }
@@ -99,7 +104,7 @@ class TagsController {
       } else {
         // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
         res.status(HttpStatuses.NOT_FOUND);
-        throw new Error('Category not found');
+        throw new Error('Tag not found');
       }
     } catch (e) {
       res.send(e);

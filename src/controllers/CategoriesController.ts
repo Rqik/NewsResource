@@ -77,7 +77,9 @@ class CategoriesController {
 
   static async get(req: Request, res: Response) {
     try {
-      const result = await db.query(`SELECT * FROM ${tableName}`);
+      const result: QueryResult<CategoriesRow> = await db.query(
+        `SELECT * FROM ${tableName}`,
+      );
 
       res.send(result.rows);
     } catch (e) {
@@ -89,9 +91,14 @@ class CategoriesController {
     const query = `SELECT * FROM ${tableName} WHERE category_id = $1`;
     try {
       const { id } = req.params;
-      const result = await db.query(query, [id]);
+      const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
 
-      res.send(result.rows[0]);
+      const data = result.rows[0];
+      res.send({
+        id: data.category_id,
+        description: data.description,
+        fk_category: data.fk_category_id,
+      });
     } catch (e) {
       res.send(e);
     }
@@ -111,7 +118,7 @@ class CategoriesController {
       );
 
       if (selectData.rows.length > 0) {
-        const result = await db.query(query, [id]);
+        const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
         const data = result.rows[0];
         res.send({
           id: data.category_id,
