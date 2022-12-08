@@ -1,10 +1,10 @@
+DROP TABLE IF EXISTS news;
+DROP TABLE IF EXISTS drafts;
+DROP TABLE IF EXISTS news_comments;
 DROP TABLE IF EXISTS authors;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS tags;
-DROP TABLE IF EXISTS news;
-DROP TABLE IF EXISTS news_comments;
-DROP TABLE IF EXISTS drafts;
 
 CREATE TABLE users (
 	user_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE users (
 CREATE TABLE authors (
 	author_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	fk_user_id int,
-	descripton varchar(512),
+	description varchar(512),
 
 	CONSTRAINT PK_authors_author_id PRIMARY KEY(author_id),
 	CONSTRAINT FK_authors_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
@@ -30,7 +30,7 @@ CREATE TABLE authors (
 
 CREATE TABLE categories (
 	category_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
-	descripton varchar(512),
+	description varchar(512) NOT NULL,
 	fk_category_id int,
 
 	CONSTRAINT PK_categories_category_id PRIMARY KEY(category_id),

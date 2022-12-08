@@ -1,10 +1,11 @@
 import express from 'express';
-import HttpStatuses from '../HttpStatuses';
+import HttpStatuses from '../shared/HttpStatuses';
+import { AuthorsController } from '../controllers';
 
 const router = express.Router();
 
 router.post('/authors', (req, res) => {
-  const isAdmin = false;
+  const isAdmin = true;
   if (isAdmin) {
     res.status(HttpStatuses.CREATED_201).send('create author');
   } else {
@@ -13,7 +14,7 @@ router.post('/authors', (req, res) => {
 });
 
 router.get('/authors/:id', (req, res) => {
-  const isAdmin = false;
+  const isAdmin = true;
   if (isAdmin) {
     res.send('get author');
   } else {
@@ -22,7 +23,7 @@ router.get('/authors/:id', (req, res) => {
 });
 
 router.put('/authors/:id', (req, res) => {
-  const isAdmin = false;
+  const isAdmin = true;
   if (isAdmin) {
     res.send('update author');
   } else {
@@ -31,7 +32,7 @@ router.put('/authors/:id', (req, res) => {
 });
 
 router.delete('/authors/:id', (req, res) => {
-  const isAdmin = false;
+  const isAdmin = true;
 
   if (isAdmin) {
     res.send('delete author');
