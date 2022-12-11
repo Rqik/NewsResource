@@ -17,6 +17,21 @@ type CategoriesRow = {
   fk_category_id: number | null;
 };
 
+const queryCategoriesRecursive = (nameTemplate = 'catR') => `
+  WITH RECURSIVE ${nameTemplate}(id, category,arr_categories) as (
+
+    SELECT category_id, description, array[description::varchar]
+    FROM categories
+    WHERE fk_category_id IS NUll
+
+    UNION
+
+    SELECT category_id, description, description || arr_categories
+    FROM categories
+    JOIN ${nameTemplate} ON categories.fk_category_id = ${nameTemplate}.id
+  )
+`;
+
 class CategoriesController {
   static async create(
     req: RequestWithBody<{ description: string; category?: string }>,
@@ -112,8 +127,7 @@ class CategoriesController {
       const { id } = req.params;
       const selectData: QueryResult<CategoriesRow> = await db.query(
         `SELECT * FROM ${tableName}
-          WHERE category_id = $1
-      `,
+          WHERE category_id = $1`,
         [id],
       );
 
@@ -136,4 +150,5 @@ class CategoriesController {
   }
 }
 
+export { queryCategoriesRecursive };
 export default CategoriesController;

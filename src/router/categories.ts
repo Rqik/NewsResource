@@ -3,10 +3,12 @@ import { CategoriesController } from '../controllers';
 
 const router = express.Router();
 
-router.get('/categories', CategoriesController.get);
-router.get('/categories/:id', CategoriesController.getOne);
-router.post('/categories', CategoriesController.create);
-router.put('/categories/:id', CategoriesController.update);
-router.delete('/categories/:id', CategoriesController.delete);
+const path = '/categories';
+
+router.get(path, CategoriesController.get);
+router.get(`${path}/:id`, CategoriesController.getOne);
+router.post(path, CategoriesController.create);
+router.put(`${path}/:id`, CategoriesController.update);
+router.delete(`${path}/:id`, CategoriesController.delete);
 
 export default router;

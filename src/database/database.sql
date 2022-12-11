@@ -61,7 +61,7 @@ CREATE TABLE news (
 	create_at timestamp with time zone DEFAULT NOW(),
 	fk_author_id int NOT NULL,
 	fk_category_id int,
-	tags int[],
+	tags varchar(256)[],
 	body text,
 	main_img text,
 	other_imgs text[],

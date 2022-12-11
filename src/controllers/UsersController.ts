@@ -62,27 +62,91 @@ class UsersController {
   static async update(
     req: RequestWithParamsAndBody<
       { id: string },
-      { description: string; user: number }
+      {
+        firstName: string;
+        lastName: string;
+        avatar: string;
+        login: string;
+        password: string;
+      }
     >,
     res: Response,
   ) {
     const query = `UPDATE ${tableName}
-                      SET description = $1,
-                          fk_user_id = $2
-                      WHERE authors_id = $3
-                      RETURNING authors_id, description, fk_user_id`;
+                      SET firstName = $1,
+                      lastName = $2,
+                      avatar = $3,
+                      login = $4,
+                      password = $5
+                      WHERE user_id = $6
+                      RETURNING user_id, first_name, last_name, avatar, login, admin`;
+
     try {
       const { id } = req.params;
-      const { description, user } = req.body;
+      const { firstName, lastName, avatar, login, password } = req.body;
       const result: QueryResult<UsersRow> = await db.query(query, [
-        description,
-        user,
+        firstName,
+        lastName,
+        avatar,
+        login,
+        password,
         id,
       ]);
       const data = result.rows[0];
 
       res.send({
         id: data.user_id,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        avatar: data.avatar,
+        login: data.login,
+        admin: data.admin,
+      });
+    } catch (e) {
+      res.send(e);
+    }
+  }
+
+  static async partialUpdate(
+    req: RequestWithParamsAndBody<
+      { id: string },
+      {
+        firstName?: string;
+        lastName?: string;
+        avatar?: string;
+        login?: string;
+        password?: string;
+      }
+    >,
+    res: Response,
+  ) {
+    const bodyProps = Object.keys(req.body);
+    const bodyValues = Object.values(req.body);
+    const snakeReg = /([a-z0–9])([A-Z])/g;
+    const setParams = bodyProps.map(
+      (el, i) => `${el.replace(snakeReg, '$1_$2').toLowerCase()} = $${i + 1}`,
+    );
+
+    const query = `UPDATE ${tableName}
+                      SET ${setParams.join(', \n')}
+                      WHERE user_id = $${setParams.length + 1}
+                      RETURNING user_id, first_name, last_name, avatar, login, admin`;
+
+    try {
+      const { id } = req.params;
+      const result: QueryResult<UsersRow> = await db.query(query, [
+        ...bodyValues,
+        id,
+      ]);
+      const data = result.rows[0];
+
+      res.send({
+        id: data.user_id,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        avatar: data.avatar,
+        login: data.login,
+        admin: data.admin,
       });
     } catch (e) {
       res.send(e);
@@ -110,6 +174,11 @@ class UsersController {
 
       res.send({
         id: data.user_id,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        login: data.login,
+        avatar: data.avatar,
+        admin: data.admin,
       });
     } catch (e) {
       res.send(e);
@@ -118,13 +187,13 @@ class UsersController {
 
   static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
     const query = `DELETE FROM ${tableName}
-                    WHERE authors_id = $1
-                    RETURNING authors_id, description, fk_user_id`;
+                    WHERE user_id = $1
+                    RETURNING user_id, first_name, last_name, avatar, login, admin`;
     try {
       const { id } = req.params;
       const selectData: QueryResult<UsersRow> = await db.query(
         `SELECT * FROM ${tableName}
-          WHERE authors_id = $1
+          WHERE user_id = $1
       `,
         [id],
       );
@@ -134,11 +203,16 @@ class UsersController {
         const data = result.rows[0];
         res.send({
           id: data.user_id,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          login: data.login,
+          avatar: data.avatar,
+          admin: data.admin,
         });
       } else {
         // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
         res.status(HttpStatuses.NOT_FOUND);
-        throw new Error('Author not found');
+        throw new Error('User not found');
       }
     } catch (e) {
       res.send(e);

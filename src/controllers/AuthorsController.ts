@@ -25,6 +25,8 @@ class AuthorsController {
                       RETURNING author_id, description, fk_user_id`;
     try {
       const { description, user } = req.body;
+      console.log(description, user);
+
       const result: QueryResult<AuthorsRow> = await db.query(query, [
         description,
         user,
@@ -86,9 +88,10 @@ class AuthorsController {
   }
 
   static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
-    const query = `SELECT * FROM ${tableName} WHERE authors_id = $1`;
+    const query = `SELECT * FROM ${tableName} WHERE author_id = $1`;
     try {
       const { id } = req.params;
+      console.log(typeof id);
       const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
       const data = result.rows[0];
 

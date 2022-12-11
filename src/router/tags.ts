@@ -3,10 +3,12 @@ import { TagsController } from '../controllers';
 
 const router = express.Router();
 
-router.get('/tags', TagsController.get);
-router.get('/tags/:id', TagsController.getOne);
-router.post('/tags', TagsController.create);
-router.put('/tags/:id', TagsController.update);
-router.delete('/tags/:id', TagsController.delete);
+const path = '/tags';
+
+router.get(path, TagsController.get);
+router.get(`${path}/:id`, TagsController.getOne);
+router.post(path, TagsController.create);
+router.put(`${path}/:id`, TagsController.update);
+router.delete(`${path}/:id`, TagsController.delete);
 
 export default router;

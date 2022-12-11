@@ -4,6 +4,7 @@ import CommentsController from './CommentsController';
 import DraftsController from './DraftsController';
 import TagsController from './TagsController';
 import UsersController from './UsersController';
+import NewsController from './NewsController';
 
 export {
   AuthorsController,
@@ -12,4 +13,5 @@ export {
   DraftsController,
   TagsController,
   UsersController,
+  NewsController,
 };
