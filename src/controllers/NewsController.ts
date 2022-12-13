@@ -39,8 +39,8 @@ class NewsController {
     res: Response,
   ) {
     const query = `INSERT INTO ${tableName} (title, fk_author_id, fk_category_id, tags, body, main_img, other_imgs)
-                      VALUES ($1, $2, $3, $4, $5, $6, $7)
-                      RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
+                        VALUES ($1, $2, $3, $4, $5, $6, $7)
+                     RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
     try {
       const {
         title,
@@ -87,16 +87,15 @@ class NewsController {
     res: Response,
   ) {
     const query = `UPDATE ${tableName}
-                    SET
-                      title = $1,
-                      fk_author_id = $2,
-                      fk_category_id = $3,
-                      tags = $4,
-                      body = $5,
-                      main_img = $6,
-                      other_imgs = $7
+                      SET title = $1,
+                          fk_author_id = $2,
+                          fk_category_id = $3,
+                          tags = $4,
+                          body = $5,
+                          main_img = $6,
+                          other_imgs = $7
                     WHERE news_id = $8
-                    RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
+                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
 
     try {
       const { id } = req.params;
@@ -150,8 +149,8 @@ class NewsController {
 
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
-                      WHERE user_id = $${setParams.length + 1}
-                      RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
+                    WHERE user_id = $${setParams.length + 1}
+                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
 
     try {
       const { id } = req.params;
@@ -175,10 +174,11 @@ class NewsController {
       const result: QueryResult<NewsRow> = await db.query(
         `
         ${queryCategoriesRecursive('catR')}
-        SELECT * FROM ${tableName} n
-          JOIN authors a ON a.author_id = n.fk_author_id
-          JOIN users u ON u.user_id = a.fk_user_id
-          JOIN catR c ON c.id = n.fk_category_id
+          SELECT *
+            FROM ${tableName} n
+            JOIN authors a ON a.author_id = n.fk_author_id
+            JOIN users u ON u.user_id = a.fk_user_id
+            JOIN catR c ON c.id = n.fk_category_id
 
         `,
       );
@@ -193,11 +193,11 @@ class NewsController {
     const query = `
       ${queryCategoriesRecursive('catR')}
       SELECT n.* , c.category root_category, c.arr_categories, a.description author_description, u.first_name, u.last_name, u.avatar, u.login, u.admin
-      FROM ${tableName} n
-      JOIN authors a ON a.author_id = n.fk_author_id
-      JOIN users u ON u.user_id = a.fk_user_id
-      JOIN catR c ON c.id = n.fk_category_id
-      WHERE n.news_id = $1
+        FROM ${tableName} n
+        JOIN authors a ON a.author_id = n.fk_author_id
+        JOIN users u ON u.user_id = a.fk_user_id
+        JOIN catR c ON c.id = n.fk_category_id
+       WHERE n.news_id = $1
     `;
     try {
       const { id } = req.params;

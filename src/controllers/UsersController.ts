@@ -33,8 +33,8 @@ class UsersController {
     res: Response,
   ) {
     const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password)
-                      VALUES ($1, $2, $3, $4, $5)
-                      RETURNING user_id, first_name, last_name, avatar, login, password, create_at, admin`;
+                        VALUES ($1, $2, $3, $4, $5)
+                     RETURNING user_id, first_name, last_name, avatar, login, password, create_at, admin`;
     try {
       const { firstName, lastName, avatar, login, password } = req.body;
       const result: QueryResult<UsersRow> = await db.query(query, [
@@ -74,12 +74,12 @@ class UsersController {
   ) {
     const query = `UPDATE ${tableName}
                       SET firstName = $1,
-                      lastName = $2,
-                      avatar = $3,
-                      login = $4,
-                      password = $5
-                      WHERE user_id = $6
-                      RETURNING user_id, first_name, last_name, avatar, login, admin`;
+                          lastName = $2,
+                          avatar = $3,
+                          login = $4,
+                          password = $5
+                    WHERE user_id = $6
+                RETURNING user_id, first_name, last_name, avatar, login, admin`;
 
     try {
       const { id } = req.params;
@@ -129,8 +129,8 @@ class UsersController {
 
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
-                      WHERE user_id = $${setParams.length + 1}
-                      RETURNING user_id, first_name, last_name, avatar, login, admin`;
+                    WHERE user_id = $${setParams.length + 1}
+                RETURNING user_id, first_name, last_name, avatar, login, admin`;
 
     try {
       const { id } = req.params;
@@ -156,7 +156,8 @@ class UsersController {
   static async get(req: Request, res: Response) {
     try {
       const result: QueryResult<UsersRow> = await db.query(
-        `SELECT * FROM ${tableName}`,
+        `SELECT *
+           FROM ${tableName}`,
       );
 
       res.send(result.rows);
@@ -166,7 +167,9 @@ class UsersController {
   }
 
   static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
-    const query = `SELECT * FROM ${tableName} WHERE user_id = $1`;
+    const query = `SELECT *
+                     FROM ${tableName}
+                    WHERE user_id = $1`;
     try {
       const { id } = req.params;
       const result: QueryResult<UsersRow> = await db.query(query, [id]);
@@ -186,13 +189,15 @@ class UsersController {
   }
 
   static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
-    const query = `DELETE FROM ${tableName}
+    const query = `DELETE
+                     FROM ${tableName}
                     WHERE user_id = $1
-                    RETURNING user_id, first_name, last_name, avatar, login, admin`;
+                RETURNING user_id, first_name, last_name, avatar, login, admin`;
     try {
       const { id } = req.params;
       const selectData: QueryResult<UsersRow> = await db.query(
-        `SELECT * FROM ${tableName}
+        `SELECT *
+           FROM ${tableName}
           WHERE user_id = $1
       `,
         [id],

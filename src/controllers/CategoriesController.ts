@@ -19,16 +19,15 @@ type CategoriesRow = {
 
 const queryCategoriesRecursive = (nameTemplate = 'catR') => `
   WITH RECURSIVE ${nameTemplate}(id, category,arr_categories) as (
-
     SELECT category_id, description, array[description::varchar]
-    FROM categories
+      FROM categories
     WHERE fk_category_id IS NUll
 
     UNION
 
     SELECT category_id, description, description || arr_categories
-    FROM categories
-    JOIN ${nameTemplate} ON categories.fk_category_id = ${nameTemplate}.id
+      FROM categories
+      JOIN ${nameTemplate} ON categories.fk_category_id = ${nameTemplate}.id
   )
 `;
 
@@ -38,8 +37,8 @@ class CategoriesController {
     res: Response,
   ) {
     const query = `INSERT INTO ${tableName} (description, fk_category_id)
-                      VALUES ($1, $2)
-                      RETURNING category_id, description, fk_category_id`;
+                   VALUES ($1, $2)
+                RETURNING category_id, description, fk_category_id`;
     try {
       const { description, category } = req.body;
       const result: QueryResult<CategoriesRow> = await db.query(query, [
@@ -69,8 +68,8 @@ class CategoriesController {
     const query = `UPDATE ${tableName}
                       SET description = $1,
                           fk_category_id = $2
-                      WHERE category_id = $3
-                      RETURNING category_id, description, fk_category_id`;
+                    WHERE category_id = $3
+                RETURNING category_id, description, fk_category_id`;
     try {
       const { id } = req.params;
       const { description, category } = req.body;
@@ -93,7 +92,8 @@ class CategoriesController {
   static async get(req: Request, res: Response) {
     try {
       const result: QueryResult<CategoriesRow> = await db.query(
-        `SELECT * FROM ${tableName}`,
+        `SELECT *
+           FROM ${tableName}`,
       );
 
       res.send(result.rows);
@@ -103,7 +103,9 @@ class CategoriesController {
   }
 
   static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
-    const query = `SELECT * FROM ${tableName} WHERE category_id = $1`;
+    const query = `SELECT *
+                     FROM ${tableName}
+                    WHERE category_id = $1`;
     try {
       const { id } = req.params;
       const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
@@ -120,13 +122,15 @@ class CategoriesController {
   }
 
   static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
-    const query = `DELETE FROM ${tableName}
+    const query = `DELETE
+                     FROM ${tableName}
                     WHERE category_id = $1
-                    RETURNING category_id, description, fk_category_id`;
+                RETURNING category_id, description, fk_category_id`;
     try {
       const { id } = req.params;
       const selectData: QueryResult<CategoriesRow> = await db.query(
-        `SELECT * FROM ${tableName}
+        `SELECT *
+           FROM ${tableName}
           WHERE category_id = $1`,
         [id],
       );

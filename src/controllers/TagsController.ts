@@ -55,7 +55,8 @@ class TagsController {
   static async get(req: Request, res: Response) {
     try {
       const result: QueryResult<TagsRow> = await db.query(
-        `SELECT * FROM ${tableName}`,
+        `SELECT *
+           FROM ${tableName}`,
       );
 
       res.send(result.rows);
@@ -65,7 +66,9 @@ class TagsController {
   }
 
   static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
-    const query = `SELECT * FROM ${tableName} WHERE tag_id = $1`;
+    const query = `SELECT *
+                     FROM ${tableName}
+                    WHERE tag_id = $1`;
     try {
       const { id } = req.params;
       const result: QueryResult<TagsRow> = await db.query(query, [id]);

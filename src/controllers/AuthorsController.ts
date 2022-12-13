@@ -21,8 +21,8 @@ class AuthorsController {
     res: Response,
   ) {
     const query = `INSERT INTO ${tableName} (description, fk_user_id)
-                      VALUES ($1, $2)
-                      RETURNING author_id, description, fk_user_id`;
+                        VALUES ($1, $2)
+                     RETURNING author_id, description, fk_user_id`;
     try {
       const { description, user } = req.body;
       console.log(description, user);
@@ -53,8 +53,8 @@ class AuthorsController {
     const query = `UPDATE ${tableName}
                       SET description = $1,
                           fk_user_id = $2
-                      WHERE authors_id = $3
-                      RETURNING authors_id, description, fk_user_id`;
+                    WHERE authors_id = $3
+                RETURNING authors_id, description, fk_user_id`;
     try {
       const { id } = req.params;
       const { description, user } = req.body;
@@ -78,7 +78,8 @@ class AuthorsController {
   static async get(req: Request, res: Response) {
     try {
       const result: QueryResult<AuthorsRow> = await db.query(
-        `SELECT * FROM ${tableName}`,
+        `SELECT *
+           FROM ${tableName}`,
       );
 
       res.send(result.rows);
@@ -88,7 +89,9 @@ class AuthorsController {
   }
 
   static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
-    const query = `SELECT * FROM ${tableName} WHERE author_id = $1`;
+    const query = `SELECT *
+                     FROM ${tableName}
+                    WHERE author_id = $1`;
     try {
       const { id } = req.params;
       console.log(typeof id);
@@ -108,11 +111,12 @@ class AuthorsController {
   static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
     const query = `DELETE FROM ${tableName}
                     WHERE authors_id = $1
-                    RETURNING authors_id, description, fk_user_id`;
+                RETURNING authors_id, description, fk_user_id`;
     try {
       const { id } = req.params;
       const selectData: QueryResult<AuthorsRow> = await db.query(
-        `SELECT * FROM ${tableName}
+        `SELECT *
+           FROM ${tableName}
           WHERE authors_id = $1
       `,
         [id],
