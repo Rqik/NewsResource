@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS news_comments;
+DROP TABLE IF EXISTS news_tags;
 DROP TABLE IF EXISTS news;
 DROP TABLE IF EXISTS drafts;
 DROP TABLE IF EXISTS news_comments;
@@ -74,13 +76,31 @@ CREATE TABLE news (
 	CONSTRAINT FK_news_draft_id FOREIGN KEY(fk_draft_id) REFERENCES drafts(draft_id)
 );
 
-CREATE TABLE news_comments (
+CREATE TABLE comments (
 	comment_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	title varchar(512),
 	create_at timestamp with time zone DEFAULT NOW(),
 	fk_user_id int,
 	body text,
 
-	CONSTRAINT PK_news_comments_comment_id PRIMARY KEY(comment_id),
-	CONSTRAINT FK_news_comments_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
+	CONSTRAINT PK_comments_comment_id PRIMARY KEY(comment_id),
+	CONSTRAINT FK_comments_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE news_tags (
+	fk_news_id int,
+	fk_tag_id int,
+
+	CONSTRAINT PK_news_tags_id PRIMARY KEY(fk_news_id, fk_tag_id),
+	CONSTRAINT FK_news_tags_news_id FOREIGN KEY(fk_news_id) REFERENCES news(news_id),
+	CONSTRAINT FK_news_tags_tag_id FOREIGN KEY(fk_tag_id) REFERENCES tags(tag_id)
+);
+
+CREATE TABLE news_comments (
+	fk_comment_id int,
+	fk_news_id int,
+
+	CONSTRAINT PK_news_comments_id PRIMARY KEY(fk_comment_id, fk_news_id),
+	CONSTRAINT FK_news_comments_comment_id FOREIGN KEY(fk_comment_id) REFERENCES comments(comment_id),
+	CONSTRAINT FK_news_comments_news_id FOREIGN KEY(fk_news_id) REFERENCES news(news_id)
 );
