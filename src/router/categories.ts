@@ -5,7 +5,7 @@ const router = express.Router();
 
 const path = '/categories';
 
-router.get(path, CategoriesController.get);
+router.get(path, CategoriesController.getAll);
 router.get(`${path}/:id`, CategoriesController.getOne);
 router.post(path, CategoriesController.create);
 router.put(`${path}/:id`, CategoriesController.update);

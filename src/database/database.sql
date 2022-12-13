@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS news_comments;
 DROP TABLE IF EXISTS news_tags;
 DROP TABLE IF EXISTS news;
+DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS drafts;
-DROP TABLE IF EXISTS news_comments;
 DROP TABLE IF EXISTS authors;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS categories;
@@ -13,7 +13,7 @@ CREATE TABLE users (
 	first_name varchar(128) NOT NULL,
 	last_name varchar(128),
 	avatar varchar(128),
-	login varchar(128) NOT NULL,
+	login varchar(128) NOT NULL UNIQUE,
 	password text NOT NULL,
 	create_at timestamp with time zone DEFAULT NOW(),
 	admin boolean NOT NULL DEFAULT false,

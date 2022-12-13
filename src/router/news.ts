@@ -4,7 +4,7 @@ import { NewsController } from '../controllers';
 const router = express.Router();
 const path = '/news';
 
-router.get(path, NewsController.get);
+router.get(path, NewsController.getAll);
 router.get(`${path}/:id`, NewsController.getOne);
 router.post(path, NewsController.create);
 router.put(`${path}/:id`, NewsController.update);

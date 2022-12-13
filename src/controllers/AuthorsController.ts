@@ -75,7 +75,7 @@ class AuthorsController {
     }
   }
 
-  static async get(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response) {
     try {
       const result: QueryResult<AuthorsRow> = await db.query(
         `SELECT *
@@ -94,7 +94,6 @@ class AuthorsController {
                     WHERE author_id = $1`;
     try {
       const { id } = req.params;
-      console.log(typeof id);
       const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
       const data = result.rows[0];
 

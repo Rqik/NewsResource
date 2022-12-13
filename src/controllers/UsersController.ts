@@ -67,31 +67,30 @@ class UsersController {
         lastName: string;
         avatar: string;
         login: string;
-        password: string;
       }
     >,
     res: Response,
   ) {
     const query = `UPDATE ${tableName}
-                      SET firstName = $1,
-                          lastName = $2,
+                      SET first_name = $1,
+                          last_name = $2,
                           avatar = $3,
-                          login = $4,
-                          password = $5
-                    WHERE user_id = $6
+                          login = $4
+                    WHERE user_id = $5
                 RETURNING user_id, first_name, last_name, avatar, login, admin`;
 
     try {
       const { id } = req.params;
-      const { firstName, lastName, avatar, login, password } = req.body;
+      const { firstName, lastName, avatar, login } = req.body;
+
       const result: QueryResult<UsersRow> = await db.query(query, [
         firstName,
         lastName,
         avatar,
         login,
-        password,
         id,
       ]);
+
       const data = result.rows[0];
 
       res.send({
@@ -153,7 +152,7 @@ class UsersController {
     }
   }
 
-  static async get(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response) {
     try {
       const result: QueryResult<UsersRow> = await db.query(
         `SELECT *

@@ -13,8 +13,8 @@ type TagsRow = { tag_id: number; title: string };
 class TagsController {
   static async create(req: RequestWithBody<{ title: string }>, res: Response) {
     const query = `INSERT INTO ${tableName} (title)
-                      VALUES ($1)
-                      RETURNING tag_id, title`;
+                        VALUES ($1)
+                     RETURNING tag_id, title`;
     try {
       const { title } = req.body;
       const result: QueryResult<TagsRow> = await db.query(query, [title]);
@@ -35,8 +35,8 @@ class TagsController {
   ) {
     const query = `UPDATE ${tableName}
                       SET title = $1
-                      WHERE tag_id = $2
-                      RETURNING tag_id, title`;
+                    WHERE tag_id = $2
+                RETURNING tag_id, title`;
     try {
       const { id } = req.params;
       const { title } = req.body;
@@ -52,7 +52,7 @@ class TagsController {
     }
   }
 
-  static async get(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response) {
     try {
       const result: QueryResult<TagsRow> = await db.query(
         `SELECT *
@@ -84,9 +84,15 @@ class TagsController {
   }
 
   static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
-    const query = `DELETE FROM ${tableName}
+    const query = `DELETE
+                     FROM ${tableName}
                     WHERE tag_id = $1
-                    RETURNING tag_id, title`;
+                RETURNING tag_id, title`;
+    const queryNewsTags = `DELETE
+                             FROM news_${tableName}
+                            WHERE fk_tag_id = $1
+
+    `;
     try {
       const { id } = req.params;
       const selectData: QueryResult<TagsRow> = await db.query(
@@ -97,6 +103,7 @@ class TagsController {
       );
 
       if (selectData.rows.length > 0) {
+        await db.query(queryNewsTags, [id]);
         const result: QueryResult<TagsRow> = await db.query(query, [id]);
         const data = result.rows[0];
 

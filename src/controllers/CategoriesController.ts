@@ -89,7 +89,7 @@ class CategoriesController {
     }
   }
 
-  static async get(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response) {
     try {
       const result: QueryResult<CategoriesRow> = await db.query(
         `SELECT *

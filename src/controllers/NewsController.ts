@@ -17,7 +17,6 @@ type NewsRow = {
   create_at: number;
   fk_author_id: number;
   fk_category_id: number;
-  tags: string[];
   body: string;
   main_img: string;
   other_imgs: string[];
@@ -31,22 +30,20 @@ class NewsController {
       title: string;
       authorId: number;
       categoryId: number;
-      tags: string[];
       body: string;
       mainImg: string;
       otherImgs: string[];
     }>,
     res: Response,
   ) {
-    const query = `INSERT INTO ${tableName} (title, fk_author_id, fk_category_id, tags, body, main_img, other_imgs)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7)
-                     RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
+    const query = `INSERT INTO ${tableName} (title, fk_author_id, fk_category_id, body, main_img, other_imgs)
+                        VALUES ($1, $2, $3, $4, $5, $6)
+                     RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs, comments, fk_draft_id`;
     try {
       const {
         title,
         authorId,
         categoryId,
-        tags = [],
         body,
         mainImg,
         otherImgs = [],
@@ -55,7 +52,6 @@ class NewsController {
         title,
         authorId,
         categoryId,
-        tags,
         body,
         mainImg,
         otherImgs,
@@ -78,7 +74,6 @@ class NewsController {
         title: string;
         authorId: number;
         categoryId: number;
-        tags: string[];
         body: string;
         mainImg: string;
         otherImgs: string[];
@@ -90,12 +85,11 @@ class NewsController {
                       SET title = $1,
                           fk_author_id = $2,
                           fk_category_id = $3,
-                          tags = $4,
-                          body = $5,
-                          main_img = $6,
-                          other_imgs = $7
-                    WHERE news_id = $8
-                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
+                          body = $4,
+                          main_img = $5,
+                          other_imgs = $6
+                    WHERE news_id = $7
+                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs, comments, fk_draft_id`;
 
     try {
       const { id } = req.params;
@@ -103,7 +97,6 @@ class NewsController {
         title,
         authorId,
         categoryId,
-        tags = [],
         body,
         mainImg,
         otherImgs = [],
@@ -112,7 +105,6 @@ class NewsController {
         title,
         authorId,
         categoryId,
-        tags,
         body,
         mainImg,
         otherImgs,
@@ -150,7 +142,7 @@ class NewsController {
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
                     WHERE user_id = $${setParams.length + 1}
-                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
+                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs, comments, fk_draft_id`;
 
     try {
       const { id } = req.params;
@@ -169,7 +161,7 @@ class NewsController {
     }
   }
 
-  static async get(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response) {
     try {
       const result: QueryResult<NewsRow> = await db.query(
         `
@@ -179,7 +171,6 @@ class NewsController {
             JOIN authors a ON a.author_id = n.fk_author_id
             JOIN users u ON u.user_id = a.fk_user_id
             JOIN catR c ON c.id = n.fk_category_id
-
         `,
       );
 
@@ -212,7 +203,7 @@ class NewsController {
   static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
     const query = `DELETE FROM ${tableName}
                     WHERE news_id = $1
-                    RETURNING news_id, title, create_at, fk_author_id, fk_category_id, tags, body, main_img, other_imgs, comments, fk_draft_id`;
+                    RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs, comments, fk_draft_id`;
     try {
       const { id } = req.params;
       const selectData: QueryResult<NewsRow> = await db.query(
