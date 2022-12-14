@@ -1,6 +1,6 @@
 import AuthorsController from './AuthorsController';
 import CategoriesController from './CategoriesController';
-import CommentsController from './CommentsController';
+import NewsCommentsController from './NewsCommentsController';
 import DraftsController from './DraftsController';
 import TagsController from './TagsController';
 import UsersController from './UsersController';
@@ -9,7 +9,7 @@ import NewsController from './NewsController';
 export {
   AuthorsController,
   CategoriesController,
-  CommentsController,
+  NewsCommentsController,
   DraftsController,
   TagsController,
   UsersController,

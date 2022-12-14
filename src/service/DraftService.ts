@@ -1,4 +1,3 @@
-import { Request, Response } from 'express';
 import { QueryResult } from 'pg';
 import db from '../db';
 
@@ -13,11 +12,14 @@ type DraftsRow = {
 const tableName = 'drafts';
 
 class DraftService {
-  static async create({ title }: { title: string }) {
-    const query = `INSERT INTO ${tableName} (title)
-                        VALUES ($1)
-                     RETURNING tag_id, title`;
-    const result: QueryResult<DraftsRow> = await db.query(query, [title]);
+  static async create({ userId, body }: { userId: number; body: string }) {
+    const query = `INSERT INTO ${tableName} (fk_user_id, body)
+                        VALUES ($1, $2)
+                     RETURNING draft_id, create_at, updated_at, fk_user_id, body`;
+    const result: QueryResult<DraftsRow> = await db.query(query, [
+      userId,
+      body,
+    ]);
     const data = result.rows[0];
 
     return {
@@ -29,12 +31,27 @@ class DraftService {
     };
   }
 
-  static async update({ id, title }: { id: string; title: string }) {
+  static async update({
+    id,
+    body,
+    userId,
+  }: {
+    id: string;
+    body: string;
+    userId: number;
+  }) {
     const query = `UPDATE ${tableName}
-                      SET title = $1
-                    WHERE tag_id = $2
-                RETURNING tag_id, title`;
-    const result: QueryResult<DraftsRow> = await db.query(query, [title, id]);
+                      SET body = $1,
+                          fk_user_id = $2,
+                          update_at = NOW()
+                    WHERE draft_id = $3
+                RETURNING draft_id, create_at, updated_at, fk_user_id, body`;
+
+    const result: QueryResult<DraftsRow> = await db.query(query, [
+      body,
+      userId,
+      id,
+    ]);
     const data = result.rows[0];
 
     return {
@@ -46,23 +63,19 @@ class DraftService {
     };
   }
 
-  static async getAll(req: Request, res: Response) {
-    try {
-      const result: QueryResult<DraftsRow> = await db.query(
-        `SELECT *
+  static async getAll() {
+    const result: QueryResult<DraftsRow> = await db.query(
+      `SELECT *
            FROM ${tableName}`,
-      );
+    );
 
-      res.send(result.rows);
-    } catch (e) {
-      res.send(e);
-    }
+    return result.rows;
   }
 
   static async getOne({ id }: { id: string }) {
     const query = `SELECT *
                      FROM ${tableName}
-                    WHERE tag_id = $1`;
+                    WHERE draft_id = $1`;
     const result: QueryResult<DraftsRow> = await db.query(query, [id]);
     const data = result.rows[0];
 
@@ -111,4 +124,4 @@ class DraftService {
   }
 }
 
-export default new DraftService();
+export default DraftService;

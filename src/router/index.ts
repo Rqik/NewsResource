@@ -1,6 +1,6 @@
 import authors from './authors';
 import categories from './categories';
-import comments from './comments';
+import comments from './news-comments';
 import drafts from './drafts';
 import users from './users';
 import newsR from './news';

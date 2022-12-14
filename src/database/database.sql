@@ -49,7 +49,7 @@ CREATE TABLE tags (
 CREATE TABLE drafts (
 	draft_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	create_at timestamp with time zone DEFAULT NOW(),
-	updated_at timestamp with time zone,
+	updated_at timestamp with time zone DEFAULT NOW(),
 	fk_user_id int,
 	body text,
 
@@ -78,9 +78,8 @@ CREATE TABLE news (
 
 CREATE TABLE comments (
 	comment_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
-	title varchar(512),
 	create_at timestamp with time zone DEFAULT NOW(),
-	fk_user_id int,
+	fk_user_id int NOT NULL,
 	body text,
 
 	CONSTRAINT PK_comments_comment_id PRIMARY KEY(comment_id),

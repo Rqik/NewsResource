@@ -122,7 +122,7 @@ class UsersService {
   static async getAll() {
     const result: QueryResult<UsersRow> = await db.query(
       `SELECT *
-           FROM ${tableName}`,
+         FROM ${tableName}`,
     );
 
     return result.rows;
