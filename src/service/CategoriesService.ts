@@ -3,11 +3,7 @@ import { QueryResult } from 'pg';
 
 import db from '../db';
 import HttpStatuses from '../shared/HttpStatuses';
-import {
-  RequestWithBody,
-  RequestWithParams,
-  RequestWithParamsAndBody,
-} from './types';
+import { RequestWithParams } from './types';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
 const tableName = 'categories';
@@ -61,7 +57,7 @@ class CategoriesService {
     description,
     category,
   }: {
-    id: string;
+    id: number;
     description: string;
     category?: string;
   }) {
@@ -96,7 +92,7 @@ class CategoriesService {
     }
   }
 
-  static async getOne({ id }: { id: string }) {
+  static async getOne({ id }: { id: number }) {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE category_id = $1`;
@@ -110,7 +106,7 @@ class CategoriesService {
     };
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async delete(req: RequestWithParams<{ id: number }>, res: Response) {
     const query = `DELETE
                      FROM ${tableName}
                     WHERE category_id = $1

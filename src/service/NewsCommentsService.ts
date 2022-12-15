@@ -16,16 +16,16 @@ class NewsCommentsService {
     newsId,
   }: {
     commentId: number;
-    newsId: string;
+    newsId: number;
   }) {
     const query = `INSERT INTO ${tableName} (fk_news_id, fk_comment_id)
-                        VALUES ($1, $2)
-    `;
+                        VALUES ($1, $2)`;
 
     const result: QueryResult<NewsCommentRow> = await db.query(query, [
       newsId,
       commentId,
     ]);
+
     return result.rows;
   }
 
@@ -35,6 +35,7 @@ class NewsCommentsService {
                     WHERE fk_news_id = $1
     `;
     const result: QueryResult<NewsCommentRow> = await db.query(query, [id]);
+
     const cIds = result.rows.map((el) => el.fk_comment_id);
 
     const comments = await CommentsService.getComments({ cIds });

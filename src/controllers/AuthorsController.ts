@@ -9,15 +9,15 @@ import {
 
 class AuthorsController {
   static async create(
-    req: RequestWithBody<{ description: string; user: number }>,
+    req: RequestWithBody<{ description: string; userId: number }>,
     res: Response,
   ) {
     try {
-      const { description, user } = req.body;
+      const { description, userId } = req.body;
 
       const result = await AuthorsService.create({
         description,
-        user,
+        userId,
       });
 
       res.send(result);
@@ -29,18 +29,13 @@ class AuthorsController {
   static async update(
     req: RequestWithParamsAndBody<
       { id: string },
-      { description: string; user: number }
+      { description: string; userId: number }
     >,
     res: Response,
   ) {
     try {
       const { id } = req.params;
-      const { description, user } = req.body;
-      const result = await AuthorsService.update({
-        description,
-        user,
-        id,
-      });
+      const result = await AuthorsService.update({ ...req.body, id });
 
       res.send(result);
     } catch (e) {

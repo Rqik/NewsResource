@@ -10,35 +10,35 @@ type AuthorsRow = {
   description: string;
 };
 
-type AuthorProp = { description: string; user: number };
+type AuthorProp = { description: string; userId: number };
 class AuthorsService {
-  static async create({ description, user }: AuthorProp) {
+  static async create({ description, userId }: AuthorProp) {
     const query = `INSERT INTO ${tableName} (description, fk_user_id)
                         VALUES ($1, $2)
                      RETURNING author_id, description, fk_user_id`;
 
     const result: QueryResult<AuthorsRow> = await db.query(query, [
       description,
-      user,
+      userId,
     ]);
     const data = result.rows[0];
 
     return {
       id: data.author_id,
       description: data.description,
-      user: data.fk_user_id,
+      userId: data.fk_user_id,
     };
   }
 
-  static async update({ id, description, user }: PropsWithId<AuthorProp>) {
+  static async update({ id, description, userId }: PropsWithId<AuthorProp>) {
     const query = `UPDATE ${tableName}
                       SET description = $1,
                           fk_user_id = $2
-                    WHERE authors_id = $3
-                RETURNING authors_id, description, fk_user_id`;
+                    WHERE author_id = $3
+                RETURNING author_id, description, fk_user_id`;
     const result: QueryResult<AuthorsRow> = await db.query(query, [
       description,
-      user,
+      userId,
       id,
     ]);
     const data = result.rows[0];
@@ -46,7 +46,7 @@ class AuthorsService {
     return {
       id: data.author_id,
       description: data.description,
-      user: data.fk_user_id,
+      userId: data.fk_user_id,
     };
   }
 
@@ -69,34 +69,31 @@ class AuthorsService {
     return {
       id: data.author_id,
       description: data.description,
-      user: data.fk_user_id,
+      userId: data.fk_user_id,
     };
+  }
+
+  static async deleteUserAuthors({ id }: PropsWithId) {
+    const query = `DELETE FROM ${tableName}
+                    WHERE fk_user_id = $1
+                RETURNING author_id, description, fk_user_id`;
+
+    const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
+    return result.rows;
   }
 
   static async delete({ id }: PropsWithId) {
     const query = `DELETE FROM ${tableName}
-                    WHERE authors_id = $1
-                RETURNING authors_id, description, fk_user_id`;
+                    WHERE author_id = $1
+                RETURNING author_id, description, fk_user_id`;
 
-    const selectData: QueryResult<AuthorsRow> = await db.query(
-      `SELECT *
-           FROM ${tableName}
-          WHERE authors_id = $1
-      `,
-      [id],
-    );
-
-    if (selectData.rows.length > 0) {
-      const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
-      const data = result.rows[0];
-      return {
-        id: data.author_id,
-        description: data.description,
-        user: data.fk_user_id,
-      };
-    }
-    // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
-    throw new Error('Author not found');
+    const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
+    const data = result.rows[0];
+    return {
+      id: data.author_id,
+      description: data.description,
+      userId: data.fk_user_id,
+    };
   }
 }
 

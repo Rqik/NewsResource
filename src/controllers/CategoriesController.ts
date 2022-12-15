@@ -9,7 +9,6 @@ import {
   RequestWithParamsAndBody,
 } from './types';
 
-/* eslint-disable @typescript-eslint/no-empty-function */
 const tableName = 'categories';
 type CategoriesRow = {
   category_id: number;

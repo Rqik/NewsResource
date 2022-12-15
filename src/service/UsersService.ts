@@ -1,6 +1,7 @@
 import { QueryResult } from 'pg';
 
 import db from '../db';
+import AuthorsService from './AuthorsService';
 import { PropsWithId } from './types';
 
 const tableName = 'users';
@@ -15,6 +16,7 @@ type UsersRow = {
   create_at: string;
   admin: boolean;
 };
+
 type UserProp = {
   firstName: string;
   lastName: string;
@@ -22,7 +24,6 @@ type UserProp = {
   login: string;
   password: string;
 };
-type UserWithoutSecurityProp = Omit<UserProp, 'password'>;
 
 class UsersService {
   static async create({
@@ -34,7 +35,7 @@ class UsersService {
   }: UserProp) {
     const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password)
                         VALUES ($1, $2, $3, $4, $5)
-                     RETURNING user_id, first_name, last_name, avatar, login, password, create_at, admin`;
+                     RETURNING user_id, first_name, last_name, avatar, login, admin, create_at, password`;
 
     const result: QueryResult<UsersRow> = await db.query(query, [
       firstName,
@@ -55,26 +56,30 @@ class UsersService {
     };
   }
 
+  // TODO: реализовать изменение admin
   static async update({
     id,
     firstName,
     lastName,
     avatar,
     login,
-  }: PropsWithId<UserWithoutSecurityProp>) {
+    password,
+  }: PropsWithId<UserProp>) {
     const query = `UPDATE ${tableName}
                       SET first_name = $1,
                           last_name = $2,
                           avatar = $3,
-                          login = $4
-                    WHERE user_id = $5
-                RETURNING user_id, first_name, last_name, avatar, login, admin`;
+                          login = $4,
+                          password = $5
+                    WHERE user_id = $6
+                RETURNING user_id, first_name, last_name, avatar, login, admin, create_at`;
 
     const result: QueryResult<UsersRow> = await db.query(query, [
       firstName,
       lastName,
       avatar,
       login,
+      password,
       id,
     ]);
 
@@ -101,7 +106,7 @@ class UsersService {
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
                     WHERE user_id = $${setParams.length + 1}
-                RETURNING user_id, first_name, last_name, avatar, login, admin`;
+                RETURNING user_id, first_name, last_name, avatar, login, admin, create_at`;
 
     const result: QueryResult<UsersRow> = await db.query(query, [
       ...bodyValues,
@@ -121,7 +126,7 @@ class UsersService {
 
   static async getAll() {
     const result: QueryResult<UsersRow> = await db.query(
-      `SELECT *
+      `SELECT user_id, first_name, last_name, avatar, login, admin, create_at
          FROM ${tableName}`,
     );
 
@@ -150,28 +155,17 @@ class UsersService {
                      FROM ${tableName}
                     WHERE user_id = $1
                 RETURNING user_id, first_name, last_name, avatar, login, admin`;
-    const selectData: QueryResult<UsersRow> = await db.query(
-      `SELECT *
-           FROM ${tableName}
-          WHERE user_id = $1
-      `,
-      [id],
-    );
-
-    if (selectData.rows.length > 0) {
-      const result: QueryResult<UsersRow> = await db.query(query, [id]);
-      const data = result.rows[0];
-      return {
-        id: data.user_id,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        login: data.login,
-        avatar: data.avatar,
-        admin: data.admin,
-      };
-    }
-    // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
-    throw new Error('User not found');
+    await AuthorsService.deleteUserAuthors({ id });
+    const result: QueryResult<UsersRow> = await db.query(query, [id]);
+    const data = result.rows[0];
+    return {
+      id: data.user_id,
+      firstName: data.first_name,
+      lastName: data.last_name,
+      login: data.login,
+      avatar: data.avatar,
+      admin: data.admin,
+    };
   }
 }
 

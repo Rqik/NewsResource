@@ -1,7 +1,9 @@
+import e from 'express';
 import { QueryResult } from 'pg';
 
 import db from '../db';
 import { queryCategoriesRecursive } from './CategoriesService';
+import NewsCommentsService from './NewsCommentsService';
 import { PropsWithId } from './types';
 
 const tableName = 'news';
@@ -14,8 +16,19 @@ type NewsRow = {
   body: string;
   main_img: string;
   other_imgs: string[];
-  comments: string[];
-  fk_draft_id: number;
+};
+
+type NewsFullRow = NewsRow & {
+  root_category: string;
+  author_id: number;
+  author_description: string;
+  arr_categories: string[];
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  avatar: string;
+  login: string;
+  admin: boolean;
 };
 
 type NewsProp = {
@@ -38,7 +51,7 @@ class NewsService {
   }: NewsProp) {
     const query = `INSERT INTO ${tableName} (title, fk_author_id, fk_category_id, body, main_img, other_imgs)
                         VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs, comments, fk_draft_id`;
+                     RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       title,
@@ -65,7 +78,7 @@ class NewsService {
     mainImg,
     otherImgs = [],
   }: {
-    id: string;
+    id: number;
     title: string;
     authorId: number;
     categoryId: number;
@@ -81,7 +94,7 @@ class NewsService {
                           main_img = $5,
                           other_imgs = $6
                     WHERE news_id = $7
-                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs, comments, fk_draft_id`;
+                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       title,
@@ -98,7 +111,7 @@ class NewsService {
     return result;
   }
 
-  static async partialUpdate(body: PropsWithId<NewsProp>) {
+  static async partialUpdate(body: PropsWithId<Partial<NewsProp>>) {
     const bodyProps = Object.keys(body);
     const bodyValues = Object.values(body);
     const snakeReg = /([a-z0–9])([A-Z])/g;
@@ -111,7 +124,7 @@ class NewsService {
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
                     WHERE user_id = $${setParams.length + 1}
-                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs, comments, fk_draft_id`;
+                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       ...bodyValues,
@@ -126,40 +139,139 @@ class NewsService {
   }
 
   static async getAll() {
-    const result: QueryResult<NewsRow> = await db.query(
-      `
-        ${queryCategoriesRecursive('catR')}
-          SELECT *
-            FROM ${tableName} n
-            JOIN authors a ON a.author_id = n.fk_author_id
-            JOIN users u ON u.user_id = a.fk_user_id
-            JOIN catR c ON c.id = n.fk_category_id
+    const result: QueryResult<NewsFullRow> = await db.query(
+      `${queryCategoriesRecursive('catR')}
+        SELECT n.* , c.category root_category, c.arr_categories, a.author_id, a.description author_description, u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin
+          FROM ${tableName} n
+          JOIN authors a ON a.author_id = n.fk_author_id
+          JOIN users u ON u.user_id = a.fk_user_id
+          JOIN catR c ON c.id = n.fk_category_id
         `,
     );
 
-    return result.rows;
+    const loadNews = result.rows.map(async (el) => {
+      const {
+        news_id: nId,
+        title,
+        create_at: createAt,
+        body,
+        main_img: mainImg,
+        other_imgs: otherImgs,
+        root_category: rootCategory,
+        author_id: aId,
+        author_description: description,
+        arr_categories: categories,
+        user_id: uId,
+        first_name: firstName,
+        last_name: lastName,
+        avatar,
+        login,
+        admin,
+      } = el;
+
+      const comments = await NewsCommentsService.getCommentsPost({
+        id: nId,
+      });
+
+      return {
+        id: nId,
+        rootCategory,
+        categories,
+        createAt,
+        title,
+        body,
+        mainImg,
+        otherImgs,
+        author: {
+          id: aId,
+          description,
+        },
+        user: {
+          id: uId,
+          firstName,
+          lastName,
+          avatar,
+          login,
+          admin,
+        },
+        comments,
+      };
+    });
+
+    const news = await Promise.allSettled(loadNews).then((req) =>
+      req.map((el) => {
+        if (el.status === 'fulfilled') {
+          return el.value;
+        }
+        return el;
+      }),
+    );
+
+    return news;
   }
 
   static async getOne({ id }: PropsWithId) {
     const query = `
       ${queryCategoriesRecursive('catR')}
-      SELECT n.* , c.category root_category, c.arr_categories, a.description author_description, u.first_name, u.last_name, u.avatar, u.login, u.admin
+      SELECT n.* , c.category root_category, c.arr_categories, a.author_id, a.description author_description, u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin
         FROM ${tableName} n
         JOIN authors a ON a.author_id = n.fk_author_id
         JOIN users u ON u.user_id = a.fk_user_id
         JOIN catR c ON c.id = n.fk_category_id
        WHERE n.news_id = $1
     `;
+    const result: QueryResult<NewsFullRow> = await db.query(query, [id]);
+    const data = result.rows[0];
+    const comments = await NewsCommentsService.getCommentsPost({ id });
 
-    const result: QueryResult<NewsRow> = await db.query(query, [id]);
-
-    return result.rows;
+    const {
+      news_id: nId,
+      title,
+      create_at: createAt,
+      body,
+      main_img: mainImg,
+      other_imgs: otherImgs,
+      root_category: rootCategory,
+      author_id: aId,
+      author_description: description,
+      arr_categories: categories,
+      user_id: uId,
+      first_name: firstName,
+      last_name: lastName,
+      avatar,
+      login,
+      admin,
+      ...prop
+    } = data;
+    return {
+      id: nId,
+      rootCategory,
+      categories,
+      createAt,
+      title,
+      body,
+      mainImg,
+      otherImgs,
+      author: {
+        id: aId,
+        description,
+      },
+      user: {
+        id: uId,
+        firstName,
+        lastName,
+        avatar,
+        login,
+        admin,
+      },
+      comments,
+    };
   }
 
   static async delete({ id }: PropsWithId) {
     const query = `DELETE FROM ${tableName}
                     WHERE news_id = $1
-                    RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs, comments, fk_draft_id`;
+                    RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
     const selectData: QueryResult<NewsRow> = await db.query(
       `SELECT * FROM ${tableName}
           WHERE news_id = $1

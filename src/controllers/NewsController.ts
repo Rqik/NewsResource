@@ -20,22 +20,7 @@ class NewsController {
     res: Response,
   ) {
     try {
-      const {
-        title,
-        authorId,
-        categoryId,
-        body,
-        mainImg,
-        otherImgs = [],
-      } = req.body;
-      const result = await NewsService.create({
-        title,
-        authorId,
-        categoryId,
-        body,
-        mainImg,
-        otherImgs,
-      });
+      const result = await NewsService.create(req.body);
 
       res.send(result);
     } catch (e) {
@@ -59,23 +44,8 @@ class NewsController {
   ) {
     try {
       const { id } = req.params;
-      const {
-        title,
-        authorId,
-        categoryId,
-        body,
-        mainImg,
-        otherImgs = [],
-      } = req.body;
-      const result = await NewsService.update({
-        title,
-        authorId,
-        categoryId,
-        body,
-        mainImg,
-        otherImgs,
-        id,
-      });
+
+      const result = await NewsService.update({ ...req.body, id: Number(id) });
 
       res.send(result);
     } catch (e) {
@@ -99,18 +69,8 @@ class NewsController {
   ) {
     try {
       const { id } = req.params;
-      const { title, authorId, categoryId, body, mainImg, otherImgs } =
-        req.body;
 
-      const result = await NewsService.partialUpdate({
-        title,
-        authorId,
-        categoryId,
-        body,
-        mainImg,
-        otherImgs,
-        id,
-      });
+      const result = await NewsService.partialUpdate({ ...req.body, id });
 
       res.send(result);
     } catch (e) {

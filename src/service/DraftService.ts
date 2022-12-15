@@ -9,6 +9,14 @@ type DraftsRow = {
   body: string;
 };
 
+type Draft = {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: number;
+  body: string;
+};
+
 const tableName = 'drafts';
 
 class DraftService {
@@ -24,8 +32,8 @@ class DraftService {
 
     return {
       id: data.draft_id,
-      createAt: data.create_at,
-      updateAt: data.updated_at,
+      createdAt: data.create_at,
+      updatedAt: data.updated_at,
       userId: data.fk_user_id,
       body: data.body,
     };
@@ -36,14 +44,14 @@ class DraftService {
     body,
     userId,
   }: {
-    id: string;
+    id: number;
     body: string;
     userId: number;
-  }) {
+  }): Promise<Draft> {
     const query = `UPDATE ${tableName}
                       SET body = $1,
                           fk_user_id = $2,
-                          update_at = NOW()
+                          updated_at = NOW()
                     WHERE draft_id = $3
                 RETURNING draft_id, create_at, updated_at, fk_user_id, body`;
 
@@ -52,27 +60,19 @@ class DraftService {
       userId,
       id,
     ]);
+
     const data = result.rows[0];
 
     return {
       id: data.draft_id,
-      createAt: data.create_at,
-      updateAt: data.updated_at,
+      createdAt: data.create_at,
+      updatedAt: data.updated_at,
       userId: data.fk_user_id,
       body: data.body,
     };
   }
 
-  static async getAll() {
-    const result: QueryResult<DraftsRow> = await db.query(
-      `SELECT *
-           FROM ${tableName}`,
-    );
-
-    return result.rows;
-  }
-
-  static async getOne({ id }: { id: string }) {
+  static async getOne({ id }: { id: number }): Promise<Draft> {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE draft_id = $1`;
@@ -81,26 +81,37 @@ class DraftService {
 
     return {
       id: data.draft_id,
-      createAt: data.create_at,
-      updateAt: data.updated_at,
+      createdAt: data.create_at,
+      updatedAt: data.updated_at,
       userId: data.fk_user_id,
       body: data.body,
     };
   }
 
-  static async delete({ id }: { id: string }) {
+  static async getDrafts({ dIds }: { dIds: number[] }): Promise<Draft[]> {
+    const query = `SELECT draft_id AS id, create_at AS "createdAt", updated_at as "updatedAt", fk_user_id AS "userId", body
+                       FROM ${tableName}
+                      WHERE draft_id = ANY ($1)
+      `;
+
+    const result: QueryResult<Draft> = await db.query(query, [dIds]);
+
+    return result.rows;
+  }
+
+  static async delete({ id }: { id: number }): Promise<Draft> {
     const query = `DELETE
                      FROM ${tableName}
-                    WHERE tag_id = $1
-                RETURNING tag_id, title`;
+                    WHERE draft_id = $1
+                RETURNING draft_id, create_at, updated_at, fk_user_id, body`;
     const queryNewsTags = `DELETE
                              FROM news_${tableName}
-                            WHERE fk_tag_id = $1
+                            WHERE fk_draft_id = $1
 
     `;
     const selectData: QueryResult<DraftsRow> = await db.query(
       `SELECT * FROM ${tableName}
-          WHERE tag_id = $1
+          WHERE draft_id = $1
       `,
       [id],
     );
@@ -112,8 +123,8 @@ class DraftService {
 
       return {
         id: data.draft_id,
-        createAt: data.create_at,
-        updateAt: data.updated_at,
+        createdAt: data.create_at,
+        updatedAt: data.updated_at,
         userId: data.fk_user_id,
         body: data.body,
       };

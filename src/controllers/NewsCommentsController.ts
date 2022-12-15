@@ -1,31 +1,29 @@
 import { Response } from 'express';
 
-import CommentsService from '../service/CommentsService';
-import NewsCommentsService from '../service/NewsCommentsService';
+import { CommentsService, NewsCommentsService } from '../service';
 import { RequestWithParams, RequestWithParamsAndBody } from './types';
 
 class NewsCommentsController {
   static async create(
     req: RequestWithParamsAndBody<
       { id: string },
-      { title: string; userId: number; body: string }
+      { userId: number; body: string }
     >,
     res: Response,
   ) {
     try {
       const { id: newsId } = req.params;
-      const { title, userId, body } = req.body;
-      const { comment_id: commentId } = await CommentsService.create({
-        title,
+      const { userId, body } = req.body;
+      const comment = await CommentsService.create({
         userId,
         body,
       });
-      const pivot = await NewsCommentsService.create({
-        newsId,
-        commentId,
+      await NewsCommentsService.create({
+        newsId: Number(newsId),
+        commentId: comment.id,
       });
 
-      res.send(pivot);
+      res.send(comment);
     } catch (e) {
       res.send(e);
     }

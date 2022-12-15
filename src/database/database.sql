@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS news_drafts;
 DROP TABLE IF EXISTS news_comments;
 DROP TABLE IF EXISTS news_tags;
 DROP TABLE IF EXISTS news;
@@ -57,25 +58,6 @@ CREATE TABLE drafts (
 	CONSTRAINT FK_drafts_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE news (
-	news_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
-	title varchar(512),
-	create_at timestamp with time zone DEFAULT NOW(),
-	fk_author_id int NOT NULL,
-	fk_category_id int,
-	tags varchar(256)[],
-	body text,
-	main_img text,
-	other_imgs text[],
-	comments text[],
-	fk_draft_id int,
-
-	CONSTRAINT PK_news_news_id PRIMARY KEY(news_id),
-	CONSTRAINT FK_news_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id),
-	CONSTRAINT FK_news_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id),
-	CONSTRAINT FK_news_draft_id FOREIGN KEY(fk_draft_id) REFERENCES drafts(draft_id)
-);
-
 CREATE TABLE comments (
 	comment_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	create_at timestamp with time zone DEFAULT NOW(),
@@ -84,6 +66,22 @@ CREATE TABLE comments (
 
 	CONSTRAINT PK_comments_comment_id PRIMARY KEY(comment_id),
 	CONSTRAINT FK_comments_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE news (
+	news_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
+	title varchar(512),
+	create_at timestamp with time zone DEFAULT NOW(),
+	body text,
+	main_img text,
+	other_imgs text[],
+	fk_author_id int,
+	fk_category_id int,
+
+	CONSTRAINT PK_news_news_id PRIMARY KEY(news_id),
+	CONSTRAINT FK_news_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id),
+	CONSTRAINT FK_news_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id),
+	CONSTRAINT FK_news_draft_id FOREIGN KEY(fk_draft_id) REFERENCES drafts(draft_id)
 );
 
 CREATE TABLE news_tags (
@@ -102,4 +100,13 @@ CREATE TABLE news_comments (
 	CONSTRAINT PK_news_comments_id PRIMARY KEY(fk_comment_id, fk_news_id),
 	CONSTRAINT FK_news_comments_comment_id FOREIGN KEY(fk_comment_id) REFERENCES comments(comment_id),
 	CONSTRAINT FK_news_comments_news_id FOREIGN KEY(fk_news_id) REFERENCES news(news_id)
+);
+
+CREATE TABLE news_drafts (
+	fk_draft_id int,
+	fk_news_id int,
+
+	CONSTRAINT PK_news_drafts_id PRIMARY KEY(fk_draft_id, fk_news_id),
+	CONSTRAINT FK_news_drafts_drafts_id FOREIGN KEY(fk_draft_id) REFERENCES drafts(draft_id),
+	CONSTRAINT FK_news_drafts_news_id FOREIGN KEY(fk_news_id) REFERENCES news(news_id)
 );

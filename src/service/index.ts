@@ -5,6 +5,8 @@ import DraftService from './DraftService';
 import TagsService from './TagsService';
 import UsersService from './UsersService';
 import NewsService from './NewsService';
+import NewsCommentsService from './NewsCommentsService';
+import NewsDraftService from './NewsDraftService';
 
 export {
   AuthorsService,
@@ -14,4 +16,6 @@ export {
   TagsService,
   UsersService,
   NewsService,
+  NewsCommentsService,
+  NewsDraftService,
 };

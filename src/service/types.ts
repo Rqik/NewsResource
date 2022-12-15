@@ -6,7 +6,7 @@ type RequestWithParamsAndBody<T, B> = Request<T, unknown, B>;
 type RequestWithQuery<T> = Request<unknown, unknown, unknown, T>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-type PropsWithId<T = {}> = { id: string } & T;
+type PropsWithId<T = {}> = { id: string | number } & T;
 
 type SnakeToCamelCase<S extends string> = S extends `${infer T}_${infer U}`
   ? `${T}${Capitalize<SnakeToCamelCase<U>>}`

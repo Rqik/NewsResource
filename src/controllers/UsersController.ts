@@ -43,21 +43,15 @@ class UsersController {
         lastName: string;
         avatar: string;
         login: string;
+        password: string;
       }
     >,
     res: Response,
   ) {
     try {
       const { id } = req.params;
-      const { firstName, lastName, avatar, login } = req.body;
 
-      const result = await UsersService.update({
-        firstName,
-        lastName,
-        avatar,
-        login,
-        id,
-      });
+      const result = await UsersService.update({ ...req.body, id });
 
       res.send(result);
     } catch (e) {
