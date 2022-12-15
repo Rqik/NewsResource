@@ -16,7 +16,7 @@ CREATE TABLE users (
 	avatar varchar(128),
 	login varchar(128) NOT NULL UNIQUE,
 	password text NOT NULL,
-	create_at timestamp with time zone DEFAULT NOW(),
+	created_at timestamp with time zone DEFAULT NOW(),
 	admin boolean NOT NULL DEFAULT false,
 
 	CONSTRAINT PK_users_user_id PRIMARY KEY(user_id)
@@ -49,7 +49,7 @@ CREATE TABLE tags (
 
 CREATE TABLE drafts (
 	draft_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
-	create_at timestamp with time zone DEFAULT NOW(),
+	created_at timestamp with time zone DEFAULT NOW(),
 	updated_at timestamp with time zone DEFAULT NOW(),
 	fk_user_id int,
 	body text,
@@ -60,7 +60,7 @@ CREATE TABLE drafts (
 
 CREATE TABLE comments (
 	comment_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
-	create_at timestamp with time zone DEFAULT NOW(),
+	created_at timestamp with time zone DEFAULT NOW(),
 	fk_user_id int NOT NULL,
 	body text,
 
@@ -71,7 +71,7 @@ CREATE TABLE comments (
 CREATE TABLE news (
 	news_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	title varchar(512),
-	create_at timestamp with time zone DEFAULT NOW(),
+	created_at timestamp with time zone DEFAULT NOW(),
 	body text,
 	main_img text,
 	other_imgs text[],
@@ -80,8 +80,7 @@ CREATE TABLE news (
 
 	CONSTRAINT PK_news_news_id PRIMARY KEY(news_id),
 	CONSTRAINT FK_news_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id),
-	CONSTRAINT FK_news_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id),
-	CONSTRAINT FK_news_draft_id FOREIGN KEY(fk_draft_id) REFERENCES drafts(draft_id)
+	CONSTRAINT FK_news_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id)
 );
 
 CREATE TABLE news_tags (

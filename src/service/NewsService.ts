@@ -10,7 +10,7 @@ const tableName = 'news';
 type NewsRow = {
   news_id: number;
   title: string;
-  create_at: number;
+  created_at: number;
   fk_author_id: number;
   fk_category_id: number;
   body: string;
@@ -51,7 +51,7 @@ class NewsService {
   }: NewsProp) {
     const query = `INSERT INTO ${tableName} (title, fk_author_id, fk_category_id, body, main_img, other_imgs)
                         VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                     RETURNING news_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       title,
@@ -94,7 +94,7 @@ class NewsService {
                           main_img = $5,
                           other_imgs = $6
                     WHERE news_id = $7
-                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                RETURNING news_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       title,
@@ -124,7 +124,7 @@ class NewsService {
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
                     WHERE user_id = $${setParams.length + 1}
-                RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                RETURNING news_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       ...bodyValues,
@@ -153,7 +153,7 @@ class NewsService {
       const {
         news_id: nId,
         title,
-        create_at: createAt,
+        created_at: createdAt,
         body,
         main_img: mainImg,
         other_imgs: otherImgs,
@@ -177,7 +177,7 @@ class NewsService {
         id: nId,
         rootCategory,
         categories,
-        createAt,
+        createdAt,
         title,
         body,
         mainImg,
@@ -227,7 +227,7 @@ class NewsService {
     const {
       news_id: nId,
       title,
-      create_at: createAt,
+      created_at: createdAt,
       body,
       main_img: mainImg,
       other_imgs: otherImgs,
@@ -247,7 +247,7 @@ class NewsService {
       id: nId,
       rootCategory,
       categories,
-      createAt,
+      createdAt,
       title,
       body,
       mainImg,
@@ -271,7 +271,7 @@ class NewsService {
   static async delete({ id }: PropsWithId) {
     const query = `DELETE FROM ${tableName}
                     WHERE news_id = $1
-                    RETURNING news_id, title, create_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                    RETURNING news_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
     const selectData: QueryResult<NewsRow> = await db.query(
       `SELECT * FROM ${tableName}
           WHERE news_id = $1

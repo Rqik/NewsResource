@@ -13,7 +13,7 @@ type UsersRow = {
   avatar: string;
   login: string;
   password: string;
-  create_at: string;
+  created_at: string;
   admin: boolean;
 };
 
@@ -35,7 +35,7 @@ class UsersService {
   }: UserProp) {
     const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password)
                         VALUES ($1, $2, $3, $4, $5)
-                     RETURNING user_id, first_name, last_name, avatar, login, admin, create_at, password`;
+                     RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, password`;
 
     const result: QueryResult<UsersRow> = await db.query(query, [
       firstName,
@@ -72,7 +72,7 @@ class UsersService {
                           login = $4,
                           password = $5
                     WHERE user_id = $6
-                RETURNING user_id, first_name, last_name, avatar, login, admin, create_at`;
+                RETURNING user_id, first_name, last_name, avatar, login, admin, created_at`;
 
     const result: QueryResult<UsersRow> = await db.query(query, [
       firstName,
@@ -106,7 +106,7 @@ class UsersService {
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
                     WHERE user_id = $${setParams.length + 1}
-                RETURNING user_id, first_name, last_name, avatar, login, admin, create_at`;
+                RETURNING user_id, first_name, last_name, avatar, login, admin, created_at`;
 
     const result: QueryResult<UsersRow> = await db.query(query, [
       ...bodyValues,
@@ -126,7 +126,7 @@ class UsersService {
 
   static async getAll() {
     const result: QueryResult<UsersRow> = await db.query(
-      `SELECT user_id, first_name, last_name, avatar, login, admin, create_at
+      `SELECT user_id, first_name, last_name, avatar, login, admin, created_at
          FROM ${tableName}`,
     );
 

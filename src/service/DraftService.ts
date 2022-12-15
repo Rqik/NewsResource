@@ -3,7 +3,7 @@ import db from '../db';
 
 type DraftsRow = {
   draft_id: number;
-  create_at: Date;
+  created_at: Date;
   updated_at: Date;
   fk_user_id: number;
   body: string;
@@ -23,7 +23,7 @@ class DraftService {
   static async create({ userId, body }: { userId: number; body: string }) {
     const query = `INSERT INTO ${tableName} (fk_user_id, body)
                         VALUES ($1, $2)
-                     RETURNING draft_id, create_at, updated_at, fk_user_id, body`;
+                     RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
     const result: QueryResult<DraftsRow> = await db.query(query, [
       userId,
       body,
@@ -32,7 +32,7 @@ class DraftService {
 
     return {
       id: data.draft_id,
-      createdAt: data.create_at,
+      createdAt: data.created_at,
       updatedAt: data.updated_at,
       userId: data.fk_user_id,
       body: data.body,
@@ -53,7 +53,7 @@ class DraftService {
                           fk_user_id = $2,
                           updated_at = NOW()
                     WHERE draft_id = $3
-                RETURNING draft_id, create_at, updated_at, fk_user_id, body`;
+                RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
 
     const result: QueryResult<DraftsRow> = await db.query(query, [
       body,
@@ -65,7 +65,7 @@ class DraftService {
 
     return {
       id: data.draft_id,
-      createdAt: data.create_at,
+      createdAt: data.created_at,
       updatedAt: data.updated_at,
       userId: data.fk_user_id,
       body: data.body,
@@ -81,7 +81,7 @@ class DraftService {
 
     return {
       id: data.draft_id,
-      createdAt: data.create_at,
+      createdAt: data.created_at,
       updatedAt: data.updated_at,
       userId: data.fk_user_id,
       body: data.body,
@@ -89,7 +89,7 @@ class DraftService {
   }
 
   static async getDrafts({ dIds }: { dIds: number[] }): Promise<Draft[]> {
-    const query = `SELECT draft_id AS id, create_at AS "createdAt", updated_at as "updatedAt", fk_user_id AS "userId", body
+    const query = `SELECT draft_id AS id, created_at AS "createdAt", updated_at as "updatedAt", fk_user_id AS "userId", body
                        FROM ${tableName}
                       WHERE draft_id = ANY ($1)
       `;
@@ -103,7 +103,7 @@ class DraftService {
     const query = `DELETE
                      FROM ${tableName}
                     WHERE draft_id = $1
-                RETURNING draft_id, create_at, updated_at, fk_user_id, body`;
+                RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
     const queryNewsTags = `DELETE
                              FROM news_${tableName}
                             WHERE fk_draft_id = $1
@@ -123,7 +123,7 @@ class DraftService {
 
       return {
         id: data.draft_id,
-        createdAt: data.create_at,
+        createdAt: data.created_at,
         updatedAt: data.updated_at,
         userId: data.fk_user_id,
         body: data.body,

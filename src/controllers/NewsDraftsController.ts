@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-import { DraftService, NewsDraftService } from '../service';
+import { NewsDraftService } from '../service';
 import { RequestWithParams, RequestWithParamsAndBody } from './types';
 
 class NewsDraftsController {
