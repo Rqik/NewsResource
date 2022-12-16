@@ -1,9 +1,9 @@
 import { Response } from 'express';
 
-import { CommentsService, NewsCommentsService } from '../service/index';
+import { CommentsService, PostsCommentsService } from '../service/index';
 import { RequestWithParams, RequestWithParamsAndBody } from './types';
 
-class NewsCommentsController {
+class PostsCommentsController {
   static async create(
     req: RequestWithParamsAndBody<
       { id: string },
@@ -18,7 +18,7 @@ class NewsCommentsController {
         userId,
         body,
       });
-      await NewsCommentsService.create({
+      await PostsCommentsService.create({
         postId: Number(postId),
         commentId: comment.id,
       });
@@ -35,7 +35,7 @@ class NewsCommentsController {
   ) {
     try {
       const { id } = req.params;
-      const comments = await NewsCommentsService.getCommentsPost({ id });
+      const comments = await PostsCommentsService.getCommentsPost({ id });
 
       res.send(comments);
     } catch (e) {
@@ -49,7 +49,7 @@ class NewsCommentsController {
   ) {
     try {
       const { id: nId, cid: cId } = req.params;
-      const comment = await NewsCommentsService.delete({
+      const comment = await PostsCommentsService.delete({
         nId: Number(nId),
         cId: Number(cId),
       });
@@ -60,4 +60,4 @@ class NewsCommentsController {
   }
 }
 
-export default NewsCommentsController;
+export default PostsCommentsController;

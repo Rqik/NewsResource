@@ -1,9 +1,9 @@
 import { Response } from 'express';
 
-import { NewsDraftService } from '../service/index';
+import { PostsDraftService } from '../service/index';
 import { RequestWithParams, RequestWithParamsAndBody } from './types';
 
-class NewsDraftsController {
+class PostsDraftsController {
   static async create(
     req: RequestWithParamsAndBody<
       { id: string },
@@ -15,7 +15,7 @@ class NewsDraftsController {
       const { id } = req.params;
       const { body, userId } = req.body;
 
-      const draft = await NewsDraftService.create({
+      const draft = await PostsDraftService.create({
         postId: Number(id),
         body,
         userId,
@@ -38,7 +38,7 @@ class NewsDraftsController {
       const { id, did } = req.params;
       const { body, userId } = req.body;
 
-      const result = await NewsDraftService.update({
+      const result = await PostsDraftService.update({
         postId: Number(id),
         draftId: Number(did),
         body,
@@ -55,7 +55,7 @@ class NewsDraftsController {
     try {
       const { id } = req.params;
 
-      const result = await NewsDraftService.getDraftsPost({
+      const result = await PostsDraftService.getDraftsPost({
         postId: Number(id),
       });
 
@@ -71,7 +71,7 @@ class NewsDraftsController {
   ) {
     try {
       const { id, did } = req.params;
-      const result = await NewsDraftService.getOne({
+      const result = await PostsDraftService.getOne({
         postId: Number(id),
         draftId: Number(did),
       });
@@ -88,7 +88,7 @@ class NewsDraftsController {
   ) {
     try {
       const { id, did } = req.params;
-      const result = await NewsDraftService.delete({
+      const result = await PostsDraftService.delete({
         postId: Number(id),
         draftId: Number(did),
       });
@@ -102,4 +102,4 @@ class NewsDraftsController {
   static async publish() {}
 }
 
-export default NewsDraftsController;
+export default PostsDraftsController;

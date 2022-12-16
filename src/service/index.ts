@@ -4,9 +4,9 @@ import CommentsService from './CommentsService';
 import DraftService from './DraftService';
 import TagsService from './TagsService';
 import UsersService from './UsersService';
-import NewsService from './PostsService';
-import NewsCommentsService from './PostsCommentsService';
-import NewsDraftService from './PostsDraftService';
+import PostsService from './PostsService';
+import PostsCommentsService from './PostsCommentsService';
+import PostsDraftService from './PostsDraftService';
 
 export {
   AuthorsService,
@@ -15,7 +15,7 @@ export {
   DraftService,
   TagsService,
   UsersService,
-  NewsService,
-  NewsCommentsService,
-  NewsDraftService,
+  PostsService,
+  PostsCommentsService,
+  PostsDraftService,
 };

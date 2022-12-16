@@ -10,7 +10,7 @@ type NewsDraftRow = {
 const tableName = 'post_drafts';
 const returnCols = 'fk_post_id, fk_draft_id';
 
-class NewsDraftService {
+class PostsDraftService {
   static async create({
     postId,
     userId,
@@ -126,4 +126,4 @@ class NewsDraftService {
   }
 }
 
-export default NewsDraftService;
+export default PostsDraftService;

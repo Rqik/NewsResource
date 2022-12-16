@@ -3,7 +3,7 @@ import { QueryResult } from 'pg';
 
 import db from '../db';
 import { queryCategoriesRecursive } from './CategoriesService';
-import NewsCommentsService from './PostsCommentsService';
+import PostsCommentsService from './PostsCommentsService';
 import { PropsWithId } from './types';
 
 const tableName = 'post';
@@ -40,7 +40,7 @@ type NewsProp = {
   otherImgs: string[];
 };
 
-class NewsService {
+class PostsService {
   static async create({
     title,
     authorId,
@@ -169,7 +169,7 @@ class NewsService {
         admin,
       } = el;
 
-      const comments = await NewsCommentsService.getCommentsPost({
+      const comments = await PostsCommentsService.getCommentsPost({
         id: nId,
       });
 
@@ -222,7 +222,7 @@ class NewsService {
     `;
     const result: QueryResult<NewsFullRow> = await db.query(query, [id]);
     const data = result.rows[0];
-    const comments = await NewsCommentsService.getCommentsPost({ id });
+    const comments = await PostsCommentsService.getCommentsPost({ id });
 
     const {
       post_id: nId,
@@ -292,4 +292,4 @@ class NewsService {
   }
 }
 
-export default NewsService;
+export default PostsService;

@@ -1,17 +1,17 @@
 import AuthorsController from './AuthorsController';
 import CategoriesController from './CategoriesController';
-import NewsCommentsController from './PostsCommentsController';
-import NewsDraftsController from './PostsDraftsController';
+import PostsCommentsController from './PostsCommentsController';
+import PostsDraftsController from './PostsDraftsController';
 import TagsController from './TagsController';
 import UsersController from './UsersController';
-import NewsController from './PostsController';
+import PostsController from './PostsController';
 
 export {
   AuthorsController,
   CategoriesController,
-  NewsCommentsController,
-  NewsDraftsController as DraftsController,
+  PostsCommentsController,
+  PostsDraftsController as DraftsController,
   TagsController,
   UsersController,
-  NewsController,
+  PostsController,
 };

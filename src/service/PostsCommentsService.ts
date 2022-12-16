@@ -10,7 +10,7 @@ type NewsCommentRow = {
   fk_comment_id: number;
 };
 
-class NewsCommentsService {
+class PostsCommentsService {
   static async create({
     commentId,
     postId,
@@ -55,4 +55,4 @@ class NewsCommentsService {
   }
 }
 
-export default NewsCommentsService;
+export default PostsCommentsService;

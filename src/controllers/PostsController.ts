@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 
-import { NewsService } from '../service/index';
+import { PostsService } from '../service/index';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
 } from './types';
 
-class NewsController {
+class PostsController {
   static async create(
     req: RequestWithBody<{
       title: string;
@@ -20,7 +20,7 @@ class NewsController {
     res: Response,
   ) {
     try {
-      const result = await NewsService.create(req.body);
+      const result = await PostsService.create(req.body);
 
       res.send(result);
     } catch (e) {
@@ -45,7 +45,7 @@ class NewsController {
     try {
       const { id } = req.params;
 
-      const result = await NewsService.update({ ...req.body, id: Number(id) });
+      const result = await PostsService.update({ ...req.body, id: Number(id) });
 
       res.send(result);
     } catch (e) {
@@ -70,7 +70,7 @@ class NewsController {
     try {
       const { id } = req.params;
 
-      const result = await NewsService.partialUpdate({ ...req.body, id });
+      const result = await PostsService.partialUpdate({ ...req.body, id });
 
       res.send(result);
     } catch (e) {
@@ -80,7 +80,7 @@ class NewsController {
 
   static async getAll(req: Request, res: Response) {
     try {
-      const result = await NewsService.getAll();
+      const result = await PostsService.getAll();
 
       res.send(result);
     } catch (e) {
@@ -91,7 +91,7 @@ class NewsController {
   static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
     try {
       const { id } = req.params;
-      const result = await NewsService.getOne({ id });
+      const result = await PostsService.getOne({ id });
 
       res.send(result);
     } catch (e) {
@@ -103,7 +103,7 @@ class NewsController {
     try {
       const { id } = req.params;
 
-      const result = await NewsService.delete({ id });
+      const result = await PostsService.delete({ id });
 
       res.send(result);
     } catch (e) {
@@ -112,4 +112,4 @@ class NewsController {
   }
 }
 
-export default NewsController;
+export default PostsController;
