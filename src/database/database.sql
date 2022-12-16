@@ -1,7 +1,7 @@
-DROP TABLE IF EXISTS news_drafts;
-DROP TABLE IF EXISTS news_comments;
-DROP TABLE IF EXISTS news_tags;
-DROP TABLE IF EXISTS news;
+DROP TABLE IF EXISTS posts_drafts;
+DROP TABLE IF EXISTS posts_comments;
+DROP TABLE IF EXISTS posts_tags;
+DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS drafts;
 DROP TABLE IF EXISTS authors;
@@ -68,8 +68,8 @@ CREATE TABLE comments (
 	CONSTRAINT FK_comments_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE news (
-	news_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
+CREATE TABLE posts (
+	post_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	title varchar(512),
 	created_at timestamp with time zone DEFAULT NOW(),
 	body text,
@@ -78,34 +78,34 @@ CREATE TABLE news (
 	fk_author_id int,
 	fk_category_id int,
 
-	CONSTRAINT PK_news_news_id PRIMARY KEY(news_id),
-	CONSTRAINT FK_news_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id),
-	CONSTRAINT FK_news_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id)
+	CONSTRAINT PK_posts_post_id PRIMARY KEY(post_id),
+	CONSTRAINT FK_posts_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id),
+	CONSTRAINT FK_posts_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id)
 );
 
-CREATE TABLE news_tags (
-	fk_news_id int,
+CREATE TABLE posts_tags (
+	fk_post_id int,
 	fk_tag_id int,
 
-	CONSTRAINT PK_news_tags_id PRIMARY KEY(fk_news_id, fk_tag_id),
-	CONSTRAINT FK_news_tags_news_id FOREIGN KEY(fk_news_id) REFERENCES news(news_id),
-	CONSTRAINT FK_news_tags_tag_id FOREIGN KEY(fk_tag_id) REFERENCES tags(tag_id)
+	CONSTRAINT PK_posts_tags_id PRIMARY KEY(fk_post_id, fk_tag_id),
+	CONSTRAINT FK_posts_tags_post_id FOREIGN KEY(fk_post_id) REFERENCES posts(post_id),
+	CONSTRAINT FK_posts_tags_tag_id FOREIGN KEY(fk_tag_id) REFERENCES tags(tag_id)
 );
 
-CREATE TABLE news_comments (
+CREATE TABLE posts_comments (
 	fk_comment_id int,
-	fk_news_id int,
+	fk_post_id int,
 
-	CONSTRAINT PK_news_comments_id PRIMARY KEY(fk_comment_id, fk_news_id),
-	CONSTRAINT FK_news_comments_comment_id FOREIGN KEY(fk_comment_id) REFERENCES comments(comment_id),
-	CONSTRAINT FK_news_comments_news_id FOREIGN KEY(fk_news_id) REFERENCES news(news_id)
+	CONSTRAINT PK_posts_comments_id PRIMARY KEY(fk_comment_id, fk_post_id),
+	CONSTRAINT FK_posts_comments_comment_id FOREIGN KEY(fk_comment_id) REFERENCES comments(comment_id),
+	CONSTRAINT FK_posts_comments_post_id FOREIGN KEY(fk_post_id) REFERENCES posts(post_id)
 );
 
-CREATE TABLE news_drafts (
+CREATE TABLE posts_drafts (
 	fk_draft_id int,
-	fk_news_id int,
+	fk_post_id int,
 
-	CONSTRAINT PK_news_drafts_id PRIMARY KEY(fk_draft_id, fk_news_id),
-	CONSTRAINT FK_news_drafts_drafts_id FOREIGN KEY(fk_draft_id) REFERENCES drafts(draft_id),
-	CONSTRAINT FK_news_drafts_news_id FOREIGN KEY(fk_news_id) REFERENCES news(news_id)
+	CONSTRAINT PK_posts_drafts_id PRIMARY KEY(fk_draft_id, fk_post_id),
+	CONSTRAINT FK_posts_drafts_drafts_id FOREIGN KEY(fk_draft_id) REFERENCES drafts(draft_id),
+	CONSTRAINT FK_posts_drafts_post_id FOREIGN KEY(fk_post_id) REFERENCES posts(post_id)
 );

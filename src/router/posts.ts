@@ -1,8 +1,8 @@
 import express from 'express';
-import { NewsController } from '../controllers';
+import { NewsController } from '../controllers/index';
 
 const router = express.Router();
-const path = '/news';
+const path = '/post';
 
 router.get(path, NewsController.getAll);
 router.get(`${path}/:id`, NewsController.getOne);

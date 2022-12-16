@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-import { NewsDraftService } from '../service';
+import { NewsDraftService } from '../service/index';
 import { RequestWithParams, RequestWithParamsAndBody } from './types';
 
 class NewsDraftsController {
@@ -16,7 +16,7 @@ class NewsDraftsController {
       const { body, userId } = req.body;
 
       const draft = await NewsDraftService.create({
-        newsId: Number(id),
+        postId: Number(id),
         body,
         userId,
       });
@@ -39,7 +39,7 @@ class NewsDraftsController {
       const { body, userId } = req.body;
 
       const result = await NewsDraftService.update({
-        newsId: Number(id),
+        postId: Number(id),
         draftId: Number(did),
         body,
         userId,
@@ -56,7 +56,7 @@ class NewsDraftsController {
       const { id } = req.params;
 
       const result = await NewsDraftService.getDraftsPost({
-        newsId: Number(id),
+        postId: Number(id),
       });
 
       res.send(result);
@@ -72,7 +72,7 @@ class NewsDraftsController {
     try {
       const { id, did } = req.params;
       const result = await NewsDraftService.getOne({
-        newsId: Number(id),
+        postId: Number(id),
         draftId: Number(did),
       });
 
@@ -89,7 +89,7 @@ class NewsDraftsController {
     try {
       const { id, did } = req.params;
       const result = await NewsDraftService.delete({
-        newsId: Number(id),
+        postId: Number(id),
         draftId: Number(did),
       });
 

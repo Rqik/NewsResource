@@ -3,12 +3,12 @@ import { QueryResult } from 'pg';
 
 import db from '../db';
 import { queryCategoriesRecursive } from './CategoriesService';
-import NewsCommentsService from './NewsCommentsService';
+import NewsCommentsService from './PostsCommentsService';
 import { PropsWithId } from './types';
 
-const tableName = 'news';
+const tableName = 'post';
 type NewsRow = {
-  news_id: number;
+  post_id: number;
   title: string;
   created_at: number;
   fk_author_id: number;
@@ -51,7 +51,7 @@ class NewsService {
   }: NewsProp) {
     const query = `INSERT INTO ${tableName} (title, fk_author_id, fk_category_id, body, main_img, other_imgs)
                         VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING news_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                     RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       title,
@@ -65,7 +65,7 @@ class NewsService {
 
     return {
       ...data,
-      id: data.news_id,
+      id: data.post_id,
     };
   }
 
@@ -93,8 +93,8 @@ class NewsService {
                           body = $4,
                           main_img = $5,
                           other_imgs = $6
-                    WHERE news_id = $7
-                RETURNING news_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                    WHERE post_id = $7
+                RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       title,
@@ -124,7 +124,7 @@ class NewsService {
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
                     WHERE user_id = $${setParams.length + 1}
-                RETURNING news_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
     const result: QueryResult<NewsRow> = await db.query(query, [
       ...bodyValues,
@@ -134,7 +134,7 @@ class NewsService {
 
     return {
       ...data,
-      id: data.news_id,
+      id: data.post_id,
     };
   }
 
@@ -151,7 +151,7 @@ class NewsService {
 
     const loadNews = result.rows.map(async (el) => {
       const {
-        news_id: nId,
+        post_id: nId,
         title,
         created_at: createdAt,
         body,
@@ -198,7 +198,7 @@ class NewsService {
       };
     });
 
-    const news = await Promise.allSettled(loadNews).then((req) =>
+    const post = await Promise.allSettled(loadNews).then((req) =>
       req.map((el) => {
         if (el.status === 'fulfilled') {
           return el.value;
@@ -207,7 +207,7 @@ class NewsService {
       }),
     );
 
-    return news;
+    return post;
   }
 
   static async getOne({ id }: PropsWithId) {
@@ -218,14 +218,14 @@ class NewsService {
         JOIN authors a ON a.author_id = n.fk_author_id
         JOIN users u ON u.user_id = a.fk_user_id
         JOIN catR c ON c.id = n.fk_category_id
-       WHERE n.news_id = $1
+       WHERE n.post_id = $1
     `;
     const result: QueryResult<NewsFullRow> = await db.query(query, [id]);
     const data = result.rows[0];
     const comments = await NewsCommentsService.getCommentsPost({ id });
 
     const {
-      news_id: nId,
+      post_id: nId,
       title,
       created_at: createdAt,
       body,
@@ -270,11 +270,11 @@ class NewsService {
 
   static async delete({ id }: PropsWithId) {
     const query = `DELETE FROM ${tableName}
-                    WHERE news_id = $1
-                    RETURNING news_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                    WHERE post_id = $1
+                    RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
     const selectData: QueryResult<NewsRow> = await db.query(
       `SELECT * FROM ${tableName}
-          WHERE news_id = $1
+          WHERE post_id = $1
       `,
       [id],
     );
@@ -284,7 +284,7 @@ class NewsService {
       const data = result.rows[0];
       return {
         ...data,
-        id: data.news_id,
+        id: data.post_id,
       };
     }
     // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app

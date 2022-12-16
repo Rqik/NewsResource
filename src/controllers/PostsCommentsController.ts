@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-import { CommentsService, NewsCommentsService } from '../service';
+import { CommentsService, NewsCommentsService } from '../service/index';
 import { RequestWithParams, RequestWithParamsAndBody } from './types';
 
 class NewsCommentsController {
@@ -12,14 +12,14 @@ class NewsCommentsController {
     res: Response,
   ) {
     try {
-      const { id: newsId } = req.params;
+      const { id: postId } = req.params;
       const { userId, body } = req.body;
       const comment = await CommentsService.create({
         userId,
         body,
       });
       await NewsCommentsService.create({
-        newsId: Number(newsId),
+        postId: Number(postId),
         commentId: comment.id,
       });
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { NewsService } from '../service';
+import { NewsService } from '../service/index';
 import {
   RequestWithBody,
   RequestWithParams,

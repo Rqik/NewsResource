@@ -105,7 +105,7 @@ class DraftService {
                     WHERE draft_id = $1
                 RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
     const queryNewsTags = `DELETE
-                             FROM news_${tableName}
+                             FROM post_${tableName}
                             WHERE fk_draft_id = $1
 
     `;

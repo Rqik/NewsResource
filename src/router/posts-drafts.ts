@@ -1,9 +1,9 @@
 import express from 'express';
-import { DraftsController } from '../controllers';
+import { DraftsController } from '../controllers/index';
 
 const router = express.Router();
 
-const postPath = '/news';
+const postPath = '/post';
 const path = '/drafts';
 
 router.get(`${postPath}/:id${path}`, DraftsController.getAll);

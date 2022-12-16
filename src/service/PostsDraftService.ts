@@ -4,23 +4,23 @@ import DraftService from './DraftService';
 
 type NewsDraftRow = {
   fk_draft_id: number;
-  fk_news_id: number;
+  fk_post_id: number;
 };
 
-const tableName = 'news_drafts';
-const returnCols = 'fk_news_id, fk_draft_id';
+const tableName = 'post_drafts';
+const returnCols = 'fk_post_id, fk_draft_id';
 
 class NewsDraftService {
   static async create({
-    newsId,
+    postId,
     userId,
     body,
   }: {
-    newsId: number;
+    postId: number;
     userId: number;
     body: string;
   }) {
-    const query = `INSERT INTO ${tableName} (fk_news_id, fk_draft_id)
+    const query = `INSERT INTO ${tableName} (fk_post_id, fk_draft_id)
                         VALUES ($1, $2)
                      RETURNING ${returnCols}`;
 
@@ -29,16 +29,16 @@ class NewsDraftService {
       userId,
     });
 
-    await db.query(query, [newsId, draft.id]);
+    await db.query(query, [postId, draft.id]);
 
     return draft;
   }
 
-  static async getDraftsPost({ newsId }: { newsId: number }) {
+  static async getDraftsPost({ postId }: { postId: number }) {
     const query = `SELECT *
                      FROM ${tableName}
-                    WHERE fk_news_id = $1`;
-    const result: QueryResult<NewsDraftRow> = await db.query(query, [newsId]);
+                    WHERE fk_post_id = $1`;
+    const result: QueryResult<NewsDraftRow> = await db.query(query, [postId]);
 
     const dIds = result.rows.map((el) => el.fk_draft_id);
 
@@ -48,20 +48,20 @@ class NewsDraftService {
   }
 
   static async delete({
-    newsId,
+    postId,
     draftId,
   }: {
-    newsId: number;
+    postId: number;
     draftId: number;
   }) {
     const queryNewsTags = `DELETE
-                             FROM news_${tableName}
-                            WHERE fk_news_id = $1 AND fk_draft_id = $2
+                             FROM post_${tableName}
+                            WHERE fk_post_id = $1 AND fk_draft_id = $2
 `;
-    const isBelongs = await this.checkNewsBelongsDraft({ newsId, draftId });
+    const isBelongs = await this.checkNewsBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      await db.query(queryNewsTags, [newsId, draftId]);
+      await db.query(queryNewsTags, [postId, draftId]);
       const removedDraft = await DraftService.delete({ id: draftId });
 
       return removedDraft;
@@ -71,17 +71,17 @@ class NewsDraftService {
   }
 
   static async update({
-    newsId,
+    postId,
     draftId,
     body,
     userId,
   }: {
-    newsId: number;
+    postId: number;
     draftId: number;
     userId: number;
     body: string;
   }) {
-    const isBelongs = await this.checkNewsBelongsDraft({ newsId, draftId });
+    const isBelongs = await this.checkNewsBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
       const draft = await DraftService.update({ id: draftId, body, userId });
@@ -92,13 +92,13 @@ class NewsDraftService {
   }
 
   static async getOne({
-    newsId,
+    postId,
     draftId,
   }: {
-    newsId: number;
+    postId: number;
     draftId: number;
   }) {
-    const isBelongs = await this.checkNewsBelongsDraft({ newsId, draftId });
+    const isBelongs = await this.checkNewsBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
       const draft = await DraftService.getOne({ id: draftId });
@@ -108,17 +108,17 @@ class NewsDraftService {
   }
 
   private static async checkNewsBelongsDraft({
-    newsId,
+    postId,
     draftId,
   }: {
-    newsId: number;
+    postId: number;
     draftId: number;
   }) {
     const query = `SELECT *
                      FROM ${tableName}
-                    WHERE fk_news_id = $1 AND fk_draft_id = $2`;
+                    WHERE fk_post_id = $1 AND fk_draft_id = $2`;
     const result: QueryResult<NewsDraftRow> = await db.query(query, [
-      newsId,
+      postId,
       draftId,
     ]);
 

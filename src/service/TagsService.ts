@@ -63,7 +63,7 @@ class TagsService {
                     WHERE tag_id = $1
                 RETURNING tag_id, title`;
     const queryNewsTags = `DELETE
-                             FROM news_${tableName}
+                             FROM post_${tableName}
                             WHERE fk_tag_id = $1
 
     `;

@@ -1,9 +1,9 @@
 import authors from './authors';
 import categories from './categories';
-import comments from './news-comments';
-import drafts from './news-drafts';
+import comments from './posts-comments';
+import drafts from './posts-drafts';
 import users from './users';
-import newsR from './news';
+import postR from './posts';
 import tags from './tags';
 
-export { authors, newsR, users, drafts, comments, categories, tags };
+export { authors, postR, users, drafts, comments, categories, tags };

@@ -1,9 +1,9 @@
 import express from 'express';
-import { NewsCommentsController } from '../controllers';
+import { NewsCommentsController } from '../controllers/index';
 
 const router = express.Router();
 
-const postPath = '/news';
+const postPath = '/post';
 const path = '/comments';
 
 router.get(`${postPath}/:id${path}`, NewsCommentsController.getCommentsPost);
