@@ -1,6 +1,7 @@
 import { Response } from 'express';
 
 import { CommentsService, PostsCommentsService } from '../service/index';
+import HttpStatuses from '../shared/HttpStatuses';
 import { RequestWithParams, RequestWithParamsAndBody } from './types';
 
 class PostsCommentsController {
@@ -25,6 +26,7 @@ class PostsCommentsController {
 
       res.send(comment);
     } catch (e) {
+      res.status(HttpStatuses.BAD_REQUEST);
       res.send(e);
     }
   }

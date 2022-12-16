@@ -2,7 +2,7 @@ import express from 'express';
 import { PostsController } from '../controllers/index';
 
 const router = express.Router();
-const path = '/post';
+const path = '/posts';
 
 router.get(path, PostsController.getAll);
 router.get(`${path}/:id`, PostsController.getOne);

@@ -6,7 +6,7 @@ import { queryCategoriesRecursive } from './CategoriesService';
 import PostsCommentsService from './PostsCommentsService';
 import { PropsWithId } from './types';
 
-const tableName = 'post';
+const tableName = 'posts';
 type NewsRow = {
   post_id: number;
   title: string;

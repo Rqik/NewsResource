@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import { PostsService } from '../service/index';
+import HttpStatuses from '../shared/HttpStatuses';
 import {
   RequestWithBody,
   RequestWithParams,
@@ -24,7 +25,18 @@ class PostsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      console.log(e.message);
+      res.send({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        ...e,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        message: e.message,
+      });
+      res.status(HttpStatuses.BAD_REQUEST);
     }
   }
 

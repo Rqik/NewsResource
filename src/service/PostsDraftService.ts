@@ -7,7 +7,7 @@ type NewsDraftRow = {
   fk_post_id: number;
 };
 
-const tableName = 'post_drafts';
+const tableName = 'posts_drafts';
 const returnCols = 'fk_post_id, fk_draft_id';
 
 class PostsDraftService {

@@ -3,7 +3,7 @@ import db from '../db';
 import CommentsService from './CommentsService';
 import { PropsWithId } from './types';
 
-const tableName = 'post_comments';
+const tableName = 'posts_comments';
 
 type NewsCommentRow = {
   fk_post_id: number;

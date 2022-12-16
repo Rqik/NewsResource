@@ -3,7 +3,7 @@ import { PostsCommentsController } from '../controllers/index';
 
 const router = express.Router();
 
-const postPath = '/post';
+const postPath = '/posts';
 const path = '/comments';
 
 router.get(`${postPath}/:id${path}`, PostsCommentsController.getCommentsPost);

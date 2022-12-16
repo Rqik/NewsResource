@@ -3,7 +3,7 @@ import { DraftsController } from '../controllers/index';
 
 const router = express.Router();
 
-const postPath = '/post';
+const postPath = '/posts';
 const path = '/drafts';
 
 router.get(`${postPath}/:id${path}`, DraftsController.getAll);
