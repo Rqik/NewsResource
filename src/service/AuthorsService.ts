@@ -4,9 +4,16 @@ import db from '../db';
 import { PropsWithId } from './types';
 
 const tableName = 'authors';
+
 type AuthorsRow = {
   author_id: number;
   fk_user_id: number;
+  description: string;
+};
+
+type Author = {
+  id: number;
+  userId: number;
   description: string;
 };
 
@@ -21,13 +28,9 @@ class AuthorsService {
       description,
       userId,
     ]);
-    const data = result.rows[0];
+    const author = result.rows[0];
 
-    return {
-      id: data.author_id,
-      description: data.description,
-      userId: data.fk_user_id,
-    };
+    return AuthorsService.convertCase(author);
   }
 
   static async update({ id, description, userId }: PropsWithId<AuthorProp>) {
@@ -41,13 +44,9 @@ class AuthorsService {
       userId,
       id,
     ]);
-    const data = result.rows[0];
+    const author = result.rows[0];
 
-    return {
-      id: data.author_id,
-      description: data.description,
-      userId: data.fk_user_id,
-    };
+    return AuthorsService.convertCase(author);
   }
 
   static async getAll() {
@@ -56,7 +55,7 @@ class AuthorsService {
            FROM ${tableName}`,
     );
 
-    return result.rows;
+    return result.rows.map((author) => AuthorsService.convertCase(author));
   }
 
   static async getOne({ id }: PropsWithId) {
@@ -64,13 +63,9 @@ class AuthorsService {
                      FROM ${tableName}
                     WHERE author_id = $1`;
     const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
-    const data = result.rows[0];
+    const author = result.rows[0];
 
-    return {
-      id: data.author_id,
-      description: data.description,
-      userId: data.fk_user_id,
-    };
+    return AuthorsService.convertCase(author);
   }
 
   static async deleteUserAuthors({ id }: PropsWithId) {
@@ -79,7 +74,7 @@ class AuthorsService {
                 RETURNING author_id, description, fk_user_id`;
 
     const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
-    return result.rows;
+    return result.rows.map((author) => AuthorsService.convertCase(author));
   }
 
   static async delete({ id }: PropsWithId) {
@@ -88,11 +83,15 @@ class AuthorsService {
                 RETURNING author_id, description, fk_user_id`;
 
     const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
-    const data = result.rows[0];
+    const author = result.rows[0];
+    return AuthorsService.convertCase(author);
+  }
+
+  static convertCase(author: AuthorsRow): Author {
     return {
-      id: data.author_id,
-      description: data.description,
-      userId: data.fk_user_id,
+      id: author.author_id,
+      description: author.description,
+      userId: author.fk_user_id,
     };
   }
 }

@@ -1,14 +1,11 @@
-import { Request, Response } from 'express';
 import { QueryResult } from 'pg';
 
 import db from '../db';
-import HttpStatuses from '../shared/HttpStatuses';
-import { RequestWithParams } from './types';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
 const tableName = 'categories';
 
-type CategoryRow = {
+type CategoriesRow = {
   category_id: number;
   description: string;
   fk_category_id: number | null;
@@ -39,7 +36,7 @@ class CategoriesService {
     const query = `INSERT INTO ${tableName} (description, fk_category_id)
                    VALUES ($1, $2)
                 RETURNING category_id, description, fk_category_id`;
-    const result: QueryResult<CategoryRow> = await db.query(query, [
+    const result: QueryResult<CategoriesRow> = await db.query(query, [
       description,
       category,
     ]);
@@ -63,7 +60,7 @@ class CategoriesService {
                           fk_category_id = $2
                     WHERE category_id = $3
                 RETURNING category_id, description, fk_category_id`;
-    const result: QueryResult<CategoryRow> = await db.query(query, [
+    const result: QueryResult<CategoriesRow> = await db.query(query, [
       description,
       category,
       id,
@@ -73,7 +70,7 @@ class CategoriesService {
   }
 
   static async getAll() {
-    const result: QueryResult<CategoryRow> = await db.query(
+    const result: QueryResult<CategoriesRow> = await db.query(
       `SELECT *
            FROM ${tableName}`,
     );
@@ -86,7 +83,7 @@ class CategoriesService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE category_id = $1`;
-    const result: QueryResult<CategoryRow> = await db.query(query, [id]);
+    const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
 
     const data = result.rows[0];
     return CategoriesService.convertCategory(data);
@@ -98,7 +95,7 @@ class CategoriesService {
                     WHERE category_id = $1
                 RETURNING category_id, description, fk_category_id`;
 
-    const selectData: QueryResult<CategoryRow> = await db.query(
+    const selectData: QueryResult<CategoriesRow> = await db.query(
       `SELECT *
            FROM ${tableName}
           WHERE category_id = $1`,
@@ -106,14 +103,14 @@ class CategoriesService {
     );
 
     if (selectData.rows.length > 0) {
-      const result: QueryResult<CategoryRow> = await db.query(query, [id]);
+      const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
       const data = result.rows[0];
       return CategoriesService.convertCategory(data);
     }
     throw new Error('Category not found');
   }
 
-  private static convertCategory(category: CategoryRow) {
+  private static convertCategory(category: CategoriesRow) {
     return {
       id: category.category_id,
       description: category.description,

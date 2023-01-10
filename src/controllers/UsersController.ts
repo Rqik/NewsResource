@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
 
 import { UsersService } from '../service';
 import {
@@ -16,21 +15,22 @@ class UsersController {
       avatar: string;
       login: string;
       password: string;
+      email: string;
     }>,
     res: Response,
   ) {
     try {
-      const { firstName, lastName, avatar, login, password } = req.body;
-      const encrypted = bcrypt.hashSync(password, 7);
+      const { firstName, lastName, avatar, login, password, email } = req.body;
 
       const result = await UsersService.create({
-        password: encrypted,
+        password,
         login,
         avatar,
         lastName,
         firstName,
+        email,
       });
-      res.send({ result, encrypted });
+      res.send({ result });
     } catch (e) {
       res.send(e);
     }
@@ -45,6 +45,7 @@ class UsersController {
         avatar: string;
         login: string;
         password: string;
+        email: string;
       }
     >,
     res: Response,
@@ -90,7 +91,7 @@ class UsersController {
 
   static async getAll(req: Request, res: Response) {
     try {
-      const result = await UsersService.findAll();
+      const result = await UsersService.getAll();
 
       res.send(result);
     } catch (e) {

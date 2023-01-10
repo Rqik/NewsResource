@@ -18,6 +18,8 @@ CREATE TABLE users (
 	password text NOT NULL,
 	created_at timestamp with time zone DEFAULT NOW(),
 	admin boolean NOT NULL DEFAULT false,
+	activateLink varchar(128)
+	email text
 
 	CONSTRAINT PK_users_user_id PRIMARY KEY(user_id)
 );
@@ -90,6 +92,15 @@ CREATE TABLE posts_tags (
 	CONSTRAINT PK_posts_tags_id PRIMARY KEY(fk_post_id, fk_tag_id),
 	CONSTRAINT FK_posts_tags_post_id FOREIGN KEY(fk_post_id) REFERENCES posts(post_id),
 	CONSTRAINT FK_posts_tags_tag_id FOREIGN KEY(fk_tag_id) REFERENCES tags(tag_id)
+);
+
+CREATE TABLE users_tokens (
+	access_token text,
+	refresh_token text,
+	fk_user_id int,
+
+	CONSTRAINT PK_users_tokens_id PRIMARY KEY(access_token, refresh_token),
+	CONSTRAINT FK_users_tokens_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
 );
 
 CREATE TABLE posts_comments (

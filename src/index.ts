@@ -1,4 +1,7 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+
 import {
   auth,
   authors,
@@ -14,8 +17,13 @@ const app = express();
 const port = process.env.PORT || 5000;
 const apiVersion = '/api/v1';
 const jsonBodyMiddleware = express.json();
-app.use(jsonBodyMiddleware);
 
+// Middleware
+app.use(jsonBodyMiddleware);
+app.use(cookieParser());
+app.use(cors());
+
+// Routs
 app.use(apiVersion, auth);
 app.use(apiVersion, authors);
 app.use(apiVersion, postR);

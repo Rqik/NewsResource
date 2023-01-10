@@ -7,6 +7,7 @@ import UsersService from './UsersService';
 import PostsService from './PostsService';
 import PostsCommentsService from './PostsCommentsService';
 import PostsDraftService from './PostsDraftService';
+import MailService from './MailService';
 
 export {
   AuthorsService,
@@ -18,4 +19,5 @@ export {
   PostsService,
   PostsCommentsService,
   PostsDraftService,
+  MailService,
 };
