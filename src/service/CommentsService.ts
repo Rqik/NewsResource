@@ -73,5 +73,6 @@ class CommentsService {
     };
   }
 }
+
 export type { CommentRow };
 export default CommentsService;

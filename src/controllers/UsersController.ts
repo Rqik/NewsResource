@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
 
 import { UsersService } from '../service';
 import {
@@ -20,16 +21,16 @@ class UsersController {
   ) {
     try {
       const { firstName, lastName, avatar, login, password } = req.body;
+      const encrypted = bcrypt.hashSync(password, 7);
 
       const result = await UsersService.create({
-        firstName,
-        lastName,
-        avatar,
+        password: encrypted,
         login,
-        password,
+        avatar,
+        lastName,
+        firstName,
       });
-
-      res.send(result);
+      res.send({ result, encrypted });
     } catch (e) {
       res.send(e);
     }
@@ -61,12 +62,11 @@ class UsersController {
 
   static async partialUpdate(
     req: RequestWithParamsAndBody<
-      { id: string },
+      { login: string },
       {
         firstName?: string;
         lastName?: string;
         avatar?: string;
-        login?: string;
         password?: string;
       }
     >,
@@ -75,11 +75,11 @@ class UsersController {
     const bodyValues = Object.values(req.body);
 
     try {
-      const { id } = req.params;
+      const { login } = req.params;
 
       const result = await UsersService.partialUpdate({
         ...bodyValues,
-        id,
+        login,
       });
 
       res.send(result);
@@ -90,7 +90,7 @@ class UsersController {
 
   static async getAll(req: Request, res: Response) {
     try {
-      const result = await UsersService.getAll();
+      const result = await UsersService.findAll();
 
       res.send(result);
     } catch (e) {
@@ -98,10 +98,13 @@ class UsersController {
     }
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async getOne(
+    req: RequestWithParams<{ login: string }>,
+    res: Response,
+  ) {
     try {
-      const { id } = req.params;
-      const result = await UsersService.getOne({ id });
+      const { login } = req.params;
+      const result = await UsersService.getOne({ login });
 
       res.send(result);
     } catch (e) {

@@ -46,14 +46,7 @@ class UsersService {
     ]);
     const data = result.rows[0];
 
-    return {
-      id: data.user_id,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      avatar: data.avatar,
-      login: data.login,
-      admin: data.admin,
-    };
+    return UsersService.convertCase(data);
   }
 
   // TODO: реализовать изменение admin
@@ -85,17 +78,10 @@ class UsersService {
 
     const data = result.rows[0];
 
-    return {
-      id: data.user_id,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      avatar: data.avatar,
-      login: data.login,
-      admin: data.admin,
-    };
+    return UsersService.convertCase(data);
   }
 
-  static async partialUpdate(body: PropsWithId<Partial<UserProp>>) {
+  static async partialUpdate(body: Partial<UserProp>) {
     const bodyProps = Object.keys(body);
     const bodyValues = Object.values(body);
     const snakeReg = /([a-z0–9])([A-Z])/g;
@@ -105,49 +91,47 @@ class UsersService {
 
     const query = `UPDATE ${tableName}
                       SET ${setParams.join(', \n')}
-                    WHERE user_id = $${setParams.length + 1}
+                    WHERE login = $${setParams.length + 1}
                 RETURNING user_id, first_name, last_name, avatar, login, admin, created_at`;
 
     const result: QueryResult<UsersRow> = await db.query(query, [
       ...bodyValues,
-      body.id,
     ]);
     const data = result.rows[0];
 
-    return {
-      id: data.user_id,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      avatar: data.avatar,
-      login: data.login,
-      admin: data.admin,
-    };
+    return UsersService.convertCase(data);
   }
 
-  static async getAll() {
+  static async findAll() {
     const result: QueryResult<UsersRow> = await db.query(
       `SELECT user_id, first_name, last_name, avatar, login, admin, created_at
          FROM ${tableName}`,
     );
 
-    return result.rows;
+    return {
+      count: result.rowCount,
+      data: result.rows.map((user) => UsersService.convertCase(user)),
+    };
   }
 
-  static async getOne({ id }: PropsWithId) {
+  static async getOne({ login }: { login: string }) {
+    const query = `SELECT *
+                     FROM ${tableName}
+                    WHERE login = $1`;
+    const result: QueryResult<UsersRow> = await db.query(query, [login]);
+    const data = result.rows[0];
+
+    return UsersService.convertCase(data);
+  }
+
+  static async getById({ id }: { id: string }) {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE user_id = $1`;
     const result: QueryResult<UsersRow> = await db.query(query, [id]);
     const data = result.rows[0];
 
-    return {
-      id: data.user_id,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      login: data.login,
-      avatar: data.avatar,
-      admin: data.admin,
-    };
+    return UsersService.convertCase(data);
   }
 
   static async delete({ id }: PropsWithId) {
@@ -158,13 +142,17 @@ class UsersService {
     await AuthorsService.deleteUserAuthors({ id });
     const result: QueryResult<UsersRow> = await db.query(query, [id]);
     const data = result.rows[0];
+    return UsersService.convertCase(data);
+  }
+
+  static convertCase(user: UsersRow) {
     return {
-      id: data.user_id,
-      firstName: data.first_name,
-      lastName: data.last_name,
-      login: data.login,
-      avatar: data.avatar,
-      admin: data.admin,
+      id: user.user_id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      avatar: user.avatar,
+      login: user.login,
+      admin: user.admin,
     };
   }
 }

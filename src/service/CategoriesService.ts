@@ -7,7 +7,8 @@ import { RequestWithParams } from './types';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
 const tableName = 'categories';
-type CategoriesRow = {
+
+type CategoryRow = {
   category_id: number;
   description: string;
   fk_category_id: number | null;
@@ -38,18 +39,14 @@ class CategoriesService {
     const query = `INSERT INTO ${tableName} (description, fk_category_id)
                    VALUES ($1, $2)
                 RETURNING category_id, description, fk_category_id`;
-    const result: QueryResult<CategoriesRow> = await db.query(query, [
+    const result: QueryResult<CategoryRow> = await db.query(query, [
       description,
       category,
     ]);
 
     const data = result.rows[0];
 
-    return {
-      id: data.category_id,
-      description: data.description,
-      fk_category: data.fk_category_id,
-    };
+    return CategoriesService.convertCategory(data);
   }
 
   static async update({
@@ -66,53 +63,42 @@ class CategoriesService {
                           fk_category_id = $2
                     WHERE category_id = $3
                 RETURNING category_id, description, fk_category_id`;
-    const result: QueryResult<CategoriesRow> = await db.query(query, [
+    const result: QueryResult<CategoryRow> = await db.query(query, [
       description,
       category,
       id,
     ]);
     const data = result.rows[0];
-    return {
-      id: data.category_id,
-      description: data.description,
-      fk_category: data.fk_category_id,
-    };
+    return CategoriesService.convertCategory(data);
   }
 
-  static async getAll(req: Request, res: Response) {
-    try {
-      const result: QueryResult<CategoriesRow> = await db.query(
-        `SELECT *
+  static async getAll() {
+    const result: QueryResult<CategoryRow> = await db.query(
+      `SELECT *
            FROM ${tableName}`,
-      );
-
-      res.send(result.rows);
-    } catch (e) {
-      res.send(e);
-    }
+    );
+    return result.rows.map((category) =>
+      CategoriesService.convertCategory(category),
+    );
   }
 
   static async getOne({ id }: { id: number }) {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE category_id = $1`;
-    const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
+    const result: QueryResult<CategoryRow> = await db.query(query, [id]);
 
     const data = result.rows[0];
-    return {
-      id: data.category_id,
-      description: data.description,
-      fk_category: data.fk_category_id,
-    };
+    return CategoriesService.convertCategory(data);
   }
 
-  static async delete(req: RequestWithParams<{ id: number }>, res: Response) {
+  static async delete({ id }: { id: number }) {
     const query = `DELETE
                      FROM ${tableName}
                     WHERE category_id = $1
                 RETURNING category_id, description, fk_category_id`;
-    const { id } = req.params;
-    const selectData: QueryResult<CategoriesRow> = await db.query(
+
+    const selectData: QueryResult<CategoryRow> = await db.query(
       `SELECT *
            FROM ${tableName}
           WHERE category_id = $1`,
@@ -120,17 +106,19 @@ class CategoriesService {
     );
 
     if (selectData.rows.length > 0) {
-      const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
+      const result: QueryResult<CategoryRow> = await db.query(query, [id]);
       const data = result.rows[0];
-      return {
-        id: data.category_id,
-        description: data.description,
-        fk_category: data.fk_category_id,
-      };
+      return CategoriesService.convertCategory(data);
     }
-    // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
-    res.status(HttpStatuses.NOT_FOUND);
     throw new Error('Category not found');
+  }
+
+  private static convertCategory(category: CategoryRow) {
+    return {
+      id: category.category_id,
+      description: category.description,
+      fk_category: category.fk_category_id,
+    };
   }
 }
 

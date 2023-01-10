@@ -1,3 +1,4 @@
+import AuthController from './AuthController';
 import AuthorsController from './AuthorsController';
 import CategoriesController from './CategoriesController';
 import PostsCommentsController from './PostsCommentsController';
@@ -7,10 +8,11 @@ import UsersController from './UsersController';
 import PostsController from './PostsController';
 
 export {
+  AuthController,
   AuthorsController,
   CategoriesController,
   PostsCommentsController,
-  PostsDraftsController as DraftsController,
+  PostsDraftsController,
   TagsController,
   UsersController,
   PostsController,

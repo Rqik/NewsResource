@@ -12,6 +12,7 @@ class TagsController {
     try {
       const { title } = req.body;
       const tag = await TagsService.create({ title });
+      console.log(tag);
 
       res.send(tag);
     } catch (e) {

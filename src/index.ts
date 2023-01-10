@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  auth,
   authors,
   postR,
   users,
@@ -11,18 +12,19 @@ import {
 
 const app = express();
 const port = process.env.PORT || 5000;
-const basePath = '/api/v1';
+const apiVersion = '/api/v1';
 const jsonBodyMiddleware = express.json();
 app.use(jsonBodyMiddleware);
 
-app.use(basePath, authors);
-app.use(basePath, postR);
-app.use(basePath, users);
-app.use(basePath, drafts);
-app.use(basePath, comments);
-app.use(basePath, categories);
-app.use(basePath, tags);
+app.use(apiVersion, auth);
+app.use(apiVersion, authors);
+app.use(apiVersion, postR);
+app.use(apiVersion, users);
+app.use(apiVersion, drafts);
+app.use(apiVersion, comments);
+app.use(apiVersion, categories);
+app.use(apiVersion, tags);
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`This app listening on port ${port}`);
 });
