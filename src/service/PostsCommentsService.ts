@@ -5,7 +5,7 @@ import { PropsWithId } from './types';
 
 const tableName = 'posts_comments';
 
-type NewsCommentRow = {
+type PostCommentRow = {
   fk_post_id: number;
   fk_comment_id: number;
 };
@@ -21,7 +21,7 @@ class PostsCommentsService {
     const query = `INSERT INTO ${tableName} (fk_post_id, fk_comment_id)
                         VALUES ($1, $2)`;
 
-    const result: QueryResult<NewsCommentRow> = await db.query(query, [
+    const result: QueryResult<PostCommentRow> = await db.query(query, [
       postId,
       commentId,
     ]);
@@ -29,12 +29,12 @@ class PostsCommentsService {
     return result.rows;
   }
 
-  static async getCommentsPost({ id }: PropsWithId) {
+  static async getPostComments({ id }: PropsWithId) {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE fk_post_id = $1
     `;
-    const result: QueryResult<NewsCommentRow> = await db.query(query, [id]);
+    const result: QueryResult<PostCommentRow> = await db.query(query, [id]);
 
     const cIds = result.rows.map((el) => el.fk_comment_id);
 

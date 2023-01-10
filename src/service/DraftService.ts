@@ -104,7 +104,7 @@ class DraftService {
                      FROM ${tableName}
                     WHERE draft_id = $1
                 RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
-    const queryNewsTags = `DELETE
+    const queryPostsTags = `DELETE
                              FROM post_${tableName}
                             WHERE fk_draft_id = $1
 
@@ -117,7 +117,7 @@ class DraftService {
     );
 
     if (selectData.rows.length > 0) {
-      await db.query(queryNewsTags, [id]);
+      await db.query(queryPostsTags, [id]);
       const result: QueryResult<DraftsRow> = await db.query(query, [id]);
       const data = result.rows[0];
 

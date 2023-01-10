@@ -37,7 +37,7 @@ class PostsCommentsController {
   ) {
     try {
       const { id } = req.params;
-      const comments = await PostsCommentsService.getCommentsPost({ id });
+      const comments = await PostsCommentsService.getPostComments({ id });
 
       res.send(comments);
     } catch (e) {

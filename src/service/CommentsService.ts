@@ -17,6 +17,7 @@ type Comment = {
   userId: number;
   body: string;
 };
+
 class CommentsService {
   static async create({
     userId,
@@ -36,12 +37,7 @@ class CommentsService {
 
     const comment = result.rows[0];
 
-    return {
-      id: comment.comment_id,
-      userId: comment.fk_user_id,
-      createdAt: comment.created_at,
-      body: comment.body,
-    };
+    return CommentsService.convertComment(comment);
   }
 
   static async getComments({ cIds }: { cIds: number[] }): Promise<Comment[]> {
@@ -50,9 +46,11 @@ class CommentsService {
                     WHERE comment_id = ANY ($1)
     `;
 
-    const result: QueryResult<Comment> = await db.query(query, [cIds]);
+    const result: QueryResult<CommentRow> = await db.query(query, [cIds]);
 
-    return result.rows;
+    return result.rows.map((comment) =>
+      CommentsService.convertComment(comment),
+    );
   }
 
   static async delete({ cId }: { cId: number }): Promise<Comment> {
@@ -63,6 +61,10 @@ class CommentsService {
 
     const result: QueryResult<CommentRow> = await db.query(query, [cId]);
     const comment = result.rows[0];
+    return CommentsService.convertComment(comment);
+  }
+
+  static convertComment(comment: CommentRow): Comment {
     return {
       id: comment.comment_id,
       userId: comment.fk_user_id,
@@ -71,5 +73,5 @@ class CommentsService {
     };
   }
 }
-
+export type { CommentRow };
 export default CommentsService;

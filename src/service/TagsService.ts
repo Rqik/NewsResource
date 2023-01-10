@@ -1,9 +1,13 @@
+import { type } from 'os';
 import { QueryResult } from 'pg';
 import db from '../db';
 import { PropsWithId } from './types';
 
 const tableName = 'tags';
-type TagsRow = { tag_id: number; title: string };
+type TagsRow = {
+  tag_id: number;
+  title: string;
+};
 type TagsProp = {
   title: string;
 };
@@ -13,12 +17,9 @@ class TagsService {
                         VALUES ($1)
                      RETURNING tag_id, title`;
     const result: QueryResult<TagsRow> = await db.query(query, [title]);
-    const data = result.rows[0];
+    const tag = result.rows[0];
 
-    return {
-      id: data.tag_id,
-      title: data.title,
-    };
+    return TagsService.convertTag(tag);
   }
 
   static async update({ id, title }: PropsWithId<TagsProp>) {
@@ -27,34 +28,37 @@ class TagsService {
                     WHERE tag_id = $2
                 RETURNING tag_id, title`;
     const result: QueryResult<TagsRow> = await db.query(query, [title, id]);
-    const data = result.rows[0];
+    const tag = result.rows[0];
 
-    return {
-      id: data.tag_id,
-      title: data.title,
-    };
+    return TagsService.convertTag(tag);
   }
 
   static async getAll() {
     const result: QueryResult<TagsRow> = await db.query(
       `SELECT *
-           FROM ${tableName}`,
+         FROM ${tableName}`,
     );
 
-    return result.rows;
+    return result.rows.map((tag) => TagsService.convertTag(tag));
+  }
+
+  static async getTags({ tIds }: { tIds: number[] }) {
+    const query = `SELECT tag_id id, title
+                     FROM ${tableName}
+                    WHERE tag_id = ANY ($1)`;
+    const tags: QueryResult<TagsRow> = await db.query(query, [tIds]);
+
+    return tags.rows.map((tag) => TagsService.convertTag(tag));
   }
 
   static async getOne({ id }: PropsWithId) {
-    const query = `SELECT *
+    const query = `SELECT tag_id id, title
                      FROM ${tableName}
                     WHERE tag_id = $1`;
     const result: QueryResult<TagsRow> = await db.query(query, [id]);
-    const data = result.rows[0];
+    const tag = result.rows[0];
 
-    return {
-      id: data.tag_id,
-      title: data.title,
-    };
+    return TagsService.convertTag(tag);
   }
 
   static async delete({ id }: PropsWithId) {
@@ -62,32 +66,31 @@ class TagsService {
                      FROM ${tableName}
                     WHERE tag_id = $1
                 RETURNING tag_id, title`;
-    const queryNewsTags = `DELETE
-                             FROM post_${tableName}
-                            WHERE fk_tag_id = $1
 
-    `;
     const selectData: QueryResult<TagsRow> = await db.query(
-      `SELECT * FROM ${tableName}
-          WHERE tag_id = $1
-      `,
+      `SELECT tag_id id, title
+         FROM ${tableName}
+        WHERE tag_id = $1`,
       [id],
     );
 
     if (selectData.rows.length > 0) {
-      await db.query(queryNewsTags, [id]);
       const result: QueryResult<TagsRow> = await db.query(query, [id]);
-      const data = result.rows[0];
+      const tag = result.rows[0];
 
-      return {
-        id: data.tag_id,
-        title: data.title,
-      };
+      return TagsService.convertTag(tag);
     }
     // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
 
     throw new Error('Tag not found');
   }
-}
 
+  static convertTag(tag: TagsRow): PropsWithId<TagsProp> {
+    return {
+      id: tag.tag_id,
+      title: tag.title,
+    };
+  }
+}
+export type { TagsRow };
 export default TagsService;

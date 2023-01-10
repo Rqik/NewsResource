@@ -6,6 +6,7 @@ import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithQuery,
 } from './types';
 
 class PostsController {
@@ -17,13 +18,14 @@ class PostsController {
       body: string;
       mainImg: string;
       otherImgs: string[];
+      tags: number[];
     }>,
     res: Response,
   ) {
     try {
-      const result = await PostsService.create(req.body);
+      const post = await PostsService.create(req.body);
 
-      res.send(result);
+      res.send(post);
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -57,9 +59,9 @@ class PostsController {
     try {
       const { id } = req.params;
 
-      const result = await PostsService.update({ ...req.body, id: Number(id) });
+      const post = await PostsService.update({ ...req.body, id: Number(id) });
 
-      res.send(result);
+      res.send(post);
     } catch (e) {
       res.send(e);
     }
@@ -82,20 +84,38 @@ class PostsController {
     try {
       const { id } = req.params;
 
-      const result = await PostsService.partialUpdate({ ...req.body, id });
+      const post = await PostsService.partialUpdate({ ...req.body, id });
 
-      res.send(result);
+      res.send(post);
     } catch (e) {
       res.send(e);
     }
   }
 
-  static async getAll(req: Request, res: Response) {
+  static async getAll(
+    req: RequestWithQuery<{
+      created_at: string;
+      created_at__lt: string;
+      created_at__gt: string;
+    }>,
+    res: Response,
+  ) {
     try {
-      const result = await PostsService.getAll();
+      const filter = new Map(Object.entries(req.query));
+      const entries = Object.entries(req.query);
+      const posts = await PostsService.getAll(req.query);
 
-      res.send(result);
+      console.log(req.query);
+      // console.log('------------/');
+      // console.log(entries);
+
+      res.send({
+        count: posts.length,
+        data: posts,
+      });
     } catch (e) {
+      console.log(e);
+
       res.send(e);
     }
   }
@@ -103,9 +123,9 @@ class PostsController {
   static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
     try {
       const { id } = req.params;
-      const result = await PostsService.getOne({ id });
+      const post = await PostsService.getOne({ id });
 
-      res.send(result);
+      res.send(post);
     } catch (e) {
       res.send(e);
     }
@@ -115,9 +135,9 @@ class PostsController {
     try {
       const { id } = req.params;
 
-      const result = await PostsService.delete({ id });
+      const post = await PostsService.delete({ id });
 
-      res.send(result);
+      res.send(post);
     } catch (e) {
       res.send(e);
     }

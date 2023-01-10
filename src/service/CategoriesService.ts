@@ -14,14 +14,14 @@ type CategoriesRow = {
 };
 
 const queryCategoriesRecursive = (nameTemplate = 'catR') => `
-  WITH RECURSIVE ${nameTemplate}(id, category,arr_categories) as (
-    SELECT category_id, description, array[description::varchar]
+  WITH RECURSIVE ${nameTemplate}(id, category, arr_categories, arr_category_id) as (
+    SELECT category_id, description, array[description::varchar], array[category_id]
       FROM categories
     WHERE fk_category_id IS NUll
 
     UNION
 
-    SELECT category_id, description, description || arr_categories
+    SELECT category_id, description, description || arr_categories, category_id || arr_category_id
       FROM categories
       JOIN ${nameTemplate} ON categories.fk_category_id = ${nameTemplate}.id
   )

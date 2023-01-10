@@ -2,7 +2,7 @@ import { QueryResult } from 'pg';
 import db from '../db';
 import DraftService from './DraftService';
 
-type NewsDraftRow = {
+type PostDraftRow = {
   fk_draft_id: number;
   fk_post_id: number;
 };
@@ -38,7 +38,7 @@ class PostsDraftService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE fk_post_id = $1`;
-    const result: QueryResult<NewsDraftRow> = await db.query(query, [postId]);
+    const result: QueryResult<PostDraftRow> = await db.query(query, [postId]);
 
     const dIds = result.rows.map((el) => el.fk_draft_id);
 
@@ -54,14 +54,14 @@ class PostsDraftService {
     postId: number;
     draftId: number;
   }) {
-    const queryNewsTags = `DELETE
+    const queryPostTags = `DELETE
                              FROM post_${tableName}
                             WHERE fk_post_id = $1 AND fk_draft_id = $2
 `;
-    const isBelongs = await this.checkNewsBelongsDraft({ postId, draftId });
+    const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      await db.query(queryNewsTags, [postId, draftId]);
+      await db.query(queryPostTags, [postId, draftId]);
       const removedDraft = await DraftService.delete({ id: draftId });
 
       return removedDraft;
@@ -81,7 +81,7 @@ class PostsDraftService {
     userId: number;
     body: string;
   }) {
-    const isBelongs = await this.checkNewsBelongsDraft({ postId, draftId });
+    const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
       const draft = await DraftService.update({ id: draftId, body, userId });
@@ -98,7 +98,7 @@ class PostsDraftService {
     postId: number;
     draftId: number;
   }) {
-    const isBelongs = await this.checkNewsBelongsDraft({ postId, draftId });
+    const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
       const draft = await DraftService.getOne({ id: draftId });
@@ -107,7 +107,7 @@ class PostsDraftService {
     throw new Error('Not found drafts');
   }
 
-  private static async checkNewsBelongsDraft({
+  private static async checkPostBelongsDraft({
     postId,
     draftId,
   }: {
@@ -117,7 +117,7 @@ class PostsDraftService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE fk_post_id = $1 AND fk_draft_id = $2`;
-    const result: QueryResult<NewsDraftRow> = await db.query(query, [
+    const result: QueryResult<PostDraftRow> = await db.query(query, [
       postId,
       draftId,
     ]);

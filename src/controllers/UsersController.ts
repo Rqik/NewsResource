@@ -101,7 +101,6 @@ class UsersController {
   static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
     try {
       const { id } = req.params;
-      console.log(req.route);
       const result = await UsersService.getOne({ id });
 
       res.send(result);
