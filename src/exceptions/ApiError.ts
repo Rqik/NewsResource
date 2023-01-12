@@ -1,0 +1,34 @@
+import HttpStatuses from '../shared/HttpStatuses';
+
+class ApiError extends Error {
+  status;
+
+  errors;
+
+  constructor({
+    status,
+    message,
+    errors = [],
+  }: {
+    status: HttpStatuses;
+    message: string;
+    errors?: Error[];
+  }) {
+    super(message);
+    this.status = status;
+    this.errors = errors;
+  }
+
+  static UnauthorizeError() {
+    return new ApiError({
+      status: HttpStatuses.UNAUTHORIZED,
+      message: 'User is not authorized',
+    });
+  }
+
+  static BadRequest(message: string, errors = []) {
+    return new ApiError({ status: HttpStatuses.BAD_REQUEST, message, errors });
+  }
+}
+
+export default ApiError;

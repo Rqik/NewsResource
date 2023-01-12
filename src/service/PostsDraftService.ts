@@ -1,5 +1,6 @@
 import { QueryResult } from 'pg';
 import db from '../db';
+import { ApiError } from '../exceptions/index';
 import DraftService from './DraftService';
 
 type PostDraftRow = {
@@ -67,7 +68,7 @@ class PostsDraftService {
       return removedDraft;
     }
 
-    throw new Error('Tag not found');
+    throw ApiError.BadRequest('Tag not found');
   }
 
   static async update({
@@ -88,7 +89,7 @@ class PostsDraftService {
 
       return draft;
     }
-    throw new Error('Not found drafts');
+    throw ApiError.BadRequest('Not found drafts');
   }
 
   static async getOne({
@@ -104,7 +105,7 @@ class PostsDraftService {
       const draft = await DraftService.getOne({ id: draftId });
       return draft;
     }
-    throw new Error('Not found drafts');
+    throw ApiError.BadRequest('Not found drafts');
   }
 
   private static async checkPostBelongsDraft({

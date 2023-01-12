@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import TagsService from '../service/TagsService';
 import {
@@ -8,7 +8,11 @@ import {
 } from './types';
 
 class TagsController {
-  static async create(req: RequestWithBody<{ title: string }>, res: Response) {
+  static async create(
+    req: RequestWithBody<{ title: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { title } = req.body;
       const tag = await TagsService.create({ title });
@@ -16,13 +20,14 @@ class TagsController {
 
       res.send(tag);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
   static async update(
     req: RequestWithParamsAndBody<{ id: string }, { title: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id } = req.params;
@@ -31,32 +36,40 @@ class TagsController {
 
       res.send(tag);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async getAll(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const tags = await TagsService.getAll();
 
       res.send(tags);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async getOne(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
       const tag = await TagsService.getOne({ id });
 
       res.send(tag);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async delete(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
 
@@ -64,7 +77,7 @@ class TagsController {
 
       res.send(removedTag);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 }

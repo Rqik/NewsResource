@@ -1,5 +1,6 @@
 import { QueryResult } from 'pg';
 import db from '../db';
+import ApiError from '../exceptions/ApiError';
 import type { TagFilters } from './PostsService';
 import TagsService from './TagsService';
 import { PropsWithId } from './types';
@@ -93,7 +94,7 @@ class PostsTagsService {
       return result.rows[0];
     }
 
-    throw new Error('Tag not found');
+    throw ApiError.BadRequest('Tag not found');
   }
 
   private static async checkPostBelongsTags({

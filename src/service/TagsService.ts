@@ -1,6 +1,6 @@
-import { type } from 'os';
 import { QueryResult } from 'pg';
 import db from '../db';
+import { ApiError } from '../exceptions';
 import { PropsWithId } from './types';
 
 const tableName = 'tags';
@@ -82,7 +82,7 @@ class TagsService {
     }
     // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
 
-    throw new Error('Tag not found');
+    throw ApiError.BadRequest('Tag not found');
   }
 
   static convertTag(tag: TagsRow): PropsWithId<TagsProp> {

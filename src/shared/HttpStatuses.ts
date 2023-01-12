@@ -4,7 +4,10 @@ const enum HttpStatuses {
   NO_CONTENT_204 = 204,
 
   BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
   NOT_FOUND = 404,
+
+  INTERNAL_SERVER = 500,
 }
 
 export default HttpStatuses;

@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS drafts;
 DROP TABLE IF EXISTS authors;
+DROP TABLE IF EXISTS users_tokens;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS tags;
@@ -18,7 +19,8 @@ CREATE TABLE users (
 	password text NOT NULL,
 	created_at timestamp with time zone DEFAULT NOW(),
 	admin boolean NOT NULL DEFAULT false,
-	activateLink varchar(128)
+	activate_link varchar(128)
+	is_activated boolean NOT NULL DEFAULT false
 	email text
 
 	CONSTRAINT PK_users_user_id PRIMARY KEY(user_id)

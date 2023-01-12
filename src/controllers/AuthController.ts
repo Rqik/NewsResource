@@ -1,19 +1,21 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import UsersService from '../service/UsersService';
+import { RequestWithParams } from './types';
 
 class AuthController {
-  static async registration(_: Request, res: Response) {
+  static async registration(_: Request, res: Response, next: NextFunction) {
     try {
       res.send('registration');
     } catch (e) {
-      res.send('error');
+      next(e);
     }
   }
 
-  static async login(_: Request, res: Response) {
+  static async login(_: Request, res: Response, next: NextFunction) {
     try {
       res.send({ s: 'login' });
     } catch (e) {
-      res.send('error');
+      next(e);
     }
   }
 
@@ -25,12 +27,19 @@ class AuthController {
     }
   }
 
-  static async activate(_: Request, res: Response) {
+  static async activate(
+    req: RequestWithParams<{ link: string }>,
+    res: Response,
+  ) {
     try {
-      res.send({ s: 'logout' });
+      const { link } = req.params;
+
+      await UsersService.activate(link);
+      return res.redirect('https://ya.ru/' || '');
     } catch (e) {
       res.send('error');
     }
+    return '';
   }
 
   static async refresh(_: Request, res: Response) {

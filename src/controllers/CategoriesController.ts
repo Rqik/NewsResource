@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { QueryResult } from 'pg';
 
 import db from '../db';
@@ -20,6 +20,7 @@ class CategoriesController {
   static async create(
     req: RequestWithBody<{ description: string; category?: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     const query = `INSERT INTO ${tableName} (description, fk_category_id)
                    VALUES ($1, $2)
@@ -39,7 +40,7 @@ class CategoriesController {
         fk_category: data.fk_category_id,
       });
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
@@ -49,6 +50,7 @@ class CategoriesController {
       { description: string; category?: string }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id } = req.params;
@@ -60,39 +62,47 @@ class CategoriesController {
       });
       res.send(categoryUpdated);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async getAll(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const categories = await CategoriesService.getAll();
 
       res.send(categories);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async getOne(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
       const category = await CategoriesService.getOne({ id: Number(id) });
 
       res.send(category);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async delete(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
 
       const category = await CategoriesService.delete({ id: Number(id) });
       res.send(category);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 }

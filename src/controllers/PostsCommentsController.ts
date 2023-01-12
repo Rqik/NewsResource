@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 
 import { CommentsService, PostsCommentsService } from '../service/index';
 import HttpStatuses from '../shared/HttpStatuses';
@@ -11,6 +11,7 @@ class PostsCommentsController {
       { userId: number; body: string }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id: postId } = req.params;
@@ -26,14 +27,14 @@ class PostsCommentsController {
 
       res.send(comment);
     } catch (e) {
-      res.status(HttpStatuses.BAD_REQUEST);
-      res.send(e);
+      next(e);
     }
   }
 
   static async getCommentsPost(
     req: RequestWithParams<{ id: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id } = req.params;
@@ -41,13 +42,14 @@ class PostsCommentsController {
 
       res.send(comments);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
   static async delete(
     req: RequestWithParams<{ id: string; cid: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id: nId, cid: cId } = req.params;
@@ -57,7 +59,7 @@ class PostsCommentsController {
       });
       res.send(comment);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 }

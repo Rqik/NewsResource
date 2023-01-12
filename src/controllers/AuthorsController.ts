@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import { AuthorsService } from '../service';
 import {
@@ -11,6 +11,7 @@ class AuthorsController {
   static async create(
     req: RequestWithBody<{ description: string; userId: number }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { description, userId } = req.body;
@@ -22,7 +23,7 @@ class AuthorsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
@@ -32,6 +33,7 @@ class AuthorsController {
       { description: string; userId: number }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id } = req.params;
@@ -39,21 +41,25 @@ class AuthorsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async getAll(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await AuthorsService.getAll();
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async getOne(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
 
@@ -61,11 +67,15 @@ class AuthorsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async delete(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
 
@@ -73,7 +83,7 @@ class AuthorsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 }

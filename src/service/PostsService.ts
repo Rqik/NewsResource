@@ -1,7 +1,7 @@
-import e from 'express';
 import { QueryResult } from 'pg';
 
 import db from '../db';
+import { ApiError } from '../exceptions';
 import { queryCategoriesRecursive } from './CategoriesService';
 import CommentsService, { CommentRow } from './CommentsService';
 import PostsCommentsService from './PostsCommentsService';
@@ -314,7 +314,7 @@ class PostsService {
     }
 
     // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
-    throw new Error('Post not found');
+    throw ApiError.BadRequest('Post not found');
   }
 
   private static convertPosts(post: PostFullRow) {

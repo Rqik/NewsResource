@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 
 import { PostsDraftService } from '../service/index';
 import { RequestWithParams, RequestWithParamsAndBody } from './types';
@@ -10,6 +10,7 @@ class PostsDraftsController {
       { body: string; userId: number }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id } = req.params;
@@ -23,7 +24,7 @@ class PostsDraftsController {
 
       res.send(draft);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
@@ -33,6 +34,7 @@ class PostsDraftsController {
       { body: string; userId: number }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id, did } = req.params;
@@ -47,11 +49,15 @@ class PostsDraftsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async getAll(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async getAll(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
 
@@ -61,13 +67,14 @@ class PostsDraftsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
   static async getOne(
     req: RequestWithParams<{ id: string; did: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id, did } = req.params;
@@ -78,13 +85,14 @@ class PostsDraftsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
   static async delete(
     req: RequestWithParams<{ id: string; did: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id, did } = req.params;
@@ -95,7 +103,7 @@ class PostsDraftsController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 

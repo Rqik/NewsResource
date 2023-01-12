@@ -1,6 +1,7 @@
 import { QueryResult } from 'pg';
 
 import db from '../db';
+import { ApiError } from '../exceptions';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
 const tableName = 'categories';
@@ -107,7 +108,7 @@ class CategoriesService {
       const data = result.rows[0];
       return CategoriesService.convertCategory(data);
     }
-    throw new Error('Category not found');
+    throw ApiError.BadRequest('Category not found');
   }
 
   private static convertCategory(category: CategoriesRow) {

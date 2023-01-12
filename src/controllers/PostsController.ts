@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 
 import { PostsService } from '../service/index';
 import HttpStatuses from '../shared/HttpStatuses';
@@ -21,6 +21,7 @@ class PostsController {
       tags: number[];
     }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const post = await PostsService.create(req.body);
@@ -55,6 +56,7 @@ class PostsController {
       }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id } = req.params;
@@ -63,7 +65,7 @@ class PostsController {
 
       res.send(post);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
@@ -80,6 +82,7 @@ class PostsController {
       }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id } = req.params;
@@ -88,7 +91,7 @@ class PostsController {
 
       res.send(post);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
@@ -99,6 +102,7 @@ class PostsController {
       created_at__gt: string;
     }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const filter = new Map(Object.entries(req.query));
@@ -120,18 +124,26 @@ class PostsController {
     }
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async getOne(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
       const post = await PostsService.getOne({ id });
 
       res.send(post);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async delete(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
 
@@ -139,7 +151,7 @@ class PostsController {
 
       res.send(post);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 }

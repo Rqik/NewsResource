@@ -6,6 +6,9 @@ import db from '../db';
 import AuthorsService from './AuthorsService';
 import { PropsWithId } from './types';
 import MailService from './MailService';
+import TokenService from './TokenService';
+import UserDto from '../dtos/UserDto';
+import { ApiError } from '../exceptions';
 
 const tableName = 'users';
 
@@ -18,6 +21,7 @@ type UsersRow = {
   password: string;
   created_at: string;
   admin: boolean;
+  is_activated: boolean;
   activate_link?: string;
   email?: string;
 };
@@ -40,12 +44,13 @@ type User = {
   password: string;
   createdAt: string;
   admin: boolean;
-  email?: string;
+  email: string;
   activateLink?: string;
+  isActivated: boolean;
 };
 
 class UsersService {
-  static async create({
+  static async registration({
     firstName,
     lastName,
     avatar,
@@ -55,15 +60,16 @@ class UsersService {
   }: UserProp) {
     const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password, activate_link)
                         VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, password, activate_link, email`;
+                     RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, password, activate_link, email, is_activated`;
 
     const candidate = await UsersService.getOne({ login });
     if (candidate !== null) {
-      throw new Error(`User with this ${login} exists`);
+      throw ApiError.BadRequest(`User with this ${login} exists`);
     }
     const hashPassword = bcrypt.hashSync(password, 7);
     const activateLink = uuid();
     await MailService.sendActivationMail({ to: email, link: activateLink });
+
     const result: QueryResult<UsersRow> = await db.query(query, [
       firstName,
       lastName,
@@ -72,9 +78,35 @@ class UsersService {
       hashPassword,
       activateLink,
     ]);
-    const data = result.rows[0];
 
-    return UsersService.convertCase(data);
+    const user = UsersService.convertCase(result.rows[0]);
+    const userDto = new UserDto(user);
+    const tokens = TokenService.generateTokens({ ...userDto });
+    await TokenService.saveToken(userDto.id, tokens.refreshToken);
+    console.log({ ...user, ...tokens });
+    return { ...user, ...tokens };
+  }
+
+  static async activate(activateLink: string) {
+    const queryUser = `SELECT *
+                         FROM ${tableName}
+                        WHERE activate_link = $1`;
+    const result: QueryResult<UsersRow> = await db.query(queryUser, [
+      activateLink,
+    ]);
+
+    const user = UsersService.convertCase(result.rows[0]);
+
+    if (!user.isActivated) {
+      const queryActivate = `UPDATE ${tableName}
+                                SET is_activated = $1
+                              WHERE user_id = $2
+                          RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, is_activated`;
+      const userUp = await db.query(queryActivate, [true, user.id]);
+
+      return UsersService.convertCase(userUp.rows[0]);
+    }
+    return user;
   }
 
   // TODO: реализовать изменение admin
@@ -188,7 +220,8 @@ class UsersService {
       activateLink: user.activate_link,
       createdAt: user.created_at,
       password: user.password,
-      email: user.email,
+      email: user.email || '',
+      isActivated: user.is_activated,
     };
   }
 }

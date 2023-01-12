@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import { UsersService } from '../service';
 import {
@@ -18,11 +18,12 @@ class UsersController {
       email: string;
     }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { firstName, lastName, avatar, login, password, email } = req.body;
 
-      const result = await UsersService.create({
+      const userDate = await UsersService.registration({
         password,
         login,
         avatar,
@@ -30,9 +31,14 @@ class UsersController {
         firstName,
         email,
       });
-      res.send({ result });
+
+      res.cookie('refreshToken', userDate.refreshToken, {
+        maxAge: 30 * 24 * 60 * 60,
+        httpOnly: true,
+      });
+      res.send({ result: userDate });
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
@@ -49,6 +55,7 @@ class UsersController {
       }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { id } = req.params;
@@ -57,7 +64,7 @@ class UsersController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
@@ -72,6 +79,7 @@ class UsersController {
       }
     >,
     res: Response,
+    next: NextFunction,
   ) {
     const bodyValues = Object.values(req.body);
 
@@ -85,23 +93,24 @@ class UsersController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async getAll(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await UsersService.getAll();
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
   static async getOne(
     req: RequestWithParams<{ login: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     try {
       const { login } = req.params;
@@ -109,11 +118,15 @@ class UsersController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  static async delete(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
       const { id } = req.params;
 
@@ -121,7 +134,7 @@ class UsersController {
 
       res.send(result);
     } catch (e) {
-      res.send(e);
+      next(e);
     }
   }
 }
