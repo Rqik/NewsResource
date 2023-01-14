@@ -6,6 +6,7 @@ import DraftService from './DraftService';
 type PostDraftRow = {
   fk_draft_id: number;
   fk_post_id: number;
+  total_count?: number;
 };
 
 const tableName = 'posts_drafts';
@@ -35,17 +36,27 @@ class PostsDraftService {
     return draft;
   }
 
-  static async getDraftsPost({ postId }: { postId: number }) {
+  static async getDraftsPost(
+    { postId }: { postId: number },
+    { page, perPage }: { page: number; perPage: number },
+  ) {
     const query = `SELECT *
                      FROM ${tableName}
-                    WHERE fk_post_id = $1`;
+                    WHERE fk_post_id = $1
+
+                    `;
     const result: QueryResult<PostDraftRow> = await db.query(query, [postId]);
 
     const dIds = result.rows.map((el) => el.fk_draft_id);
 
-    const drafts = await DraftService.getDrafts({ dIds });
+    const { totalCount, count, drafts } = await DraftService.getDrafts(
+      {
+        dIds,
+      },
+      { page, perPage },
+    );
 
-    return drafts;
+    return { totalCount, count, drafts };
   }
 
   static async delete({

@@ -1,10 +1,12 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 
 import { AuthorsService } from '../service';
+import paginator from '../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithQuery,
 } from './types';
 
 class AuthorsController {
@@ -45,11 +47,29 @@ class AuthorsController {
     }
   }
 
-  static async getAll(req: Request, res: Response, next: NextFunction) {
+  static async getAll(
+    req: RequestWithQuery<{ per_page: string; page: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      const result = await AuthorsService.getAll();
+      const { per_page: perPage = 10, page = 0 } = req.query;
 
-      res.send(result);
+      const { totalCount, count, authors } = await AuthorsService.getAll({
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+
+      const pagination = paginator({
+        totalCount,
+        count,
+        req,
+        route: '/authors',
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+
+      res.send({ ...pagination, data: authors });
     } catch (e) {
       next(e);
     }

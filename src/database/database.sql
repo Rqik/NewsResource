@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS drafts;
 DROP TABLE IF EXISTS authors;
-DROP TABLE IF EXISTS users_tokens;
+DROP TABLE IF EXISTS tokens;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS tags;
@@ -96,13 +96,12 @@ CREATE TABLE posts_tags (
 	CONSTRAINT FK_posts_tags_tag_id FOREIGN KEY(fk_tag_id) REFERENCES tags(tag_id)
 );
 
-CREATE TABLE users_tokens (
-	access_token text,
+CREATE TABLE tokens (
 	refresh_token text,
 	fk_user_id int,
 
-	CONSTRAINT PK_users_tokens_id PRIMARY KEY(access_token, refresh_token),
-	CONSTRAINT FK_users_tokens_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
+	CONSTRAINT PK_pk_refresh_token PRIMARY KEY(refresh_token),
+	CONSTRAINT FK_tokens_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
 );
 
 CREATE TABLE posts_comments (

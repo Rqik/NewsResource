@@ -7,6 +7,7 @@ const tableName = 'tags';
 type TagsRow = {
   tag_id: number;
   title: string;
+  total_count?: number;
 };
 type TagsProp = {
   title: string;
@@ -33,13 +34,24 @@ class TagsService {
     return TagsService.convertTag(tag);
   }
 
-  static async getAll() {
-    const result: QueryResult<TagsRow> = await db.query(
-      `SELECT *
-         FROM ${tableName}`,
-    );
-
-    return result.rows.map((tag) => TagsService.convertTag(tag));
+  static async getAll({ page, perPage }: { page: number; perPage: number }) {
+    const query = `SELECT *,
+                          count(*) OVER() AS total_count
+                     FROM ${tableName}
+                    LIMIT $1
+                   OFFSET $2
+`;
+    const result: QueryResult<TagsRow> = await db.query(query, [
+      perPage,
+      page * perPage,
+    ]);
+    const totalCount = result.rows[0].total_count || null;
+    const tags = result.rows.map((tag) => TagsService.convertTag(tag));
+    return {
+      totalCount,
+      count: result.rowCount,
+      tags,
+    };
   }
 
   static async getTags({ tIds }: { tIds: number[] }) {

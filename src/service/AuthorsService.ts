@@ -9,6 +9,7 @@ type AuthorsRow = {
   author_id: number;
   fk_user_id: number;
   description: string;
+  total_count?: number;
 };
 
 type Author = {
@@ -49,13 +50,21 @@ class AuthorsService {
     return AuthorsService.convertCase(author);
   }
 
-  static async getAll() {
+  static async getAll({ page, perPage }: { page: number; perPage: number }) {
     const result: QueryResult<AuthorsRow> = await db.query(
-      `SELECT *
-           FROM ${tableName}`,
+      `SELECT *,
+              count(*) OVER() AS total_count
+         FROM ${tableName}
+        LIMIT $1
+       OFFSET $2
+           `,
+      [perPage, page * perPage],
     );
-
-    return result.rows.map((author) => AuthorsService.convertCase(author));
+    const authors = result.rows.map((author) =>
+      AuthorsService.convertCase(author),
+    );
+    const totalCount = result.rows[0]?.total_count || null;
+    return { authors, count: result.rowCount, totalCount };
   }
 
   static async getOne({ id }: PropsWithId) {

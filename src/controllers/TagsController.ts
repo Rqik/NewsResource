@@ -1,10 +1,12 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 
 import TagsService from '../service/TagsService';
+import paginator from '../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithQuery,
 } from './types';
 
 class TagsController {
@@ -40,11 +42,28 @@ class TagsController {
     }
   }
 
-  static async getAll(req: Request, res: Response, next: NextFunction) {
+  static async getAll(
+    req: RequestWithQuery<{ per_page: string; page: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      const tags = await TagsService.getAll();
+      const { per_page: perPage = 10, page = 0 } = req.query;
 
-      res.send(tags);
+      const { totalCount, tags, count } = await TagsService.getAll({
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+
+      const pagination = paginator({
+        totalCount,
+        count,
+        req,
+        route: '/tags',
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+      res.send({ ...pagination, data: tags });
     } catch (e) {
       next(e);
     }

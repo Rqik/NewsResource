@@ -29,7 +29,10 @@ class PostsCommentsService {
     return result.rows;
   }
 
-  static async getPostComments({ id }: PropsWithId) {
+  static async getPostComments(
+    { id }: PropsWithId,
+    { page, perPage }: { page: number; perPage: number },
+  ) {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE fk_post_id = $1
@@ -38,9 +41,12 @@ class PostsCommentsService {
 
     const cIds = result.rows.map((el) => el.fk_comment_id);
 
-    const comments = await CommentsService.getComments({ cIds });
+    const { totalCount, count, comments } = await CommentsService.getComments(
+      { cIds },
+      { page, perPage },
+    );
 
-    return comments;
+    return { totalCount, count, comments };
   }
 
   static async delete({ nId, cId }: { nId: number; cId: number }) {

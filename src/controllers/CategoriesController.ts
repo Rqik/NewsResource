@@ -1,12 +1,14 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { QueryResult } from 'pg';
 
 import db from '../db';
 import CategoriesService from '../service/CategoriesService';
+import paginator from '../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithQuery,
 } from './types';
 
 const tableName = 'categories';
@@ -66,11 +68,28 @@ class CategoriesController {
     }
   }
 
-  static async getAll(req: Request, res: Response, next: NextFunction) {
+  static async getAll(
+    req: RequestWithQuery<{ per_page: string; page: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      const categories = await CategoriesService.getAll();
+      const { per_page: perPage = 10, page = 0 } = req.query;
 
-      res.send(categories);
+      const { totalCount, count, categories } = await CategoriesService.getAll({
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+
+      const pagination = paginator({
+        totalCount,
+        count,
+        req,
+        route: '/categories',
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+      res.send({ ...pagination, data: categories });
     } catch (e) {
       next(e);
     }

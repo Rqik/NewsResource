@@ -6,7 +6,7 @@ import db from '../db';
 import AuthorsService from './AuthorsService';
 import { PropsWithId } from './types';
 import MailService from './MailService';
-import TokenService from './TokenService';
+import TokensService from './TokensService';
 import UserDto from '../dtos/UserDto';
 import { ApiError } from '../exceptions';
 
@@ -24,6 +24,7 @@ type UsersRow = {
   is_activated: boolean;
   activate_link?: string;
   email?: string;
+  total_count?: number;
 };
 
 type UserProp = {
@@ -81,9 +82,11 @@ class UsersService {
 
     const user = UsersService.convertCase(result.rows[0]);
     const userDto = new UserDto(user);
-    const tokens = TokenService.generateTokens({ ...userDto });
-    await TokenService.saveToken(userDto.id, tokens.refreshToken);
-    console.log({ ...user, ...tokens });
+    const tokens = TokensService.generateTokens({ ...userDto });
+    await TokensService.create({
+      userId: userDto.id,
+      refreshToken: tokens.refreshToken,
+    });
     return { ...user, ...tokens };
   }
 
@@ -107,6 +110,57 @@ class UsersService {
       return UsersService.convertCase(userUp.rows[0]);
     }
     return user;
+  }
+
+  static async login({ login, password }: { login: string; password: string }) {
+    const user = await UsersService.getOne({ login });
+
+    if (user === null) {
+      throw ApiError.BadRequest(`User ${login} not found`);
+    }
+
+    const isPassEquals = await bcrypt.compare(password, user.password);
+    if (!isPassEquals) {
+      throw ApiError.BadRequest('Wrong password');
+    }
+
+    const userDto = new UserDto(user);
+    const tokens = TokensService.generateTokens(userDto);
+    await TokensService.create({
+      userId: userDto.id,
+      refreshToken: tokens.refreshToken,
+    });
+    return { ...user, ...tokens };
+  }
+
+  static async logout(refreshToken: string) {
+    const token = await TokensService.delete({ refreshToken });
+
+    return token;
+  }
+
+  static async refresh(refreshToken: string) {
+    if (!refreshToken) {
+      throw ApiError.UnauthorizeError();
+    }
+    const userDate = await TokensService.validateRefresh(refreshToken);
+    const tokenFromDb = await TokensService.getOne({ refreshToken });
+    if (!userDate && !tokenFromDb) {
+      throw ApiError.UnauthorizeError();
+    }
+    if (typeof userDate !== 'object' || userDate === null) {
+      throw ApiError.UnauthorizeError();
+    }
+
+    const user = await UsersService.getById(userDate.id);
+    const userDto = new UserDto(user);
+    const tokens = TokensService.generateTokens(userDto);
+
+    await TokensService.create({
+      userId: userDto.id,
+      refreshToken: tokens.refreshToken,
+    });
+    return { ...userDate, ...tokens };
   }
 
   // TODO: реализовать изменение admin
@@ -162,15 +216,22 @@ class UsersService {
     return UsersService.convertCase(data);
   }
 
-  static async getAll() {
+  static async getAll({ page, perPage }: { page: number; perPage: number }) {
     const result: QueryResult<UsersRow> = await db.query(
-      `SELECT user_id, first_name, last_name, avatar, login, admin, created_at
-         FROM ${tableName}`,
+      `SELECT user_id, first_name, last_name, avatar, login, admin, created_at,
+              count(*) OVER() AS total_count
+         FROM ${tableName}
+        LIMIT $1
+       OFFSET $2
+         `,
+      [perPage, page * perPage],
     );
-
+    const users = result.rows.map((user) => UsersService.convertCase(user));
+    const totalCount = result.rows[0].total_count || null;
     return {
       count: result.rowCount,
-      data: result.rows.map((user) => UsersService.convertCase(user)),
+      totalCount,
+      users,
     };
   }
 

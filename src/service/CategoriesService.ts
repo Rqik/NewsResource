@@ -10,6 +10,7 @@ type CategoriesRow = {
   category_id: number;
   description: string;
   fk_category_id: number | null;
+  total_count?: number;
 };
 
 const queryCategoriesRecursive = (nameTemplate = 'catR') => `
@@ -70,14 +71,28 @@ class CategoriesService {
     return CategoriesService.convertCategory(data);
   }
 
-  static async getAll() {
+  static async getAll({ page, perPage }: { page: number; perPage: number }) {
     const result: QueryResult<CategoriesRow> = await db.query(
-      `SELECT *
-           FROM ${tableName}`,
+      `SELECT *,
+              count(*) OVER() AS total_count
+         FROM ${tableName}
+        LIMIT $1
+       OFFSET $2
+           `,
+      [perPage, page * perPage],
     );
-    return result.rows.map((category) =>
+
+    const totalCount = result.rows[0].total_count || null;
+
+    const categories = result.rows.map((category) =>
       CategoriesService.convertCategory(category),
     );
+
+    return {
+      totalCount,
+      count: result.rowCount,
+      categories,
+    };
   }
 
   static async getOne({ id }: { id: number }) {

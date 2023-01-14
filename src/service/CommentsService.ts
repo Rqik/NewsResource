@@ -9,6 +9,7 @@ type CommentRow = {
   created_at: Date;
   fk_user_id: number;
   body: string;
+  total_count?: number;
 };
 
 type Comment = {
@@ -40,17 +41,28 @@ class CommentsService {
     return CommentsService.convertComment(comment);
   }
 
-  static async getComments({ cIds }: { cIds: number[] }): Promise<Comment[]> {
-    const query = `SELECT comment_id AS id, created_at AS "createdAt", fk_user_id AS "userId" , body
+  static async getComments(
+    { cIds }: { cIds: number[] },
+    { page, perPage }: { page: number; perPage: number },
+  ) {
+    const query = `SELECT comment_id AS id, created_at AS "createdAt", fk_user_id AS "userId", body,
+                          count(*) OVER() AS total_count
                      FROM ${tableName}
                     WHERE comment_id = ANY ($1)
+                    LIMIT $2
+                   OFFSET $3
     `;
 
-    const result: QueryResult<CommentRow> = await db.query(query, [cIds]);
-
-    return result.rows.map((comment) =>
+    const result: QueryResult<CommentRow> = await db.query(query, [
+      cIds,
+      perPage,
+      page * perPage,
+    ]);
+    const totalCount = result.rows[0]?.total_count || null;
+    const comments = result.rows.map((comment) =>
       CommentsService.convertComment(comment),
     );
+    return { totalCount, count: result.rowCount, comments };
   }
 
   static async delete({ cId }: { cId: number }): Promise<Comment> {

@@ -1,10 +1,13 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
+import { ApiError } from '../exceptions/index';
 
 import { UsersService } from '../service';
+import paginator from '../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
+  RequestWithQuery,
 } from './types';
 
 class UsersController {
@@ -97,11 +100,27 @@ class UsersController {
     }
   }
 
-  static async getAll(req: Request, res: Response, next: NextFunction) {
+  static async getAll(
+    req: RequestWithQuery<{ per_page: string; page: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      const result = await UsersService.getAll();
+      const { per_page: perPage = 20, page = 0 } = req.query;
 
-      res.send(result);
+      const { totalCount, users, count } = await UsersService.getAll({
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+      const pagination = paginator({
+        totalCount,
+        count,
+        req,
+        route: '/users',
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+      res.send({ ...pagination, data: users });
     } catch (e) {
       next(e);
     }
@@ -115,7 +134,9 @@ class UsersController {
     try {
       const { login } = req.params;
       const result = await UsersService.getOne({ login });
-
+      if (result === null) {
+        throw ApiError.BadRequest(`User ${login} not found`);
+      }
       res.send(result);
     } catch (e) {
       next(e);

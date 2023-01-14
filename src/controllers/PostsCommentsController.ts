@@ -1,8 +1,12 @@
 import { NextFunction, Response } from 'express';
 
 import { CommentsService, PostsCommentsService } from '../service/index';
-import HttpStatuses from '../shared/HttpStatuses';
-import { RequestWithParams, RequestWithParamsAndBody } from './types';
+import paginator from '../shared/paginator';
+import {
+  RequestWithParams,
+  RequestWithParamsAndBody,
+  RequestWithParamsAnQuery,
+} from './types';
 
 class PostsCommentsController {
   static async create(
@@ -32,15 +36,35 @@ class PostsCommentsController {
   }
 
   static async getCommentsPost(
-    req: RequestWithParams<{ id: string }>,
+    req: RequestWithParamsAnQuery<
+      { id: string },
+      { per_page: string; page: string }
+    >,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const { id } = req.params;
-      const comments = await PostsCommentsService.getPostComments({ id });
+      const { per_page: perPage = 10, page = 0 } = req.query;
 
-      res.send(comments);
+      const { id } = req.params;
+      const { totalCount, count, comments } =
+        await PostsCommentsService.getPostComments(
+          { id },
+          {
+            page: Number(page),
+            perPage: Number(perPage),
+          },
+        );
+      const pagination = paginator({
+        totalCount,
+        count,
+        req,
+        route: `/posts/${id}/comments`,
+        page: Number(page),
+        perPage: Number(perPage),
+      });
+
+      res.send({ ...pagination, comments });
     } catch (e) {
       next(e);
     }

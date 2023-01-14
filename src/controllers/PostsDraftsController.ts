@@ -1,7 +1,12 @@
 import { NextFunction, Response } from 'express';
 
 import { PostsDraftService } from '../service/index';
-import { RequestWithParams, RequestWithParamsAndBody } from './types';
+import paginator from '../shared/paginator';
+import {
+  RequestWithParams,
+  RequestWithParamsAndBody,
+  RequestWithParamsAnQuery,
+} from './types';
 
 class PostsDraftsController {
   static async create(
@@ -54,18 +59,36 @@ class PostsDraftsController {
   }
 
   static async getAll(
-    req: RequestWithParams<{ id: string }>,
+    req: RequestWithParamsAnQuery<
+      { id: string },
+      { per_page: string; page: string }
+    >,
     res: Response,
     next: NextFunction,
   ) {
     try {
+      const { per_page: perPage = 10, page = 0 } = req.query;
       const { id } = req.params;
 
-      const result = await PostsDraftService.getDraftsPost({
-        postId: Number(id),
+      const { totalCount, count, drafts } =
+        await PostsDraftService.getDraftsPost(
+          {
+            postId: Number(id),
+          },
+          {
+            page: Number(page),
+            perPage: Number(perPage),
+          },
+        );
+      const pagination = paginator({
+        totalCount,
+        count,
+        req,
+        route: `/posts/${id}/drafts`,
+        page: Number(page),
+        perPage: Number(perPage),
       });
-
-      res.send(result);
+      res.send({ ...pagination, drafts });
     } catch (e) {
       next(e);
     }

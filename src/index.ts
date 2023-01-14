@@ -2,6 +2,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import 'dotenv/config';
+
 import {
   auth,
   authors,
@@ -35,6 +36,7 @@ app.use(apiVersion, comments);
 app.use(apiVersion, categories);
 app.use(apiVersion, tags);
 
+// Middleware
 app.use(errorMiddleware);
 
 app.listen(port, () => {

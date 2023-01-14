@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 
 import { PostsService } from '../service/index';
-import HttpStatuses from '../shared/HttpStatuses';
+import paginator from '../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
@@ -28,18 +28,7 @@ class PostsController {
 
       res.send(post);
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      console.log(e.message);
-      res.send({
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        ...e,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        message: e.message,
-      });
-      res.status(HttpStatuses.BAD_REQUEST);
+      next();
     }
   }
 
@@ -97,30 +86,46 @@ class PostsController {
 
   static async getAll(
     req: RequestWithQuery<{
-      created_at: string;
-      created_at__lt: string;
-      created_at__gt: string;
+      created_at?: string;
+      created_at__lt?: string;
+      created_at__gt?: string;
+      category?: string;
+      title?: string;
+      body?: string;
+      categories__in?: string;
+      categories__all?: string;
+      tag?: string;
+      tags__in?: string;
+      tags__all?: string;
+      page?: string;
+      per_page?: string;
     }>,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const filter = new Map(Object.entries(req.query));
-      const entries = Object.entries(req.query);
-      const posts = await PostsService.getAll(req.query);
+      const { per_page: perPage = 10, page = 0 } = req.query;
 
-      console.log(req.query);
-      // console.log('------------/');
-      // console.log(entries);
+      const { totalCount, count, posts } = await PostsService.getAll(
+        req.query,
+        {
+          page: Number(page),
+          perPage: Number(perPage),
+        },
+      );
 
-      res.send({
-        count: posts.length,
-        data: posts,
+      const pagination = paginator({
+        totalCount,
+        count,
+        req,
+        route: '/posts',
+        page: Number(page),
+        perPage: Number(perPage),
       });
-    } catch (e) {
-      console.log(e);
 
-      res.send(e);
+      res.send({ ...pagination, data: posts });
+    } catch (e) {
+      next(e);
     }
   }
 

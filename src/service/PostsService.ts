@@ -38,6 +38,7 @@ type PostRowSimple = PostRow & {
 type PostFullRow = PostRowSimple & {
   tags: TagsRow[];
   comments: CommentRow[];
+  total_count?: number;
 };
 
 type PostProp = {
@@ -179,7 +180,24 @@ class PostsService {
     };
   }
 
-  static async getAll(query: Record<string, string>) {
+  static async getAll(
+    query: {
+      created_at?: string;
+      created_at__lt?: string;
+      created_at__gt?: string;
+      category?: string;
+      title?: string;
+      body?: string;
+      categories__in?: string;
+      categories__all?: string;
+      tag?: string;
+      tags__in?: string;
+      tags__all?: string;
+    },
+    pagination: { page: number; perPage: number },
+  ) {
+    const { perPage = 10, page = 0 } = pagination;
+
     let counterFilters = 0;
     const whereKeys = [
       'created_at__lt',
@@ -243,9 +261,10 @@ class PostsService {
     const querySelect = `${queryCategoriesRecursive('catR')}
      SELECT * FROM (
         SELECT
+          count(*) OVER() AS total_count,
           n.*,
           array_agg(t.tag_id ORDER BY t.tag_id) tag_ids,
-          ${queryTags} tags, c.category root_category, c.arr_categories, c.arr_category_id, a.description author_description, u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin,
+          ${queryTags} tags, c.category root_category, c.arr_categories, c.arr_category_id, a.author_id, a.description author_description, u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin,
           ${queryComments} comments
           FROM ${tableName} n
             LEFT JOIN authors a ON a.author_id = n.fk_author_id
@@ -260,15 +279,23 @@ class PostsService {
             GROUP BY n.post_id, a.author_id, u.user_id, root_category, c.arr_categories, c.arr_category_id
           ORDER BY n.post_id) as fullData
          ${arrayStr}
+         LIMIT $${(counterFilters += 1)}
+         OFFSET $${(counterFilters += 1)}
     `;
 
     const postsSQL: QueryResult<PostFullRow> = await db.query(querySelect, [
       ...values,
+      perPage,
+      page * perPage,
     ]);
-
+    const totalCount = postsSQL.rows[0]?.total_count || null;
     const posts = postsSQL.rows.map((post) => PostsService.convertPosts(post));
 
-    return posts;
+    return {
+      totalCount,
+      posts,
+      count: postsSQL.rowCount,
+    };
   }
 
   static async getOne({ id }: PropsWithId) {
@@ -283,7 +310,10 @@ class PostsService {
     `;
     const result: QueryResult<PostRowSimple> = await db.query(query, [id]);
     const data = result.rows[0];
-    const comments = await PostsCommentsService.getPostComments({ id });
+    const comments = await PostsCommentsService.getPostComments(
+      { id },
+      { perPage: 0, page: 0 },
+    );
     const tags = await PostsTagsService.getPostTags({ id });
 
     return {
@@ -296,10 +326,10 @@ class PostsService {
   static async delete({ id }: PropsWithId) {
     const query = `DELETE FROM ${tableName}
                     WHERE post_id = $1
-                    RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
+                RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
     const selectData: QueryResult<PostRow> = await db.query(
       `SELECT * FROM ${tableName}
-          WHERE post_id = $1
+        WHERE post_id = $1
       `,
       [id],
     );
@@ -326,7 +356,7 @@ class PostsService {
       main_img: mainImg,
       other_imgs: otherImgs,
       root_category: rootCategory,
-      author_id: aId,
+      author_id: authorId,
       author_description: description,
       arr_categories: categories,
       user_id: uId,
@@ -338,6 +368,7 @@ class PostsService {
       tags: ts,
       comments: cm,
       arr_category_id: categoryIds,
+      fk_category_id: rootCategoryId,
     } = post;
 
     const comments = cm.map((c) => CommentsService.convertComment(c));
@@ -345,7 +376,10 @@ class PostsService {
 
     return {
       id,
-      rootCategory,
+      rootCategory: {
+        id: rootCategoryId,
+        description: rootCategory,
+      },
       categories,
       createdAt,
       title,
@@ -353,7 +387,7 @@ class PostsService {
       mainImg,
       otherImgs,
       author: {
-        id: aId,
+        id: authorId,
         description,
       },
       user: {
