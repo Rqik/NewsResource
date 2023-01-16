@@ -1,4 +1,6 @@
 import errorMiddleware from './error-middleware';
+import loggerMiddleware from './logger-middleware';
+import authMiddleware from './auth-middleware';
+import adminMiddleware from './admin-middleware';
 
-// eslint-disable-next-line import/prefer-default-export
-export { errorMiddleware };
+export { errorMiddleware, loggerMiddleware, authMiddleware, adminMiddleware };

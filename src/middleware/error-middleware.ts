@@ -1,29 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
-import { ApiError } from '../exceptions';
+import { ApiError } from '../exceptions/index';
 import HttpStatuses from '../shared/HttpStatuses';
 
-const errorMiddleware = ({
-  err,
-  req,
-  res,
-  next,
-}: {
-  err: Error;
-  req: Request;
-  res: Response;
-  next: NextFunction;
-}) => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  console.log('arguments');
-  console.log(err, req, res, next);
-
+const errorMiddleware = (
+  err: Error,
+  _: Request,
+  res: Response,
+  __: NextFunction,
+) => {
   if (err instanceof ApiError) {
-    return res
-      .status(err.status)
-      .json({ message: err.message, error: err.errors });
+    res.status(err.status).json({ message: err.message, error: err.errors });
   }
-  return res
+
+  res
     .status(HttpStatuses.INTERNAL_SERVER)
     .json({ message: 'Unexpected error' });
 };

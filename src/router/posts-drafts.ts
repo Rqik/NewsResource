@@ -1,15 +1,46 @@
 import express from 'express';
-import { PostsDraftsController } from '../controllers/index';
+import { PostsDraftsController } from '../controllers';
+import { authMiddleware } from '../middleware';
 
 const router = express.Router();
 
 const postPath = '/posts';
-const path = '/drafts';
+const draftsPath = '/drafts';
 
-router.get(`${postPath}/:id${path}`, PostsDraftsController.getAll);
-router.get(`${postPath}/:id${path}/:did`, PostsDraftsController.getOne);
-router.post(`${postPath}/:id${path}`, PostsDraftsController.create);
-router.put(`${postPath}/:id${path}/:did`, PostsDraftsController.update);
-router.delete(`${postPath}/:id${path}/:did`, PostsDraftsController.delete);
+router.get(
+  `${postPath}/:id${draftsPath}`,
+  authMiddleware,
+  PostsDraftsController.getAll,
+);
+
+router.get(
+  `${postPath}/:id${draftsPath}/:did`,
+  authMiddleware,
+  PostsDraftsController.getOne,
+);
+
+router.get(
+  `${postPath}/:id${draftsPath}/:did/publish`,
+  authMiddleware,
+  PostsDraftsController.publish,
+);
+
+router.post(
+  `${postPath}/:id${draftsPath}`,
+  authMiddleware,
+  PostsDraftsController.create,
+);
+
+router.put(
+  `${postPath}/:id${draftsPath}/:did`,
+  authMiddleware,
+  PostsDraftsController.update,
+);
+
+router.delete(
+  `${postPath}/:id${draftsPath}/:did`,
+  authMiddleware,
+  PostsDraftsController.delete,
+);
 
 export default router;

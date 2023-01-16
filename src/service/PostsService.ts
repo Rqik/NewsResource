@@ -67,7 +67,7 @@ const filter: Record<string, string> = {
   tags__in: 'tag_ids && ',
   tags__all: 'tag_ids @> ',
   author: 'u.first_name = ',
-  category: 'arr_category_id = ',
+  category: 'fk_category_id = ',
   categories__in: 'arr_category_id && ',
   categories__all: 'arr_category_id @> ',
 };
@@ -222,6 +222,8 @@ class PostsService {
 
     if (query) {
       Object.entries(query).forEach(([key, value]) => {
+        console.log(key);
+
         if (whereKeys.includes(key)) {
           if (whereStr === '') {
             whereStr += 'WHERE ';
@@ -233,9 +235,11 @@ class PostsService {
           if (findStr.includes(key)) {
             whereStr += `${filter[key]}  '%' || $${counterFilters} || '%'`;
           } else {
-            values.push(value);
             whereStr += `${filter[key]} $${counterFilters} `;
           }
+          console.log(whereStr, value);
+
+          values.push(value);
         } else if (convertArray.includes(key)) {
           counterFilters += 1;
 
@@ -282,6 +286,15 @@ class PostsService {
          LIMIT $${(counterFilters += 1)}
          OFFSET $${(counterFilters += 1)}
     `;
+    // console.log(
+    //   querySelect,
+    //   'values = ',
+    //   ...values,
+    //   'perPage',
+    //   perPage,
+    //   'page * perPage = ',
+    //   page * perPage,
+    // );
 
     const postsSQL: QueryResult<PostFullRow> = await db.query(querySelect, [
       ...values,

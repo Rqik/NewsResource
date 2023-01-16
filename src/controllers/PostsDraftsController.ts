@@ -130,7 +130,9 @@ class PostsDraftsController {
     }
   }
 
-  static async publish() {}
+  static async publish() {
+    console.log('publish');
+  }
 }
 
 export default PostsDraftsController;

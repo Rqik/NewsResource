@@ -44,12 +44,12 @@ type User = {
   login: string;
   password: string;
   createdAt: string;
-  admin: boolean;
+  isAdmin: boolean;
   email: string;
   activateLink?: string;
   isActivated: boolean;
 };
-
+const adminEmail = ['tabasaranec96@mail.ru'];
 class UsersService {
   static async registration({
     firstName,
@@ -59,14 +59,17 @@ class UsersService {
     email,
     password,
   }: UserProp) {
-    const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password, activate_link)
-                        VALUES ($1, $2, $3, $4, $5, $6)
+    const isAdmin = adminEmail.includes(email);
+    const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password, activate_link, admin)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7)
                      RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, password, activate_link, email, is_activated`;
 
     const candidate = await UsersService.getOne({ login });
+
     if (candidate !== null) {
-      throw ApiError.BadRequest(`User with this ${login} exists`);
+      throw ApiError.BadRequest(`User with this login ${login} exists`);
     }
+
     const hashPassword = bcrypt.hashSync(password, 7);
     const activateLink = uuid();
     await MailService.sendActivationMail({ to: email, link: activateLink });
@@ -78,6 +81,7 @@ class UsersService {
       login,
       hashPassword,
       activateLink,
+      isAdmin,
     ]);
 
     const user = UsersService.convertCase(result.rows[0]);
@@ -277,7 +281,7 @@ class UsersService {
       lastName: user.last_name,
       avatar: user.avatar,
       login: user.login,
-      admin: user.admin,
+      isAdmin: user.admin,
       activateLink: user.activate_link,
       createdAt: user.created_at,
       password: user.password,

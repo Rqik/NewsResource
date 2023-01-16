@@ -13,7 +13,7 @@ import {
   categories,
   tags,
 } from './router';
-import { errorMiddleware } from './middleware';
+import { errorMiddleware, loggerMiddleware } from './middleware';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,7 +24,7 @@ const jsonBodyMiddleware = express.json();
 // Middleware
 app.use(jsonBodyMiddleware);
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({ credentials: true }));
 
 // Routs
 app.use(apiVersion, auth);
@@ -36,7 +36,12 @@ app.use(apiVersion, comments);
 app.use(apiVersion, categories);
 app.use(apiVersion, tags);
 
+app.get('*', (_, res) => {
+  res.sendStatus(404);
+});
+
 // Middleware
+app.use(loggerMiddleware);
 app.use(errorMiddleware);
 
 app.listen(port, () => {
