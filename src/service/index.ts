@@ -8,6 +8,7 @@ import PostsService from './PostsService';
 import PostsCommentsService from './PostsCommentsService';
 import PostsDraftService from './PostsDraftService';
 import MailService from './MailService';
+import TokensService from './TokensService';
 
 export {
   AuthorsService,
@@ -20,4 +21,5 @@ export {
   PostsCommentsService,
   PostsDraftService,
   MailService,
+  TokensService,
 };

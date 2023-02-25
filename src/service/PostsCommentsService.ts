@@ -57,6 +57,7 @@ class PostsCommentsService {
     await db.query(query, [nId, cId]);
 
     const comment = await CommentsService.delete({ cId });
+
     return comment;
   }
 }

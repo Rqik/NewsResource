@@ -62,6 +62,7 @@ class CommentsService {
     const comments = result.rows.map((comment) =>
       CommentsService.convertComment(comment),
     );
+
     return { totalCount, count: result.rowCount, comments };
   }
 
@@ -73,6 +74,7 @@ class CommentsService {
 
     const result: QueryResult<CommentRow> = await db.query(query, [cId]);
     const comment = result.rows[0];
+
     return CommentsService.convertComment(comment);
   }
 

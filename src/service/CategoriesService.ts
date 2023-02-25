@@ -68,6 +68,7 @@ class CategoriesService {
       id,
     ]);
     const data = result.rows[0];
+
     return CategoriesService.convertCategory(data);
   }
 
@@ -102,6 +103,7 @@ class CategoriesService {
     const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
 
     const data = result.rows[0];
+
     return CategoriesService.convertCategory(data);
   }
 
@@ -121,6 +123,7 @@ class CategoriesService {
     if (selectData.rows.length > 0) {
       const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
       const data = result.rows[0];
+
       return CategoriesService.convertCategory(data);
     }
     throw ApiError.BadRequest('Category not found');

@@ -350,6 +350,7 @@ class PostsService {
     if (selectData.rows.length > 0) {
       const result: QueryResult<PostRow> = await db.query(query, [id]);
       const data = result.rows[0];
+
       return {
         ...data,
         id: data.post_id,

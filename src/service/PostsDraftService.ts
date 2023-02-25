@@ -114,6 +114,7 @@ class PostsDraftService {
 
     if (isBelongs) {
       const draft = await DraftService.getOne({ id: draftId });
+
       return draft;
     }
     throw ApiError.BadRequest('Not found drafts');

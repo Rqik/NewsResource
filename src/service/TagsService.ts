@@ -47,6 +47,7 @@ class TagsService {
     ]);
     const totalCount = result.rows[0].total_count || null;
     const tags = result.rows.map((tag) => TagsService.convertTag(tag));
+
     return {
       totalCount,
       count: result.rowCount,

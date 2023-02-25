@@ -15,6 +15,7 @@ type SnakeToCamelCase<S extends string> = S extends `${infer T}_${infer U}`
 type SnakeToCamelCaseNested<T extends object> = {
   [K in keyof T as SnakeToCamelCase<K & string>]: T[K];
 };
+
 export type {
   SnakeToCamelCaseNested,
   PropsWithId,

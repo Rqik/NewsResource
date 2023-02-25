@@ -91,6 +91,7 @@ class PostsTagsService {
 
     if (isBelongs) {
       const result = await db.query(queryPostsTags, [postId, tagId]);
+
       return result.rows[0];
     }
 

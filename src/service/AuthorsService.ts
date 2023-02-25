@@ -64,6 +64,7 @@ class AuthorsService {
       AuthorsService.convertCase(author),
     );
     const totalCount = result.rows[0]?.total_count || null;
+
     return { authors, count: result.rowCount, totalCount };
   }
 
@@ -83,6 +84,7 @@ class AuthorsService {
                 RETURNING author_id, description, fk_user_id`;
 
     const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
+
     return result.rows.map((author) => AuthorsService.convertCase(author));
   }
 
@@ -93,6 +95,7 @@ class AuthorsService {
 
     const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
     const author = result.rows[0];
+
     return AuthorsService.convertCase(author);
   }
 

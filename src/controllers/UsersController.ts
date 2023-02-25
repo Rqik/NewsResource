@@ -11,6 +11,8 @@ import {
 } from './types';
 
 class UsersController {
+  private static maxAge = 30 * 24 * 60 * 60;
+
   static async create(
     req: RequestWithBody<{
       firstName: string;
@@ -24,7 +26,6 @@ class UsersController {
     next: NextFunction,
   ) {
     try {
-      console.log('UsersController create');
       const { firstName, lastName, avatar, login, password, email } = req.body;
 
       const userDate = await UsersService.registration({
@@ -36,9 +37,8 @@ class UsersController {
         email,
       });
 
-      console.log('UsersController userDate', userDate);
       res.cookie('refreshToken', userDate.refreshToken, {
-        maxAge: 30 * 24 * 60 * 60,
+        maxAge: UsersController.maxAge,
         httpOnly: true,
       });
       res.send({ result: userDate });

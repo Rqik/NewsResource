@@ -37,6 +37,8 @@ app.use(apiVersion, categories);
 app.use(apiVersion, tags);
 
 app.get('*', (_, res) => {
+  console.log('33');
+
   res.sendStatus(404);
 });
 

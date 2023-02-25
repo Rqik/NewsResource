@@ -1,31 +1,31 @@
-import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import HttpStatuses from '../shared/HttpStatuses';
-import UserDto from '../dtos/UserDto';
+
+import { ApiError } from '../exceptions';
+import { TokensService } from '../service';
 
 const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
     if (typeof req.headers.authorization === 'undefined') {
-      res.sendStatus(HttpStatuses.NOT_FOUND);
+      next(ApiError.UnauthorizeError());
     }
 
     const token = req.headers.authorization?.split(' ')[1] || '';
     if (!token) {
-      res.sendStatus(HttpStatuses.NOT_FOUND);
+      next(ApiError.UnauthorizeError());
     }
 
-    const decodeData = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_SECRET as string,
-    ) as UserDto;
-    // console.log('decodeData.isAdmin', decodeData?.isAdmin);
+    const decodeData = TokensService.validateAccess(token);
 
-    if (!decodeData.isAdmin) {
-      res.sendStatus(HttpStatuses.NOT_FOUND);
+    if (decodeData === null) {
+      next(ApiError.UnauthorizeError());
+    }
+
+    if (typeof decodeData !== 'string' && !decodeData?.isAdmin) {
+      next(ApiError.UnauthorizeError());
     }
     next();
   } catch (e) {
-    res.sendStatus(HttpStatuses.NOT_FOUND);
+    next(ApiError.UnauthorizeError());
   }
 };
 

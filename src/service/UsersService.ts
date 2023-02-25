@@ -3,12 +3,12 @@ import bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 
 import db from '../db';
+import UserDto from '../dtos/UserDto';
+import { ApiError } from '../exceptions';
 import AuthorsService from './AuthorsService';
 import { PropsWithId } from './types';
 import MailService from './MailService';
 import TokensService from './TokensService';
-import UserDto from '../dtos/UserDto';
-import { ApiError } from '../exceptions';
 
 const tableName = 'users';
 
@@ -60,8 +60,8 @@ class UsersService {
     password,
   }: UserProp) {
     const isAdmin = adminEmail.includes(email);
-    const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password, activate_link, admin)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7)
+    const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password, activate_link, admin, email)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                      RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, password, activate_link, email, is_activated`;
 
     const candidate = await UsersService.getOne({ login });
@@ -82,6 +82,7 @@ class UsersService {
       hashPassword,
       activateLink,
       isAdmin,
+      email,
     ]);
 
     const user = UsersService.convertCase(result.rows[0]);
@@ -91,6 +92,7 @@ class UsersService {
       userId: userDto.id,
       refreshToken: tokens.refreshToken,
     });
+
     return { ...user, ...tokens };
   }
 
@@ -113,6 +115,7 @@ class UsersService {
 
       return UsersService.convertCase(userUp.rows[0]);
     }
+
     return user;
   }
 
@@ -129,11 +132,12 @@ class UsersService {
     }
 
     const userDto = new UserDto(user);
-    const tokens = TokensService.generateTokens(userDto);
+    const tokens = TokensService.generateTokens({ ...userDto });
     await TokensService.create({
       userId: userDto.id,
       refreshToken: tokens.refreshToken,
     });
+
     return { ...user, ...tokens };
   }
 
@@ -147,24 +151,28 @@ class UsersService {
     if (!refreshToken) {
       throw ApiError.UnauthorizeError();
     }
-    const userDate = await TokensService.validateRefresh(refreshToken);
+
+    const userData = TokensService.validateRefresh(refreshToken);
     const tokenFromDb = await TokensService.getOne({ refreshToken });
-    if (!userDate && !tokenFromDb) {
-      throw ApiError.UnauthorizeError();
-    }
-    if (typeof userDate !== 'object' || userDate === null) {
+
+    if (!userData && !tokenFromDb) {
       throw ApiError.UnauthorizeError();
     }
 
-    const user = await UsersService.getById(userDate.id);
+    if (typeof userData !== 'object' || userData === null) {
+      throw ApiError.UnauthorizeError();
+    }
+
+    const user = await UsersService.getById({ id: userData.id });
     const userDto = new UserDto(user);
-    const tokens = TokensService.generateTokens(userDto);
+    const tokens = TokensService.generateTokens({ ...userDto });
 
     await TokensService.create({
       userId: userDto.id,
       refreshToken: tokens.refreshToken,
     });
-    return { ...userDate, ...tokens };
+
+    return { ...userData, ...tokens };
   }
 
   // TODO: реализовать изменение admin
@@ -176,6 +184,18 @@ class UsersService {
     login,
     password,
   }: PropsWithId<UserProp>) {
+    const user = await UsersService.getOne({ login });
+
+    if (user === null) {
+      throw ApiError.BadRequest(`User ${login} not found`);
+    }
+
+    const isPassEquals = await bcrypt.compare(password, user.password);
+
+    if (!isPassEquals) {
+      throw ApiError.BadRequest('Wrong password');
+    }
+
     const query = `UPDATE ${tableName}
                       SET first_name = $1,
                           last_name = $2,
@@ -232,6 +252,7 @@ class UsersService {
     );
     const users = result.rows.map((user) => UsersService.convertCase(user));
     const totalCount = result.rows[0].total_count || null;
+
     return {
       count: result.rowCount,
       totalCount,
@@ -271,6 +292,7 @@ class UsersService {
     await AuthorsService.deleteUserAuthors({ id });
     const result: QueryResult<UsersRow> = await db.query(query, [id]);
     const data = result.rows[0];
+
     return UsersService.convertCase(data);
   }
 

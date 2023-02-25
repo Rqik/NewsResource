@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { QueryResult } from 'pg';
+
 import db from '../db';
-import UserDto from '../dtos/UserDto';
+import type UserDto from '../dtos/UserDto';
 
 const tableName = 'tokens';
 
@@ -9,6 +10,7 @@ type TokenRow = {
   refresh_token: string;
   fk_user_id: number;
 };
+
 type Token = {
   refreshToken: string;
   userId: number;
@@ -34,19 +36,20 @@ class TokensService {
     return { accessToken, refreshToken };
   }
 
-  static async validateAccess(token: string) {
+  static validateAccess(token: string) {
     try {
       const userData = jwt.verify(
         token,
         process.env.JWT_ACCESS_SECRET as string,
       );
+
       return userData;
     } catch (error) {
       return null;
     }
   }
 
-  static async validateRefresh(token: string) {
+  static validateRefresh(token: string) {
     try {
       const userData = jwt.verify(
         token,
@@ -72,6 +75,7 @@ class TokensService {
     if (tokenData) {
       tokenData.refreshToken = refreshToken;
       const tkn = await TokensService.update(tokenData);
+
       return tkn;
     }
     const query = `INSERT INTO ${tableName} (refresh_token, fk_user_id)
@@ -82,6 +86,7 @@ class TokensService {
       refreshToken,
       userId,
     ]);
+
     return TokensService.convertCase(result.rows[0]);
   }
 
@@ -93,6 +98,7 @@ class TokensService {
     if (result.rows.length === 0) {
       return null;
     }
+
     return TokensService.convertCase(result.rows[0]);
   }
 
@@ -108,6 +114,7 @@ class TokensService {
     if (result.rows.length === 0) {
       return null;
     }
+
     return TokensService.convertCase(result.rows[0]);
   }
 
@@ -126,6 +133,7 @@ class TokensService {
       refreshToken,
       userId,
     ]);
+
     return TokensService.convertCase(result.rows[0]);
   }
 
@@ -134,6 +142,7 @@ class TokensService {
                     WHERE refresh_token = $1
                 RETURNING refresh_token, fk_user_id`;
     const result: QueryResult<TokenRow> = await db.query(query, [refreshToken]);
+
     return TokensService.convertCase(result.rows[0]);
   }
 

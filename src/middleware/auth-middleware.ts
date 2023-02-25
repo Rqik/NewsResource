@@ -1,7 +1,7 @@
-import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+
 import ApiError from '../exceptions/ApiError';
-import UserDto from '../dtos/UserDto';
+import TokensService from '../service/TokensService';
 
 const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'OPTIONS') {
@@ -18,15 +18,15 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
       throw ApiError.UnauthorizeError();
     }
 
-    const decodeData = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_SECRET as string,
-    ) as UserDto;
+    const decodeData = TokensService.validateAccess(token);
+    if (decodeData === null) {
+      next(ApiError.UnauthorizeError());
+    }
 
     req.user = decodeData;
     next();
   } catch (e) {
-    next(e);
+    next(ApiError.UnauthorizeError());
   }
 };
 

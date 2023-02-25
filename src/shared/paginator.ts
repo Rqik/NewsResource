@@ -36,6 +36,7 @@ const paginator = ({
       page: Number(page) + 1,
     })}`;
   }
+
   return pagination;
 };
 
