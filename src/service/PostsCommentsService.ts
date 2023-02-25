@@ -39,24 +39,30 @@ class PostsCommentsService {
     `;
     const result: QueryResult<PostCommentRow> = await db.query(query, [id]);
 
-    const cIds = result.rows.map((el) => el.fk_comment_id);
+    const commentIds = result.rows.map((el) => el.fk_comment_id);
 
     const { totalCount, count, comments } = await CommentsService.getComments(
-      { cIds },
+      { commentIds },
       { page, perPage },
     );
 
     return { totalCount, count, comments };
   }
 
-  static async delete({ nId, cId }: { nId: number; cId: number }) {
+  static async delete({
+    postId,
+    commentId,
+  }: {
+    postId: number;
+    commentId: number;
+  }) {
     const query = `DELETE
                      FROM ${tableName}
                     WHERE fk_post_id = $1 AND fk_comment_id = $2`;
 
-    await db.query(query, [nId, cId]);
+    await db.query(query, [postId, commentId]);
 
-    const comment = await CommentsService.delete({ cId });
+    const comment = await CommentsService.delete({ id: commentId });
 
     return comment;
   }

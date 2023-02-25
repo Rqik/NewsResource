@@ -1,7 +1,8 @@
 import { NextFunction, Response } from 'express';
 import { ApiError } from '../exceptions/index';
 
-import { UsersService } from '../service';
+import { TokensService, UsersService } from '../service';
+import getAuthorizationToken from '../shared/get-authorization-token';
 import paginator from '../shared/paginator';
 import {
   RequestWithBody,
@@ -139,6 +140,32 @@ class UsersController {
       if (result === null) {
         throw ApiError.BadRequest(`User ${login} not found`);
       }
+      res.send(result);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async getCurrentAuth(
+    req: RequestWithParams<{ login: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const accessToken = getAuthorizationToken(req);
+      const tokenData = TokensService.validateAccess(accessToken);
+
+      if (tokenData === null || typeof tokenData === 'string') {
+        throw ApiError.BadRequest('Invalid Authorization token');
+      }
+
+      const { id } = tokenData;
+      const result = await UsersService.getById({ id });
+
+      if (result === null) {
+        throw ApiError.BadRequest(`User ${id} not found`);
+      }
+
       res.send(result);
     } catch (e) {
       next(e);

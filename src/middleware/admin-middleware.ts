@@ -2,30 +2,28 @@ import { Request, Response, NextFunction } from 'express';
 
 import { ApiError } from '../exceptions';
 import { TokensService } from '../service';
+import getAuthorizationToken from '../shared/get-authorization-token';
 
 const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (typeof req.headers.authorization === 'undefined') {
-      next(ApiError.UnauthorizeError());
-    }
+    const token = getAuthorizationToken(req);
 
-    const token = req.headers.authorization?.split(' ')[1] || '';
     if (!token) {
-      next(ApiError.UnauthorizeError());
+      throw ApiError.NotFound();
     }
 
     const decodeData = TokensService.validateAccess(token);
 
-    if (decodeData === null) {
-      next(ApiError.UnauthorizeError());
+    if (!decodeData || typeof decodeData !== 'object') {
+      throw ApiError.NotFound();
     }
 
-    if (typeof decodeData !== 'string' && !decodeData?.isAdmin) {
-      next(ApiError.UnauthorizeError());
+    if (!decodeData.isAdmin) {
+      throw ApiError.NotFound();
     }
     next();
   } catch (e) {
-    next(ApiError.UnauthorizeError());
+    next(ApiError.NotFound());
   }
 };
 

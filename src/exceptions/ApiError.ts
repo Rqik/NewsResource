@@ -19,6 +19,13 @@ class ApiError extends Error {
     this.errors = errors;
   }
 
+  static NotFound() {
+    return new ApiError({
+      status: HttpStatuses.NOT_FOUND,
+      message: 'Not Found',
+    });
+  }
+
   static UnauthorizeError() {
     return new ApiError({
       status: HttpStatuses.UNAUTHORIZED,

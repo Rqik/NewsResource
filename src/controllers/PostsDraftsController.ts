@@ -131,6 +131,7 @@ class PostsDraftsController {
   }
 
   static async publish() {
+    // TODO:FIX
     console.log('publish');
   }
 }

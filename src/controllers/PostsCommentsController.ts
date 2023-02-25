@@ -1,6 +1,12 @@
 import { NextFunction, Response } from 'express';
 
-import { CommentsService, PostsCommentsService } from '../service/index';
+import { ApiError } from '../exceptions';
+import {
+  CommentsService,
+  PostsCommentsService,
+  TokensService,
+} from '../service';
+import getAuthorizationToken from '../shared/get-authorization-token';
 import paginator from '../shared/paginator';
 import {
   RequestWithParams,
@@ -10,16 +16,21 @@ import {
 
 class PostsCommentsController {
   static async create(
-    req: RequestWithParamsAndBody<
-      { id: string },
-      { userId: number; body: string }
-    >,
+    req: RequestWithParamsAndBody<{ id: string }, { body: string }>,
     res: Response,
     next: NextFunction,
   ) {
     try {
       const { id: postId } = req.params;
-      const { userId, body } = req.body;
+      const { body } = req.body;
+      const accessToken = getAuthorizationToken(req);
+      const tokenData = TokensService.validateAccess(accessToken);
+
+      if (tokenData === null || typeof tokenData === 'string') {
+        throw ApiError.BadRequest('Invalid Authorization token');
+      }
+
+      const { id: userId } = tokenData;
       const comment = await CommentsService.create({
         userId,
         body,
@@ -55,6 +66,7 @@ class PostsCommentsController {
             perPage: Number(perPage),
           },
         );
+
       const pagination = paginator({
         totalCount,
         count,
@@ -76,10 +88,10 @@ class PostsCommentsController {
     next: NextFunction,
   ) {
     try {
-      const { id: nId, cid: cId } = req.params;
+      const { id: postId, cid: commentId } = req.params;
       const comment = await PostsCommentsService.delete({
-        nId: Number(nId),
-        cId: Number(cId),
+        postId: Number(postId),
+        commentId: Number(commentId),
       });
       res.send(comment);
     } catch (e) {

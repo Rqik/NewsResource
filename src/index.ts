@@ -14,6 +14,7 @@ import {
   tags,
 } from './router';
 import { errorMiddleware, loggerMiddleware } from './middleware';
+import HttpStatuses from './shared/HttpStatuses';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -37,9 +38,7 @@ app.use(apiVersion, categories);
 app.use(apiVersion, tags);
 
 app.get('*', (_, res) => {
-  console.log('33');
-
-  res.sendStatus(404);
+  res.status(HttpStatuses.NOT_FOUND).send('Not Found');
 });
 
 // Middleware

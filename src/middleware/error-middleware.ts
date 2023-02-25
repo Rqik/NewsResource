@@ -8,6 +8,10 @@ const errorMiddleware = (
   res: Response,
   __: NextFunction,
 ) => {
+  if (err instanceof ApiError && err.status === HttpStatuses.NOT_FOUND) {
+    res.status(err.status).send(err.message);
+  }
+
   if (err instanceof ApiError) {
     res.status(err.status).json({ message: err.message, error: err.errors });
   }

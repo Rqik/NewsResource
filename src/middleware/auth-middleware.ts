@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import ApiError from '../exceptions/ApiError';
 import TokensService from '../service/TokensService';
+import getAuthorizationToken from '../shared/get-authorization-token';
 
 const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'OPTIONS') {
@@ -9,11 +10,8 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    if (typeof req.headers.authorization === 'undefined') {
-      throw ApiError.UnauthorizeError();
-    }
+    const token = getAuthorizationToken(req);
 
-    const token = req.headers.authorization.split(' ')[1];
     if (!token) {
       throw ApiError.UnauthorizeError();
     }
