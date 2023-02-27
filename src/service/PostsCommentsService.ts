@@ -21,12 +21,12 @@ class PostsCommentsService {
     const query = `INSERT INTO ${tableName} (fk_post_id, fk_comment_id)
                         VALUES ($1, $2)`;
 
-    const result: QueryResult<PostCommentRow> = await db.query(query, [
+    const { rows }: QueryResult<PostCommentRow> = await db.query(query, [
       postId,
       commentId,
     ]);
 
-    return result.rows;
+    return rows;
   }
 
   static async getPostComments(
@@ -37,9 +37,9 @@ class PostsCommentsService {
                      FROM ${tableName}
                     WHERE fk_post_id = $1
     `;
-    const result: QueryResult<PostCommentRow> = await db.query(query, [id]);
+    const { rows }: QueryResult<PostCommentRow> = await db.query(query, [id]);
 
-    const commentIds = result.rows.map((el) => el.fk_comment_id);
+    const commentIds = rows.map((el) => el.fk_comment_id);
 
     const { totalCount, count, comments } = await CommentsService.getComments(
       { commentIds },

@@ -28,13 +28,13 @@ class DraftService {
     const query = `INSERT INTO ${tableName} (fk_user_id, body)
                         VALUES ($1, $2)
                      RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
-    console.log(body);
-    const result: QueryResult<DraftsRow> = await db.query(query, [
+
+    const { rows }: QueryResult<DraftsRow> = await db.query(query, [
       Number(userId),
       body,
     ]);
 
-    const draft = result.rows[0];
+    const draft = rows[0];
 
     return DraftService.convertDraft(draft);
   }
@@ -55,13 +55,13 @@ class DraftService {
                     WHERE draft_id = $3
                 RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
 
-    const result: QueryResult<DraftsRow> = await db.query(query, [
+    const { rows }: QueryResult<DraftsRow> = await db.query(query, [
       body,
       userId,
       id,
     ]);
 
-    const draft = result.rows[0];
+    const draft = rows[0];
 
     return DraftService.convertDraft(draft);
   }
@@ -70,8 +70,8 @@ class DraftService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE draft_id = $1`;
-    const result: QueryResult<DraftsRow> = await db.query(query, [id]);
-    const draft = result.rows[0];
+    const { rows }: QueryResult<DraftsRow> = await db.query(query, [id]);
+    const draft = rows[0];
 
     return DraftService.convertDraft(draft);
   }
@@ -88,16 +88,15 @@ class DraftService {
                    OFFSET $3
       `;
 
-    const result: QueryResult<DraftsRow> = await db.query(query, [
-      dIds,
-      perPage,
-      page * perPage,
-    ]);
+    const { rows, rowCount: count }: QueryResult<DraftsRow> = await db.query(
+      query,
+      [dIds, perPage, page * perPage],
+    );
 
-    const totalCount = result.rows[0]?.total_count || null;
-    const drafts = result.rows.map((draft) => DraftService.convertDraft(draft));
+    const totalCount = rows[0]?.total_count || null;
+    const drafts = rows.map((draft) => DraftService.convertDraft(draft));
 
-    return { totalCount, count: result.rowCount, drafts };
+    return { totalCount, count, drafts };
   }
 
   static async delete({ id }: { id: number }): Promise<Draft> {
@@ -119,8 +118,8 @@ class DraftService {
 
     if (selectData.rows.length > 0) {
       await db.query(queryPostsTags, [id]);
-      const result: QueryResult<DraftsRow> = await db.query(query, [id]);
-      const data = result.rows[0];
+      const { rows }: QueryResult<DraftsRow> = await db.query(query, [id]);
+      const data = rows[0];
 
       return {
         id: data.draft_id,

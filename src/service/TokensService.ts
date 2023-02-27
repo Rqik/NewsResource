@@ -82,24 +82,24 @@ class TokensService {
                         VALUES ($1, $2)
                      RETURNING refresh_token, fk_user_id
     `;
-    const result: QueryResult<TokenRow> = await db.query(query, [
+    const { rows }: QueryResult<TokenRow> = await db.query(query, [
       refreshToken,
       userId,
     ]);
 
-    return TokensService.convertCase(result.rows[0]);
+    return TokensService.convertCase(rows[0]);
   }
 
   static async getById({ userId }: { userId: number }): Promise<Token | null> {
     const query = `SELECT * FROM ${tableName}
                     WHERE fk_user_id = $1
     `;
-    const result: QueryResult<TokenRow> = await db.query(query, [userId]);
-    if (result.rows.length === 0) {
+    const { rows }: QueryResult<TokenRow> = await db.query(query, [userId]);
+    if (rows.length === 0) {
       return null;
     }
 
-    return TokensService.convertCase(result.rows[0]);
+    return TokensService.convertCase(rows[0]);
   }
 
   static async getOne({
@@ -110,12 +110,14 @@ class TokensService {
     const query = `SELECT * FROM ${tableName}
                     WHERE refresh_token = $1
     `;
-    const result: QueryResult<TokenRow> = await db.query(query, [refreshToken]);
-    if (result.rows.length === 0) {
+    const { rows }: QueryResult<TokenRow> = await db.query(query, [
+      refreshToken,
+    ]);
+    if (rows.length === 0) {
       return null;
     }
 
-    return TokensService.convertCase(result.rows[0]);
+    return TokensService.convertCase(rows[0]);
   }
 
   static async update({
@@ -129,21 +131,23 @@ class TokensService {
                       SET refresh_token = $1
                     WHERE fk_user_id = $2
                 RETURNING refresh_token, fk_user_id`;
-    const result: QueryResult<TokenRow> = await db.query(query, [
+    const { rows }: QueryResult<TokenRow> = await db.query(query, [
       refreshToken,
       userId,
     ]);
 
-    return TokensService.convertCase(result.rows[0]);
+    return TokensService.convertCase(rows[0]);
   }
 
   static async delete({ refreshToken }: { refreshToken: string }) {
     const query = `DELETE ${tableName}
                     WHERE refresh_token = $1
                 RETURNING refresh_token, fk_user_id`;
-    const result: QueryResult<TokenRow> = await db.query(query, [refreshToken]);
+    const { rows }: QueryResult<TokenRow> = await db.query(query, [
+      refreshToken,
+    ]);
 
-    return TokensService.convertCase(result.rows[0]);
+    return TokensService.convertCase(rows[0]);
   }
 
   static convertCase(token: TokenRow): Token {

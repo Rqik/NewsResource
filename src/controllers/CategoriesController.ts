@@ -29,12 +29,12 @@ class CategoriesController {
                 RETURNING category_id, description, fk_category_id`;
     try {
       const { description, category } = req.body;
-      const result: QueryResult<CategoriesRow> = await db.query(query, [
+      const { rows }: QueryResult<CategoriesRow> = await db.query(query, [
         description,
         category,
       ]);
 
-      const data = result.rows[0];
+      const data = rows[0];
 
       res.send({
         id: data.category_id,

@@ -58,11 +58,11 @@ type TagFilters = {
 };
 
 const filter: Record<string, string> = {
-  created_at: 'n.created_at::date = ',
-  created_at__lt: 'n.created_at::date < ',
-  created_at__gt: 'n.created_at::date > ',
-  title: 'n.title LIKE ',
-  body: 'n.body LIKE ',
+  created_at: 'p.created_at::date = ',
+  created_at__lt: 'p.created_at::date < ',
+  created_at__gt: 'p.created_at::date > ',
+  title: 'p.title LIKE ',
+  body: 'p.body LIKE ',
   tag: 'tag_ids = ',
   tags__in: 'tag_ids && ',
   tags__all: 'tag_ids @> ',
@@ -88,7 +88,7 @@ class PostsService {
                         VALUES ($1, $2, $3, $4, $5, $6)
                      RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
-    const result: QueryResult<PostRow> = await db.query(query, [
+    const { rows }: QueryResult<PostRow> = await db.query(query, [
       title,
       authorId,
       categoryId,
@@ -96,7 +96,7 @@ class PostsService {
       mainImg,
       otherImgs,
     ]);
-    const data = result.rows[0];
+    const data = rows[0];
     const { post_id: postId } = data;
     const setTags = tags.map(async (tagId) =>
       PostsTagsService.create({ postId, tagId }),
@@ -138,7 +138,7 @@ class PostsService {
                     WHERE post_id = $7
                 RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
-    const result: QueryResult<PostRow> = await db.query(query, [
+    const { rows }: QueryResult<PostRow> = await db.query(query, [
       title,
       authorId,
       categoryId,
@@ -148,7 +148,7 @@ class PostsService {
       id,
     ]);
 
-    const data = result.rows[0];
+    const data = rows[0];
 
     return data;
   }
@@ -168,11 +168,11 @@ class PostsService {
                     WHERE user_id = $${setParams.length + 1}
                 RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
-    const result: QueryResult<PostRow> = await db.query(query, [
+    const { rows }: QueryResult<PostRow> = await db.query(query, [
       ...bodyValues,
       body.id,
     ]);
-    const data = result.rows[0];
+    const data = rows[0];
 
     return {
       ...data,
@@ -222,8 +222,6 @@ class PostsService {
 
     if (query) {
       Object.entries(query).forEach(([key, value]) => {
-        console.log(key);
-
         if (whereKeys.includes(key)) {
           if (whereStr === '') {
             whereStr += 'WHERE ';
@@ -237,7 +235,6 @@ class PostsService {
           } else {
             whereStr += `${filter[key]} $${counterFilters} `;
           }
-          console.log(whereStr, value);
 
           values.push(value);
         } else if (convertArray.includes(key)) {
@@ -258,6 +255,22 @@ class PostsService {
             arrayStr += `${filter[key]}  ARRAY[$${counterFilters}::int[]]`;
             values.push(val.sort((a, b) => a - b));
           }
+        } else if (key === 'search') {
+          if (whereStr === '') {
+            whereStr += 'WHERE ';
+          } else {
+            whereStr += 'AND ';
+          }
+          counterFilters += 1;
+          whereStr += `p.title LIKE '%' || $${counterFilters} || '%'
+                       OR a.description LIKE '%' || $${counterFilters} || '%'
+                       OR u.first_name LIKE '%' || $${counterFilters} || '%'
+                       OR p.body LIKE '%' || $${counterFilters} || '%'
+                       OR p.title LIKE '%' || $${counterFilters} || '%'
+                       OR u.last_name LIKE '%' || $${counterFilters} || '%'
+
+          `;
+          values.push(value);
         }
       });
     }
@@ -266,63 +279,53 @@ class PostsService {
      SELECT * FROM (
         SELECT
           count(*) OVER() AS total_count,
-          n.*,
+          p.*,
           array_agg(t.tag_id ORDER BY t.tag_id) tag_ids,
           ${queryTags} tags, c.category root_category, c.arr_categories, c.arr_category_id, a.author_id, a.description author_description, u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin,
           ${queryComments} comments
-          FROM ${tableName} n
-            LEFT JOIN authors a ON a.author_id = n.fk_author_id
+          FROM ${tableName} p
+            LEFT JOIN authors a ON a.author_id = p.fk_author_id
             LEFT JOIN users u ON u.user_id = a.fk_user_id
-            LEFT JOIN catR c ON c.id = n.fk_category_id
-            LEFT JOIN posts_tags pt ON pt.fk_post_id = n.post_id
+            LEFT JOIN catR c ON c.id = p.fk_category_id
+            LEFT JOIN posts_tags pt ON pt.fk_post_id = p.post_id
             LEFT JOIN tags t ON t.tag_id = pt.fk_tag_id
-            LEFT JOIN posts_comments pc ON pc.fk_post_id = n.post_id
+            LEFT JOIN posts_comments pc ON pc.fk_post_id = p.post_id
             LEFT JOIN comments cm ON cm.comment_id = pc.fk_comment_id
             ${whereStr}
 
-            GROUP BY n.post_id, a.author_id, u.user_id, root_category, c.arr_categories, c.arr_category_id
-          ORDER BY n.post_id) as fullData
+            GROUP BY p.post_id, a.author_id, u.user_id, root_category, c.arr_categories, c.arr_category_id
+          ORDER BY p.post_id) as fullData
          ${arrayStr}
          LIMIT $${(counterFilters += 1)}
          OFFSET $${(counterFilters += 1)}
     `;
-    // console.log(
-    //   querySelect,
-    //   'values = ',
-    //   ...values,
-    //   'perPage',
-    //   perPage,
-    //   'page * perPage = ',
-    //   page * perPage,
-    // );
 
-    const postsSQL: QueryResult<PostFullRow> = await db.query(querySelect, [
-      ...values,
-      perPage,
-      page * perPage,
-    ]);
-    const totalCount = postsSQL.rows[0]?.total_count || null;
-    const posts = postsSQL.rows.map((post) => PostsService.convertPosts(post));
+    const { rows, rowCount: count }: QueryResult<PostFullRow> = await db.query(
+      querySelect,
+      [...values, perPage, page * perPage],
+    );
+    const totalCount = rows[0]?.total_count || null;
+    const posts = rows.map((post) => PostsService.convertPosts(post));
 
     return {
       totalCount,
       posts,
-      count: postsSQL.rowCount,
+      count,
     };
   }
 
   static async getOne({ id }: PropsWithId) {
     const query = `
       ${queryCategoriesRecursive('catR')}
-      SELECT n.* , c.category root_category, c.arr_categories, c.arr_category_id, a.author_id, a.description author_description, u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin
-        FROM ${tableName} n
-        JOIN authors a ON a.author_id = n.fk_author_id
+      SELECT p.* , c.category root_category, c.arr_categories, c.arr_category_id, a.author_id, a.description author_description, u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin
+        FROM ${tableName} p
+        JOIN authors a ON a.author_id = p.fk_author_id
         JOIN users u ON u.user_id = a.fk_user_id
-        JOIN catR c ON c.id = n.fk_category_id
-       WHERE n.post_id = $1
+        JOIN catR c ON c.id = p.fk_category_id
+       WHERE p.post_id = $1
     `;
-    const result: QueryResult<PostRowSimple> = await db.query(query, [id]);
-    const data = result.rows[0];
+    const { rows }: QueryResult<PostRowSimple> = await db.query(query, [id]);
+    const data = rows[0];
     const comments = await PostsCommentsService.getPostComments(
       { id },
       { perPage: 0, page: 0 },
@@ -348,8 +351,8 @@ class PostsService {
     );
 
     if (selectData.rows.length > 0) {
-      const result: QueryResult<PostRow> = await db.query(query, [id]);
-      const data = result.rows[0];
+      const { rows }: QueryResult<PostRow> = await db.query(query, [id]);
+      const data = rows[0];
 
       return {
         ...data,

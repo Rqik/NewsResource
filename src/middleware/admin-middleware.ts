@@ -18,9 +18,10 @@ const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
       throw ApiError.NotFound();
     }
 
-    if (!decodeData.isAdmin) {
+    if (!decodeData.isAdmin || !decodeData.isActivated) {
       throw ApiError.NotFound();
     }
+
     next();
   } catch (e) {
     next(ApiError.NotFound());

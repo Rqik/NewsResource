@@ -31,12 +31,12 @@ class CommentsService {
                         VALUES ($1, $2)
                         RETURNING comment_id, fk_user_id, body, created_at
     `;
-    const result: QueryResult<CommentRow> = await db.query(query, [
+    const { rows }: QueryResult<CommentRow> = await db.query(query, [
       userId,
       body,
     ]);
 
-    const comment = result.rows[0];
+    const comment = rows[0];
 
     return CommentsService.convertComment(comment);
   }
@@ -57,11 +57,10 @@ class CommentsService {
                     WHERE comment_id = ANY ($1)
     `;
 
-    const result: QueryResult<CommentRow> = await db.query(query, [
-      commentIds,
-      perPage,
-      page * perPage,
-    ]);
+    const { rows, rowCount: count }: QueryResult<CommentRow> = await db.query(
+      query,
+      [commentIds, perPage, page * perPage],
+    );
 
     const resultTotal: QueryResult<{ count: number }> = await db.query(
       queryTotal,
@@ -69,9 +68,9 @@ class CommentsService {
     );
 
     const totalCount = resultTotal.rows[0].count || null;
-    const comments = result.rows.map((comment) => comment);
+    const comments = rows.map((comment) => comment);
 
-    return { totalCount, count: result.rowCount, comments };
+    return { totalCount, count, comments };
   }
 
   static async delete({ id }: { id: number }): Promise<Comment> {
@@ -80,8 +79,8 @@ class CommentsService {
                     WHERE comment_id = $1
                 RETURNING comment_id, created_at, fk_user_id, body`;
 
-    const result: QueryResult<CommentRow> = await db.query(query, [id]);
-    const comment = result.rows[0];
+    const { rows }: QueryResult<CommentRow> = await db.query(query, [id]);
+    const comment = rows[0];
 
     return CommentsService.convertComment(comment);
   }

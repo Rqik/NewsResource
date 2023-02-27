@@ -27,9 +27,9 @@ class PostsTagsService {
                      FROM ${tableName}
                     WHERE fk_post_id = $1
                     `;
-    const result: QueryResult<PostTagRow> = await db.query(query, [id]);
+    const { rows }: QueryResult<PostTagRow> = await db.query(query, [id]);
 
-    const tIds = result.rows.map((el) => el.fk_tag_id);
+    const tIds = rows.map((el) => el.fk_tag_id);
 
     const tags = await TagsService.getTags({ tIds });
 
@@ -69,13 +69,13 @@ class PostsTagsService {
     // }
     // console.log(query);
 
-    const result: QueryResult<PostTagRow> = await db.query(query, [
+    const { rows }: QueryResult<PostTagRow> = await db.query(query, [
       id,
       ...values,
     ]);
 
     // console.log('dd', result);
-    const tIds = result.rows.map((el) => el.fk_tag_id);
+    const tIds = rows.map((el) => el.fk_tag_id);
 
     const tags = await TagsService.getTags({ tIds });
 
@@ -90,9 +90,9 @@ class PostsTagsService {
     const isBelongs = await this.checkPostBelongsTags({ postId, tagId });
 
     if (isBelongs) {
-      const result = await db.query(queryPostsTags, [postId, tagId]);
+      const { rows } = await db.query(queryPostsTags, [postId, tagId]);
 
-      return result.rows[0];
+      return rows[0];
     }
 
     throw ApiError.BadRequest('Tag not found');
@@ -108,12 +108,12 @@ class PostsTagsService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE fk_post_id = $1 AND fk_tag_id = $2`;
-    const result: QueryResult<PostTagRow> = await db.query(query, [
+    const { rows }: QueryResult<PostTagRow> = await db.query(query, [
       postId,
       tagId,
     ]);
 
-    return result.rows.length > 0;
+    return rows.length > 0;
   }
 }
 

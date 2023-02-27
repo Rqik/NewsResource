@@ -17,8 +17,8 @@ class TagsService {
     const query = `INSERT INTO ${tableName} (title)
                         VALUES ($1)
                      RETURNING tag_id, title`;
-    const result: QueryResult<TagsRow> = await db.query(query, [title]);
-    const tag = result.rows[0];
+    const { rows }: QueryResult<TagsRow> = await db.query(query, [title]);
+    const tag = rows[0];
 
     return TagsService.convertTag(tag);
   }
@@ -28,8 +28,8 @@ class TagsService {
                       SET title = $1
                     WHERE tag_id = $2
                 RETURNING tag_id, title`;
-    const result: QueryResult<TagsRow> = await db.query(query, [title, id]);
-    const tag = result.rows[0];
+    const { rows }: QueryResult<TagsRow> = await db.query(query, [title, id]);
+    const tag = rows[0];
 
     return TagsService.convertTag(tag);
   }
@@ -41,16 +41,16 @@ class TagsService {
                     LIMIT $1
                    OFFSET $2
 `;
-    const result: QueryResult<TagsRow> = await db.query(query, [
-      perPage,
-      page * perPage,
-    ]);
-    const totalCount = result.rows[0].total_count || null;
-    const tags = result.rows.map((tag) => TagsService.convertTag(tag));
+    const { rows, rowCount: count }: QueryResult<TagsRow> = await db.query(
+      query,
+      [perPage, page * perPage],
+    );
+    const totalCount = rows[0].total_count || null;
+    const tags = rows.map((tag) => TagsService.convertTag(tag));
 
     return {
       totalCount,
-      count: result.rowCount,
+      count,
       tags,
     };
   }
@@ -59,17 +59,17 @@ class TagsService {
     const query = `SELECT tag_id id, title
                      FROM ${tableName}
                     WHERE tag_id = ANY ($1)`;
-    const tags: QueryResult<TagsRow> = await db.query(query, [tIds]);
+    const { rows }: QueryResult<TagsRow> = await db.query(query, [tIds]);
 
-    return tags.rows.map((tag) => TagsService.convertTag(tag));
+    return rows.map((tag) => TagsService.convertTag(tag));
   }
 
   static async getOne({ id }: PropsWithId) {
     const query = `SELECT tag_id id, title
                      FROM ${tableName}
                     WHERE tag_id = $1`;
-    const result: QueryResult<TagsRow> = await db.query(query, [id]);
-    const tag = result.rows[0];
+    const { rows }: QueryResult<TagsRow> = await db.query(query, [id]);
+    const tag = rows[0];
 
     return TagsService.convertTag(tag);
   }
@@ -88,8 +88,8 @@ class TagsService {
     );
 
     if (selectData.rows.length > 0) {
-      const result: QueryResult<TagsRow> = await db.query(query, [id]);
-      const tag = result.rows[0];
+      const { rows }: QueryResult<TagsRow> = await db.query(query, [id]);
+      const tag = rows[0];
 
       return TagsService.convertTag(tag);
     }

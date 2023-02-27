@@ -74,7 +74,7 @@ class UsersService {
     const activateLink = uuid();
     await MailService.sendActivationMail({ to: email, link: activateLink });
 
-    const result: QueryResult<UsersRow> = await db.query(query, [
+    const { rows }: QueryResult<UsersRow> = await db.query(query, [
       firstName,
       lastName,
       avatar,
@@ -85,7 +85,7 @@ class UsersService {
       email,
     ]);
 
-    const user = UsersService.convertCase(result.rows[0]);
+    const user = UsersService.convertCase(rows[0]);
     const userDto = new UserDto(user);
     const tokens = TokensService.generateTokens({ ...userDto });
     await TokensService.create({
@@ -100,20 +100,20 @@ class UsersService {
     const queryUser = `SELECT *
                          FROM ${tableName}
                         WHERE activate_link = $1`;
-    const result: QueryResult<UsersRow> = await db.query(queryUser, [
+    const { rows }: QueryResult<UsersRow> = await db.query(queryUser, [
       activateLink,
     ]);
 
-    const user = UsersService.convertCase(result.rows[0]);
+    const user = UsersService.convertCase(rows[0]);
 
     if (!user.isActivated) {
       const queryActivate = `UPDATE ${tableName}
                                 SET is_activated = $1
                               WHERE user_id = $2
                           RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, is_activated`;
-      const userUp = await db.query(queryActivate, [true, user.id]);
+      const { rows: userRows } = await db.query(queryActivate, [true, user.id]);
 
-      return UsersService.convertCase(userUp.rows[0]);
+      return UsersService.convertCase(userRows[0]);
     }
 
     return user;
@@ -205,7 +205,7 @@ class UsersService {
                     WHERE user_id = $6
                 RETURNING user_id, first_name, last_name, avatar, login, admin, created_at`;
 
-    const result: QueryResult<UsersRow> = await db.query(query, [
+    const { rows }: QueryResult<UsersRow> = await db.query(query, [
       firstName,
       lastName,
       avatar,
@@ -214,7 +214,7 @@ class UsersService {
       id,
     ]);
 
-    const data = result.rows[0];
+    const data = rows[0];
 
     return UsersService.convertCase(data);
   }
@@ -232,16 +232,16 @@ class UsersService {
                     WHERE login = $${setParams.length + 1}
                 RETURNING user_id, first_name, last_name, avatar, login, admin, created_at`;
 
-    const result: QueryResult<UsersRow> = await db.query(query, [
+    const { rows }: QueryResult<UsersRow> = await db.query(query, [
       ...bodyValues,
     ]);
-    const data = result.rows[0];
+    const data = rows[0];
 
     return UsersService.convertCase(data);
   }
 
   static async getAll({ page, perPage }: { page: number; perPage: number }) {
-    const result: QueryResult<UsersRow> = await db.query(
+    const { rows, rowCount: count }: QueryResult<UsersRow> = await db.query(
       `SELECT user_id, first_name, last_name, avatar, login, admin, created_at,
               count(*) OVER() AS total_count
          FROM ${tableName}
@@ -250,11 +250,11 @@ class UsersService {
          `,
       [perPage, page * perPage],
     );
-    const users = result.rows.map((user) => UsersService.convertCase(user));
-    const totalCount = result.rows[0].total_count || null;
+    const users = rows.map((user) => UsersService.convertCase(user));
+    const totalCount = rows[0].total_count || null;
 
     return {
-      count: result.rowCount,
+      count,
       totalCount,
       users,
     };
@@ -264,12 +264,12 @@ class UsersService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE login = $1`;
-    const result: QueryResult<UsersRow> = await db.query(query, [login]);
+    const { rows }: QueryResult<UsersRow> = await db.query(query, [login]);
 
-    if (result.rows.length === 0) {
+    if (rows.length === 0) {
       return null;
     }
-    const data = result.rows[0];
+    const data = rows[0];
 
     return UsersService.convertCase(data);
   }
@@ -278,8 +278,8 @@ class UsersService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE user_id = $1`;
-    const result: QueryResult<UsersRow> = await db.query(query, [id]);
-    const data = result.rows[0];
+    const { rows }: QueryResult<UsersRow> = await db.query(query, [id]);
+    const data = rows[0];
 
     return UsersService.convertCase(data);
   }
@@ -290,8 +290,8 @@ class UsersService {
                     WHERE user_id = $1
                 RETURNING user_id, first_name, last_name, avatar, login, admin`;
     await AuthorsService.deleteUserAuthors({ id });
-    const result: QueryResult<UsersRow> = await db.query(query, [id]);
-    const data = result.rows[0];
+    const { rows }: QueryResult<UsersRow> = await db.query(query, [id]);
+    const data = rows[0];
 
     return UsersService.convertCase(data);
   }

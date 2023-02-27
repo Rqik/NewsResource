@@ -47,18 +47,15 @@ class AuthController {
 
       await UsersService.activate(link);
 
-      return res.redirect('https://ya.ru/' || '');
+      res.redirect(process.env.CLIENT_URL || 'https://ya.ru/');
     } catch (e) {
       next(e);
     }
-
-    return '';
   }
 
   static async refresh(req: Request, res: Response, next: NextFunction) {
     try {
       const { refreshToken } = req.cookies;
-      console.log('refreshToken', refreshToken);
 
       const userData = await UsersService.refresh(refreshToken);
 

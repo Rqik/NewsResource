@@ -38,12 +38,12 @@ class CategoriesService {
     const query = `INSERT INTO ${tableName} (description, fk_category_id)
                    VALUES ($1, $2)
                 RETURNING category_id, description, fk_category_id`;
-    const result: QueryResult<CategoriesRow> = await db.query(query, [
+    const { rows }: QueryResult<CategoriesRow> = await db.query(query, [
       description,
       category,
     ]);
 
-    const data = result.rows[0];
+    const data = rows[0];
 
     return CategoriesService.convertCategory(data);
   }
@@ -62,36 +62,37 @@ class CategoriesService {
                           fk_category_id = $2
                     WHERE category_id = $3
                 RETURNING category_id, description, fk_category_id`;
-    const result: QueryResult<CategoriesRow> = await db.query(query, [
+    const { rows }: QueryResult<CategoriesRow> = await db.query(query, [
       description,
       category,
       id,
     ]);
-    const data = result.rows[0];
+    const data = rows[0];
 
     return CategoriesService.convertCategory(data);
   }
 
   static async getAll({ page, perPage }: { page: number; perPage: number }) {
-    const result: QueryResult<CategoriesRow> = await db.query(
-      `SELECT *,
+    const { rows, rowCount: count }: QueryResult<CategoriesRow> =
+      await db.query(
+        `SELECT *,
               count(*) OVER() AS total_count
          FROM ${tableName}
         LIMIT $1
        OFFSET $2
            `,
-      [perPage, page * perPage],
-    );
+        [perPage, page * perPage],
+      );
 
-    const totalCount = result.rows[0].total_count || null;
+    const totalCount = rows[0].total_count || null;
 
-    const categories = result.rows.map((category) =>
+    const categories = rows.map((category) =>
       CategoriesService.convertCategory(category),
     );
 
     return {
       totalCount,
-      count: result.rowCount,
+      count,
       categories,
     };
   }
@@ -100,9 +101,9 @@ class CategoriesService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE category_id = $1`;
-    const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
+    const { rows }: QueryResult<CategoriesRow> = await db.query(query, [id]);
 
-    const data = result.rows[0];
+    const data = rows[0];
 
     return CategoriesService.convertCategory(data);
   }
@@ -121,8 +122,8 @@ class CategoriesService {
     );
 
     if (selectData.rows.length > 0) {
-      const result: QueryResult<CategoriesRow> = await db.query(query, [id]);
-      const data = result.rows[0];
+      const { rows }: QueryResult<CategoriesRow> = await db.query(query, [id]);
+      const data = rows[0];
 
       return CategoriesService.convertCategory(data);
     }

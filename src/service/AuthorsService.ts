@@ -25,11 +25,11 @@ class AuthorsService {
                         VALUES ($1, $2)
                      RETURNING author_id, description, fk_user_id`;
 
-    const result: QueryResult<AuthorsRow> = await db.query(query, [
+    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [
       description,
       userId,
     ]);
-    const author = result.rows[0];
+    const author = rows[0];
 
     return AuthorsService.convertCase(author);
   }
@@ -40,18 +40,18 @@ class AuthorsService {
                           fk_user_id = $2
                     WHERE author_id = $3
                 RETURNING author_id, description, fk_user_id`;
-    const result: QueryResult<AuthorsRow> = await db.query(query, [
+    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [
       description,
       userId,
       id,
     ]);
-    const author = result.rows[0];
+    const author = rows[0];
 
     return AuthorsService.convertCase(author);
   }
 
   static async getAll({ page, perPage }: { page: number; perPage: number }) {
-    const result: QueryResult<AuthorsRow> = await db.query(
+    const { rows, rowCount: count }: QueryResult<AuthorsRow> = await db.query(
       `SELECT *,
               count(*) OVER() AS total_count
          FROM ${tableName}
@@ -60,20 +60,18 @@ class AuthorsService {
            `,
       [perPage, page * perPage],
     );
-    const authors = result.rows.map((author) =>
-      AuthorsService.convertCase(author),
-    );
-    const totalCount = result.rows[0]?.total_count || null;
+    const authors = rows.map((author) => AuthorsService.convertCase(author));
+    const totalCount = rows[0]?.total_count || null;
 
-    return { authors, count: result.rowCount, totalCount };
+    return { authors, count, totalCount };
   }
 
   static async getOne({ id }: PropsWithId) {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE author_id = $1`;
-    const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
-    const author = result.rows[0];
+    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [id]);
+    const author = rows[0];
 
     return AuthorsService.convertCase(author);
   }
@@ -83,9 +81,9 @@ class AuthorsService {
                     WHERE fk_user_id = $1
                 RETURNING author_id, description, fk_user_id`;
 
-    const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
+    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [id]);
 
-    return result.rows.map((author) => AuthorsService.convertCase(author));
+    return rows.map((author) => AuthorsService.convertCase(author));
   }
 
   static async delete({ id }: PropsWithId) {
@@ -93,8 +91,8 @@ class AuthorsService {
                     WHERE author_id = $1
                 RETURNING author_id, description, fk_user_id`;
 
-    const result: QueryResult<AuthorsRow> = await db.query(query, [id]);
-    const author = result.rows[0];
+    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [id]);
+    const author = rows[0];
 
     return AuthorsService.convertCase(author);
   }

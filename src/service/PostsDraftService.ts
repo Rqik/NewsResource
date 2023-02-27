@@ -45,9 +45,9 @@ class PostsDraftService {
                     WHERE fk_post_id = $1
 
                     `;
-    const result: QueryResult<PostDraftRow> = await db.query(query, [postId]);
+    const { rows }: QueryResult<PostDraftRow> = await db.query(query, [postId]);
 
-    const dIds = result.rows.map((el) => el.fk_draft_id);
+    const dIds = rows.map((el) => el.fk_draft_id);
 
     const { totalCount, count, drafts } = await DraftService.getDrafts(
       {
@@ -130,12 +130,12 @@ class PostsDraftService {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE fk_post_id = $1 AND fk_draft_id = $2`;
-    const result: QueryResult<PostDraftRow> = await db.query(query, [
+    const { rows }: QueryResult<PostDraftRow> = await db.query(query, [
       postId,
       draftId,
     ]);
 
-    return result.rows.length > 0;
+    return rows.length > 0;
   }
 }
 
