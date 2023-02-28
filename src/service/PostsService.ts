@@ -267,8 +267,12 @@ class PostsService {
                        OR u.first_name LIKE '%' || $${counterFilters} || '%'
                        OR p.body LIKE '%' || $${counterFilters} || '%'
                        OR p.title LIKE '%' || $${counterFilters} || '%'
-                       OR u.last_name LIKE '%' || $${counterFilters} || '%'
-
+                       OR t.title  LIKE '%' || $${counterFilters} || '%'
+                       OR EXISTS (
+                          SELECT
+                            FROM unnest(arr_categories) elem
+                           WHERE elem LIKE '%' || $${counterFilters} || '%'
+                          )
           `;
           values.push(value);
         }
