@@ -70,7 +70,6 @@ class TokensService {
     userId: number;
   }): Promise<Token> {
     const tokenData = await TokensService.getById({ userId });
-    console.log('tokenData', tokenData);
     // TODO:fix это не работает как надо. если вызвать увидишь ошибку
     if (tokenData) {
       tokenData.refreshToken = refreshToken;

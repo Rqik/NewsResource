@@ -17,10 +17,18 @@ class PostsDraftService {
     postId,
     userId,
     body,
+    title,
+    categoryId,
+    mainImg,
+    otherImgs = [],
   }: {
     postId: number;
     userId: number;
     body: string;
+    title: string;
+    categoryId: number;
+    mainImg: string;
+    otherImgs: string[];
   }) {
     const query = `INSERT INTO ${tableName} (fk_post_id, fk_draft_id)
                         VALUES ($1, $2)
@@ -29,6 +37,10 @@ class PostsDraftService {
     const draft = await DraftService.create({
       body,
       userId,
+      title,
+      categoryId,
+      mainImg,
+      otherImgs,
     });
 
     await db.query(query, [postId, draft.id]);
@@ -37,22 +49,19 @@ class PostsDraftService {
   }
 
   static async getDraftsPost(
-    { postId }: { postId: number },
+    { postId, userId }: { postId: number; userId: number },
     { page, perPage }: { page: number; perPage: number },
   ) {
     const query = `SELECT *
                      FROM ${tableName}
                     WHERE fk_post_id = $1
-
-                    `;
+`;
     const { rows }: QueryResult<PostDraftRow> = await db.query(query, [postId]);
 
     const dIds = rows.map((el) => el.fk_draft_id);
 
     const { totalCount, count, drafts } = await DraftService.getDrafts(
-      {
-        dIds,
-      },
+      { dIds, userId },
       { page, perPage },
     );
 
@@ -87,16 +96,32 @@ class PostsDraftService {
     draftId,
     body,
     userId,
+    title,
+    categoryId,
+    mainImg,
+    otherImgs = [],
   }: {
     postId: number;
     draftId: number;
     userId: number;
     body: string;
+    title: string;
+    categoryId: number;
+    mainImg: string;
+    otherImgs: string[];
   }) {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftService.update({ id: draftId, body, userId });
+      const draft = await DraftService.update({
+        id: draftId,
+        body,
+        userId,
+        title,
+        categoryId,
+        mainImg,
+        otherImgs,
+      });
 
       return draft;
     }
@@ -106,14 +131,36 @@ class PostsDraftService {
   static async getOne({
     postId,
     draftId,
+    userId,
   }: {
     postId: number;
     draftId: number;
+    userId: number;
   }) {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftService.getOne({ id: draftId });
+      const draft = await DraftService.getOne({ id: draftId, userId });
+
+      return draft;
+    }
+    throw ApiError.BadRequest('Not found drafts');
+  }
+
+  static async publish({
+    postId,
+    draftId,
+    userId,
+  }: {
+    postId: number;
+    draftId: number;
+    userId: number;
+  }) {
+    const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
+
+    if (isBelongs) {
+      const draft = await DraftService.getOne({ id: draftId, userId });
+      console.log(draft);
 
       return draft;
     }

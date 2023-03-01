@@ -24,6 +24,7 @@ class PostsCommentsController {
       const { id: postId } = req.params;
       const { body } = req.body;
       const accessToken = getAuthorizationToken(req);
+      // TODO:
       const tokenData = TokensService.validateAccess(accessToken);
 
       if (tokenData === null || typeof tokenData === 'string') {

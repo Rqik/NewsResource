@@ -56,10 +56,15 @@ CREATE TABLE drafts (
 	created_at timestamp with time zone DEFAULT NOW(),
 	updated_at timestamp with time zone DEFAULT NOW(),
 	fk_user_id int,
+	title varchar(512),
 	body text,
+	main_img text,
+	other_imgs text[],
+	fk_category_id int,
 
 	CONSTRAINT PK_drafts_draft_id PRIMARY KEY(draft_id),
-	CONSTRAINT FK_drafts_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id)
+	CONSTRAINT FK_drafts_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id),
+	CONSTRAINT FK_drafts_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id)
 );
 
 CREATE TABLE comments (
@@ -76,6 +81,7 @@ CREATE TABLE posts (
 	post_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	title varchar(512),
 	created_at timestamp with time zone DEFAULT NOW(),
+	updated_at timestamp with time zone DEFAULT NOW(),
 	body text,
 	main_img text,
 	other_imgs text[],

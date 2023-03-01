@@ -11,12 +11,11 @@ import { PropsWithId } from './types';
 
 const tableName = 'posts';
 
-type Sort = 'ASC' | 'DESC';
-
 type PostRow = {
   post_id: number;
   title: string;
-  created_at: number;
+  created_at: Date;
+  updated_at: Date;
   fk_author_id: number;
   fk_category_id: number;
   body: string;
@@ -44,10 +43,13 @@ type PostFullRow = PostRowSimple & {
   total_count?: number;
 };
 
+// TODO: post id
 type PostProp = {
   title: string;
   authorId: number;
   categoryId: number;
+  createdAt: Date;
+  updatedAt: Date;
   body: string;
   mainImg: string;
   otherImgs: string[];
@@ -86,7 +88,7 @@ class PostsService {
     mainImg,
     otherImgs = [],
     tags = [],
-  }: PostProp) {
+  }: Omit<PostProp, 'createdAt' | 'updatedAt'>) {
     const query = `INSERT INTO ${tableName} (title, fk_author_id, fk_category_id, body, main_img, other_imgs)
                         VALUES ($1, $2, $3, $4, $5, $6)
                      RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;

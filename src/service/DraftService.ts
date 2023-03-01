@@ -9,7 +9,11 @@ type DraftsRow = {
   created_at: Date;
   updated_at: Date;
   fk_user_id: number;
+  fk_category_id: number;
   body: string;
+  title: string;
+  main_img: string;
+  other_imgs: string[];
   total_count?: number;
 };
 
@@ -19,19 +23,34 @@ type Draft = {
   updatedAt: Date;
   userId: number;
   body: string;
+  title: string;
+  categoryId: number;
+  mainImg: string;
+  otherImgs: string[];
 };
 
 const tableName = 'drafts';
 
 class DraftService {
-  static async create({ userId, body }: { userId: number; body: string }) {
-    const query = `INSERT INTO ${tableName} (fk_user_id, body)
-                        VALUES ($1, $2)
-                     RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
+  static async create({
+    userId,
+    body,
+    title,
+    categoryId,
+    mainImg,
+    otherImgs,
+  }: Omit<Draft, 'createdAt' | 'updatedAt' | 'id'>) {
+    const query = `INSERT INTO ${tableName} (fk_user_id, body, title, fk_category_id, main_img, other_imgs)
+                        VALUES ($1, $2, $3, $4, $5, $6)
+                     RETURNING draft_id, created_at, updated_at, fk_user_id, body, title, fk_category_id, main_img, other_imgs`;
 
     const { rows }: QueryResult<DraftsRow> = await db.query(query, [
       Number(userId),
       body,
+      title,
+      categoryId,
+      mainImg,
+      otherImgs,
     ]);
 
     const draft = rows[0];
@@ -41,23 +60,31 @@ class DraftService {
 
   static async update({
     id,
-    body,
     userId,
-  }: {
-    id: number;
-    body: string;
-    userId: number;
-  }): Promise<Draft> {
+    body,
+    title,
+    categoryId,
+    mainImg,
+    otherImgs,
+  }: Omit<Draft, 'updatedAt' | 'createdAt'>) {
     const query = `UPDATE ${tableName}
                       SET body = $1,
                           fk_user_id = $2,
-                          updated_at = NOW()
-                    WHERE draft_id = $3
+                          updated_at = NOW(),
+                          title = $3,
+                          main_img = $4,
+                          other_imgs = $5,
+                          fk_category_id = $6
+                    WHERE draft_id = $7
                 RETURNING draft_id, created_at, updated_at, fk_user_id, body`;
 
     const { rows }: QueryResult<DraftsRow> = await db.query(query, [
       body,
       userId,
+      title,
+      mainImg,
+      otherImgs,
+      categoryId,
       id,
     ]);
 
@@ -66,35 +93,41 @@ class DraftService {
     return DraftService.convertDraft(draft);
   }
 
-  static async getOne({ id }: { id: number }): Promise<Draft> {
+  static async getOne({
+    id,
+    userId,
+  }: {
+    id: number;
+    userId: number;
+  }): Promise<Draft> {
     const query = `SELECT *
                      FROM ${tableName}
-                    WHERE draft_id = $1`;
-    const { rows }: QueryResult<DraftsRow> = await db.query(query, [id]);
+                    WHERE draft_id = $1 AND fk_user_id = $2`;
+    const { rows }: QueryResult<DraftsRow> = await db.query(query, [
+      id,
+      userId,
+    ]);
     const draft = rows[0];
 
     return DraftService.convertDraft(draft);
   }
 
   static async getDrafts(
-    { dIds }: { dIds: number[] },
+    { dIds, userId }: { dIds: number[]; userId: number },
     { page, perPage }: { page: number; perPage: number },
   ) {
     const query = `SELECT draft_id AS id, created_at AS "createdAt", updated_at as "updatedAt", fk_user_id AS "userId", body,
                           count(*) OVER() AS total_count
                      FROM ${tableName}
-                    WHERE draft_id = ANY ($1)
-                    LIMIT $2
-                   OFFSET $3
+                    WHERE draft_id = ANY ($1) AND fk_user_id = $2
+                    LIMIT $3
+                   OFFSET $4
       `;
 
-    const { rows, rowCount: count }: QueryResult<DraftsRow> = await db.query(
-      query,
-      [dIds, perPage, page * perPage],
-    );
+    const { rows: drafts, rowCount: count }: QueryResult<DraftsRow> =
+      await db.query(query, [dIds, userId, perPage, page * perPage]);
 
-    const totalCount = rows[0]?.total_count || null;
-    const drafts = rows.map((draft) => DraftService.convertDraft(draft));
+    const totalCount = drafts[0]?.total_count || null;
 
     return { totalCount, count, drafts };
   }
@@ -121,13 +154,7 @@ class DraftService {
       const { rows }: QueryResult<DraftsRow> = await db.query(query, [id]);
       const data = rows[0];
 
-      return {
-        id: data.draft_id,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-        userId: data.fk_user_id,
-        body: data.body,
-      };
+      return DraftService.convertDraft(data);
     }
     // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
 
@@ -135,12 +162,18 @@ class DraftService {
   }
 
   static convertDraft(draft: DraftsRow): PropsWithId<Draft> {
+    console.log(draft);
+
     return {
       id: draft.draft_id,
       createdAt: draft.created_at,
       updatedAt: draft.updated_at,
       userId: draft.fk_user_id,
       body: draft.body,
+      title: draft.title,
+      mainImg: draft.main_img,
+      otherImgs: draft.other_imgs,
+      categoryId: draft.fk_category_id,
     };
   }
 }
