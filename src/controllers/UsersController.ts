@@ -1,6 +1,8 @@
 import { NextFunction, Response } from 'express';
-import { ApiError } from '../exceptions/index';
+import { v4 } from 'uuid';
+import path from 'path';
 
+import { ApiError } from '../exceptions/index';
 import { TokensService, UsersService } from '../service';
 import getAuthorizationToken from '../shared/get-authorization-token';
 import paginator from '../shared/paginator';
@@ -18,7 +20,6 @@ class UsersController {
     req: RequestWithBody<{
       firstName: string;
       lastName: string;
-      avatar: string;
       login: string;
       password: string;
       email: string;
@@ -27,7 +28,17 @@ class UsersController {
     next: NextFunction,
   ) {
     try {
-      const { firstName, lastName, avatar, login, password, email } = req.body;
+      const { firstName, lastName, login, password, email } = req.body;
+      const ava = req.files;
+      const avatar = `${v4()}.jpg`;
+
+      const file = ava?.avatar;
+
+      if (file && !(file instanceof Array)) {
+        file.mv(
+          path.resolve(__dirname, '../../static', 'images', 'avatars', avatar),
+        );
+      }
 
       const userDate = await UsersService.registration({
         password,

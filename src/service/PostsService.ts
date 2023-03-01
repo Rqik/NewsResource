@@ -10,6 +10,9 @@ import TagsService, { TagsRow } from './TagsService';
 import { PropsWithId } from './types';
 
 const tableName = 'posts';
+
+type Sort = 'ASC' | 'DESC';
+
 type PostRow = {
   post_id: number;
   title: string;
@@ -48,7 +51,7 @@ type PostProp = {
   body: string;
   mainImg: string;
   otherImgs: string[];
-  tags: number[];
+  tags: number[] | string;
 };
 
 type TagFilters = {
@@ -98,7 +101,13 @@ class PostsService {
     ]);
     const data = rows[0];
     const { post_id: postId } = data;
-    const setTags = tags.map(async (tagId) =>
+    let tagsParse: number[] = [];
+    if (typeof tags === 'string') {
+      tagsParse = JSON.parse(tags);
+    } else {
+      tagsParse = tags;
+    }
+    const setTags = tagsParse.map(async (tagId) =>
       PostsTagsService.create({ postId, tagId }),
     );
 
@@ -107,7 +116,7 @@ class PostsService {
     return {
       ...data,
       id: postId,
-      tags,
+      tags: tagsParse,
     };
   }
 
@@ -193,6 +202,7 @@ class PostsService {
       tag?: string;
       tags__in?: string;
       tags__all?: string;
+      sort?: string;
     },
     pagination: { page: number; perPage: number },
   ) {
@@ -217,7 +227,7 @@ class PostsService {
     ];
     let whereStr = '';
     let arrayStr = '';
-
+    let orderBy = 'p.post_id ASC';
     const values: (string | number | string[] | number[])[] = [];
 
     if (query) {
@@ -275,6 +285,18 @@ class PostsService {
                           )
           `;
           values.push(value);
+        } else if (key === 'sort') {
+          orderBy = '';
+          const reg = /(?<order>\w+):(?<sort>desc|asc)/gim;
+          [...value.matchAll(reg)].forEach(({ groups }, i) => {
+            let sort = `${groups?.order} ${groups?.sort}` || '';
+            if (groups?.order === 'imgs') {
+              sort = `array_length(other_imgs, 1) ${groups?.sort}`;
+            }
+            if (sort !== '') {
+              orderBy += i === 0 ? sort : `, ${sort}`;
+            }
+          });
         }
       });
     }
@@ -298,7 +320,7 @@ class PostsService {
             ${whereStr}
 
             GROUP BY p.post_id, a.author_id, u.user_id, root_category, c.arr_categories, c.arr_category_id
-          ORDER BY p.post_id) as fullData
+          ORDER BY ${orderBy}) as fullData
          ${arrayStr}
          LIMIT $${(counterFilters += 1)}
          OFFSET $${(counterFilters += 1)}

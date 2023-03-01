@@ -1,5 +1,8 @@
 import express from 'express';
+import fileUpload from 'express-fileupload';
 import cookieParser from 'cookie-parser';
+import fs from 'fs';
+import path from 'path';
 import cors from 'cors';
 import 'dotenv/config';
 
@@ -25,6 +28,8 @@ const jsonBodyMiddleware = express.json();
 // Middleware
 app.use(jsonBodyMiddleware);
 app.use(cookieParser());
+app.use(fileUpload({}));
+app.use('/static', express.static(path.resolve(__dirname, '..', 'static')));
 app.use(cors({ credentials: true }));
 
 // Routs

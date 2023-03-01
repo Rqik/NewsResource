@@ -1,4 +1,6 @@
 import { NextFunction, Response } from 'express';
+import path from 'path';
+import { v4 } from 'uuid';
 
 import { PostsService } from '../service/index';
 import paginator from '../shared/paginator';
@@ -16,15 +18,42 @@ class PostsController {
       authorId: number;
       categoryId: number;
       body: string;
-      mainImg: string;
-      otherImgs: string[];
-      tags: number[];
+      tags: number[] | string;
     }>,
     res: Response,
     next: NextFunction,
   ) {
     try {
-      const post = await PostsService.create(req.body);
+      const main = req.files;
+      const mainNameImg = `${v4()}.jpg`;
+      const otherNameImgs: string[] = [];
+      const { mainImg, otherImgs } = main || {};
+
+      if (mainImg && !(mainImg instanceof Array)) {
+        mainImg.mv(
+          path.resolve(
+            __dirname,
+            '../../static',
+            'images',
+            'posts',
+            mainNameImg,
+          ),
+        );
+      }
+      if (otherImgs && otherImgs instanceof Array) {
+        otherImgs.forEach((file) => {
+          const nameImg = `${v4()}.jpg`;
+          otherNameImgs.push(nameImg);
+          file.mv(
+            path.resolve(__dirname, '../../static', 'images', 'posts', nameImg),
+          );
+        });
+      }
+      const post = await PostsService.create({
+        ...req.body,
+        mainImg: mainNameImg,
+        otherImgs: otherNameImgs,
+      });
 
       res.send(post);
     } catch (e) {
