@@ -76,6 +76,20 @@ class AuthorsService {
     return AuthorsService.convertCase(author);
   }
 
+  static async getByUserId({ id }: PropsWithId) {
+    try {
+      const query = `SELECT *
+          FROM ${tableName}
+        WHERE fk_user_id = $1`;
+      const { rows }: QueryResult<AuthorsRow> = await db.query(query, [id]);
+      const author = rows[0];
+
+      return AuthorsService.convertCase(author);
+    } catch {
+      return null;
+    }
+  }
+
   static async deleteUserAuthors({ id }: PropsWithId) {
     const query = `DELETE FROM ${tableName}
                     WHERE fk_user_id = $1

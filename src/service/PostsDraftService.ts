@@ -2,6 +2,7 @@ import { QueryResult } from 'pg';
 import db from '../db';
 import { ApiError } from '../exceptions/index';
 import DraftService from './DraftService';
+import PostsService from './PostsService';
 
 type PostDraftRow = {
   fk_draft_id: number;
@@ -15,7 +16,7 @@ const returnCols = 'fk_post_id, fk_draft_id';
 class PostsDraftService {
   static async create({
     postId,
-    userId,
+    authorId,
     body,
     title,
     categoryId,
@@ -23,7 +24,7 @@ class PostsDraftService {
     otherImgs = [],
   }: {
     postId: number;
-    userId: number;
+    authorId: number;
     body: string;
     title: string;
     categoryId: number;
@@ -36,7 +37,7 @@ class PostsDraftService {
 
     const draft = await DraftService.create({
       body,
-      userId,
+      authorId,
       title,
       categoryId,
       mainImg,
@@ -49,7 +50,7 @@ class PostsDraftService {
   }
 
   static async getDraftsPost(
-    { postId, userId }: { postId: number; userId: number },
+    { postId, authorId }: { postId: number; authorId: number },
     { page, perPage }: { page: number; perPage: number },
   ) {
     const query = `SELECT *
@@ -61,7 +62,7 @@ class PostsDraftService {
     const dIds = rows.map((el) => el.fk_draft_id);
 
     const { totalCount, count, drafts } = await DraftService.getDrafts(
-      { dIds, userId },
+      { dIds, authorId },
       { page, perPage },
     );
 
@@ -95,7 +96,7 @@ class PostsDraftService {
     postId,
     draftId,
     body,
-    userId,
+    authorId,
     title,
     categoryId,
     mainImg,
@@ -103,7 +104,7 @@ class PostsDraftService {
   }: {
     postId: number;
     draftId: number;
-    userId: number;
+    authorId: number;
     body: string;
     title: string;
     categoryId: number;
@@ -116,7 +117,7 @@ class PostsDraftService {
       const draft = await DraftService.update({
         id: draftId,
         body,
-        userId,
+        authorId,
         title,
         categoryId,
         mainImg,
@@ -131,16 +132,16 @@ class PostsDraftService {
   static async getOne({
     postId,
     draftId,
-    userId,
+    authorId,
   }: {
     postId: number;
     draftId: number;
-    userId: number;
+    authorId: number;
   }) {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftService.getOne({ id: draftId, userId });
+      const draft = await DraftService.getOne({ id: draftId, authorId });
 
       return draft;
     }
@@ -150,17 +151,18 @@ class PostsDraftService {
   static async publish({
     postId,
     draftId,
-    userId,
+    authorId,
   }: {
     postId: number;
     draftId: number;
-    userId: number;
+    authorId: number;
   }) {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftService.getOne({ id: draftId, userId });
-      console.log(draft);
+      const draft = await DraftService.getOne({ id: draftId, authorId });
+
+      await PostsService.update({ ...draft, id: postId });
 
       return draft;
     }

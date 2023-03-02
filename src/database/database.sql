@@ -20,7 +20,7 @@ CREATE TABLE users (
 	created_at timestamp with time zone DEFAULT NOW(),
 	admin boolean NOT NULL DEFAULT false,
 	activate_link varchar(128)
-	is_activated boolean NOT NULL DEFAULT false
+	is_activated boolean NOT NULL DEFAULT false,
 	email text
 
 	CONSTRAINT PK_users_user_id PRIMARY KEY(user_id)
@@ -28,7 +28,7 @@ CREATE TABLE users (
 
 CREATE TABLE authors (
 	author_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
-	fk_user_id int NOT NULL,
+	fk_user_id int NOT NULL UNIQUE,
 	description varchar(512),
 
 	CONSTRAINT PK_authors_author_id PRIMARY KEY(author_id),
@@ -55,15 +55,15 @@ CREATE TABLE drafts (
 	draft_id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	created_at timestamp with time zone DEFAULT NOW(),
 	updated_at timestamp with time zone DEFAULT NOW(),
-	fk_user_id int,
 	title varchar(512),
 	body text,
 	main_img text,
 	other_imgs text[],
+	fk_author_id int,
 	fk_category_id int,
 
 	CONSTRAINT PK_drafts_draft_id PRIMARY KEY(draft_id),
-	CONSTRAINT FK_drafts_user_id FOREIGN KEY(fk_user_id) REFERENCES users(user_id),
+	CONSTRAINT FK_posts_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id),
 	CONSTRAINT FK_drafts_category_id FOREIGN KEY(fk_category_id) REFERENCES categories(category_id)
 );
 
@@ -87,6 +87,7 @@ CREATE TABLE posts (
 	other_imgs text[],
 	fk_author_id int,
 	fk_category_id int,
+	is_published boolean NOT NULL DEFAULT true,
 
 	CONSTRAINT PK_posts_post_id PRIMARY KEY(post_id),
 	CONSTRAINT FK_posts_author_id FOREIGN KEY(fk_author_id) REFERENCES authors(author_id),

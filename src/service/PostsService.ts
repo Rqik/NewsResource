@@ -101,6 +101,7 @@ class PostsService {
       mainImg,
       otherImgs,
     ]);
+
     const data = rows[0];
     const { post_id: postId } = data;
     let tagsParse: number[] = [];
@@ -114,6 +115,7 @@ class PostsService {
     );
 
     await Promise.allSettled(setTags);
+    // TODO: return value not converted
 
     return {
       ...data,
@@ -343,17 +345,29 @@ class PostsService {
   }
 
   static async getOne({ id }: PropsWithId) {
-    const query = `
-      ${queryCategoriesRecursive('catR')}
-      SELECT p.* , c.category root_category, c.arr_categories, c.arr_category_id, a.author_id, a.description author_description, u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin
-        FROM ${tableName} p
-        JOIN authors a ON a.author_id = p.fk_author_id
-        JOIN users u ON u.user_id = a.fk_user_id
-        JOIN catR c ON c.id = p.fk_category_id
-       WHERE p.post_id = $1
+    const q2 = `${queryCategoriesRecursive('catR')}
+       SELECT
+          p.*,
+          array_agg(t.tag_id ORDER BY t.tag_id) tag_ids,
+          ${queryTags} tags, c.category root_category, c.arr_categories,
+          c.arr_category_id, a.author_id, a.description author_description,
+          u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin,
+          ${queryComments} comments
+         FROM ${tableName} p
+    LEFT JOIN authors a ON a.author_id = p.fk_author_id
+    LEFT JOIN users u ON u.user_id = a.fk_user_id
+    LEFT JOIN catR c ON c.id = p.fk_category_id
+    LEFT JOIN posts_tags pt ON pt.fk_post_id = p.post_id
+    LEFT JOIN tags t ON t.tag_id = pt.fk_tag_id
+    LEFT JOIN posts_comments pc ON pc.fk_post_id = p.post_id
+    LEFT JOIN comments cm ON cm.comment_id = pc.fk_comment_id
+        WHERE p.post_id = $1
+     GROUP BY p.post_id, a.author_id, u.user_id, root_category,
+              c.arr_categories, c.arr_category_id
     `;
-    const { rows }: QueryResult<PostRowSimple> = await db.query(query, [id]);
+    const { rows }: QueryResult<PostRowSimple> = await db.query(q2, [id]);
     const data = rows[0];
+
     const comments = await PostsCommentsService.getPostComments(
       { id },
       { perPage: 0, page: 0 },
@@ -388,7 +402,6 @@ class PostsService {
       };
     }
 
-    // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
     throw ApiError.BadRequest('Post not found');
   }
 

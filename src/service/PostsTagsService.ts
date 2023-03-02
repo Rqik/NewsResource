@@ -38,43 +38,22 @@ class PostsTagsService {
 
   static async getPostFilteredTags({
     id,
-    filters,
   }: PropsWithId<{
     filters: TagFilters;
   }>) {
-    // console.log('getPostFilteredTags -- ');
-
     const query = `SELECT *
                      FROM ${tableName}
 
                     WHERE fk_post_id = $1
                     `;
 
-    const counterFilter = 2;
     const values: (number | number[])[] = [];
-    // if (filters.tag !== null) {
-    //   query += ` AND fk_tag_id = $${counterFilter}`;
-    //   counterFilter += 1;
-    //   values.push(filters.tag);
-    // }
-    // if (filters.tags__in.length > 0) {
-    //   query += ` AND fk_tag_id IN $${counterFilter}`;
-    //   counterFilter += 1;
-    //   values.push(filters.tags__in);
-    // }
-    // if (filters.tags__all.length > 0) {
-    //   query += ` AND fk_tag_id ALL $${counterFilter}`;
-    //   counterFilter += 1;
-    //   values.push(filters.tags__all);
-    // }
-    // console.log(query);
 
     const { rows }: QueryResult<PostTagRow> = await db.query(query, [
       id,
       ...values,
     ]);
 
-    // console.log('dd', result);
     const tIds = rows.map((el) => el.fk_tag_id);
 
     const tags = await TagsService.getTags({ tIds });
