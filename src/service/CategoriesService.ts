@@ -15,15 +15,15 @@ type CategoriesRow = {
 
 const queryCategoriesRecursive = (nameTemplate = 'catR') => `
   WITH RECURSIVE ${nameTemplate}(id, category, arr_categories, arr_category_id) as (
-    SELECT category_id, description, array[description::varchar], array[category_id]
-      FROM categories
-    WHERE fk_category_id IS NUll
+          SELECT category_id, description, array[description::varchar], array[category_id]
+            FROM categories
+           WHERE fk_category_id IS NUll
 
-    UNION
+           UNION
 
-    SELECT category_id, description, description || arr_categories, category_id || arr_category_id
-      FROM categories
-      JOIN ${nameTemplate} ON categories.fk_category_id = ${nameTemplate}.id
+          SELECT category_id, description, description || arr_categories, category_id || arr_category_id
+            FROM categories
+            JOIN ${nameTemplate} ON categories.fk_category_id = ${nameTemplate}.id
   )
 `;
 
@@ -76,10 +76,10 @@ class CategoriesService {
     const { rows, rowCount: count }: QueryResult<CategoriesRow> =
       await db.query(
         `SELECT *,
-              count(*) OVER() AS total_count
-         FROM ${tableName}
-        LIMIT $1
-       OFFSET $2
+                count(*) OVER() AS total_count
+           FROM ${tableName}
+          LIMIT $1
+         OFFSET $2
            `,
         [perPage, page * perPage],
       );
@@ -116,8 +116,8 @@ class CategoriesService {
 
     const selectData: QueryResult<CategoriesRow> = await db.query(
       `SELECT *
-           FROM ${tableName}
-          WHERE category_id = $1`,
+         FROM ${tableName}
+        WHERE category_id = $1`,
       [id],
     );
 

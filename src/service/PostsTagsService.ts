@@ -44,7 +44,6 @@ class PostsTagsService {
   }>) {
     const query = `SELECT *
                      FROM ${tableName}
-
                     WHERE fk_post_id = $1
                     `;
 
@@ -64,8 +63,8 @@ class PostsTagsService {
 
   static async delete({ postId, tagId }: { postId: number; tagId: number }) {
     const queryPostsTags = `DELETE
-                             FROM post_${tableName}
-                            WHERE fk_post_id = $1 AND fk_tag_id = $2
+                              FROM post_${tableName}
+                             WHERE fk_post_id = $1 AND fk_tag_id = $2
 `;
     const isBelongs = await this.checkPostBelongsTags({ postId, tagId });
 

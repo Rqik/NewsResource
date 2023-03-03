@@ -29,7 +29,7 @@ class CommentsService {
   }): Promise<Comment> {
     const query = `INSERT INTO ${tableName} (fk_user_id, body)
                         VALUES ($1, $2)
-                        RETURNING comment_id, fk_user_id, body, created_at
+                     RETURNING comment_id, fk_user_id, body, created_at
     `;
     const { rows }: QueryResult<CommentRow> = await db.query(query, [
       userId,
@@ -53,8 +53,8 @@ class CommentsService {
     `;
 
     const queryTotal = `SELECT count(*)
-                     FROM ${tableName}
-                    WHERE comment_id = ANY ($1)
+                          FROM ${tableName}
+                         WHERE comment_id = ANY ($1)
     `;
 
     const { rows, rowCount: count }: QueryResult<CommentRow> = await db.query(

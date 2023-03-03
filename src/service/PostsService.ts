@@ -346,13 +346,12 @@ class PostsService {
 
   static async getOne({ id }: PropsWithId) {
     const q2 = `${queryCategoriesRecursive('catR')}
-       SELECT
-          p.*,
-          array_agg(t.tag_id ORDER BY t.tag_id) tag_ids,
-          ${queryTags} tags, c.category root_category, c.arr_categories,
-          c.arr_category_id, a.author_id, a.description author_description,
-          u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin,
-          ${queryComments} comments
+       SELECT p.*,
+              array_agg(t.tag_id ORDER BY t.tag_id) tag_ids,
+              ${queryTags} tags, c.category root_category, c.arr_categories,
+              c.arr_category_id, a.author_id, a.description author_description,
+              u.user_id, u.first_name, u.last_name, u.avatar, u.login, u.admin,
+              ${queryComments} comments
          FROM ${tableName} p
     LEFT JOIN authors a ON a.author_id = p.fk_author_id
     LEFT JOIN users u ON u.user_id = a.fk_user_id
