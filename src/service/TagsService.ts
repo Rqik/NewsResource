@@ -1,4 +1,5 @@
 import { QueryResult } from 'pg';
+
 import db from '../db';
 import { ApiError } from '../exceptions';
 import { PropsWithId } from './types';

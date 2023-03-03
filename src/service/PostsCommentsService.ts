@@ -1,4 +1,5 @@
 import { QueryResult } from 'pg';
+
 import db from '../db';
 import CommentsService from './CommentsService';
 import { PropsWithId } from './types';

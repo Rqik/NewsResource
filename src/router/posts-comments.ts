@@ -1,4 +1,5 @@
 import express from 'express';
+
 import { PostsCommentsController } from '../controllers/index';
 import authMiddleware from '../middleware/auth-middleware';
 

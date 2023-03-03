@@ -1,7 +1,6 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import cookieParser from 'cookie-parser';
-import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
 import 'dotenv/config';

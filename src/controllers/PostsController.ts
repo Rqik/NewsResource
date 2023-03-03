@@ -1,8 +1,6 @@
 import { NextFunction, Response } from 'express';
-import path from 'path';
-import { v4 } from 'uuid';
 
-import { PostsService } from '../service/index';
+import { FileService, PostsService } from '../service/index';
 import paginator from '../shared/paginator';
 import {
   RequestWithBody,
@@ -25,31 +23,9 @@ class PostsController {
   ) {
     try {
       const main = req.files;
-      const mainNameImg = `${v4()}.jpg`;
-      const otherNameImgs: string[] = [];
       const { mainImg, otherImgs } = main || {};
-
-      if (mainImg && !(mainImg instanceof Array)) {
-        mainImg.mv(
-          path.resolve(
-            __dirname,
-            '../../static',
-            'images',
-            'posts',
-            mainNameImg,
-          ),
-        );
-      }
-      if (otherImgs && otherImgs instanceof Array) {
-        otherImgs.forEach((file) => {
-          const nameImg = `${v4()}.jpg`;
-
-          otherNameImgs.push(nameImg);
-          file.mv(
-            path.resolve(__dirname, '../../static', 'images', 'posts', nameImg),
-          );
-        });
-      }
+      const [mainNameImg] = FileService.savePostImage(mainImg) || [];
+      const otherNameImgs = FileService.savePostImage(otherImgs) || [];
 
       const post = await PostsService.create({
         ...req.body,
@@ -79,31 +55,9 @@ class PostsController {
     try {
       const { id } = req.params;
       const main = req.files;
-      const mainNameImg = `${v4()}.jpg`;
-      const otherNameImgs: string[] = [];
       const { mainImg, otherImgs } = main || {};
-
-      if (mainImg && !(mainImg instanceof Array)) {
-        mainImg.mv(
-          path.resolve(
-            __dirname,
-            '../../static',
-            'images',
-            'posts',
-            mainNameImg,
-          ),
-        );
-      }
-      if (otherImgs && otherImgs instanceof Array) {
-        otherImgs.forEach((file) => {
-          const nameImg = `${v4()}.jpg`;
-
-          otherNameImgs.push(nameImg);
-          file.mv(
-            path.resolve(__dirname, '../../static', 'images', 'posts', nameImg),
-          );
-        });
-      }
+      const [mainNameImg] = FileService.savePostImage(mainImg) || [];
+      const otherNameImgs = FileService.savePostImage(otherImgs) || [];
 
       const post = await PostsService.update({
         ...req.body,

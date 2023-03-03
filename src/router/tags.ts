@@ -1,4 +1,5 @@
 import express from 'express';
+
 import { TagsController } from '../controllers';
 import { adminMiddleware } from '../middleware';
 

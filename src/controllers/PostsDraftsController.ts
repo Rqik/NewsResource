@@ -1,9 +1,12 @@
 import { NextFunction, Response } from 'express';
-import path from 'path';
-import { v4 } from 'uuid';
 
 import { ApiError } from '../exceptions';
-import { AuthorsService, PostsDraftService, PostsService } from '../service';
+import {
+  AuthorsService,
+  FileService,
+  PostsDraftService,
+  PostsService,
+} from '../service';
 import paginator from '../shared/paginator';
 import {
   RequestWithParams,
@@ -27,33 +30,11 @@ class PostsDraftsController {
     try {
       const { id } = req.params;
       const main = req.files;
-
-      const mainNameImg = `${v4()}.jpg`;
-      const otherNameImgs: string[] = [];
       const { mainImg, otherImgs } = main || {};
+
       const author = await PostsDraftsController.authorValidate(req);
-
-      if (mainImg && !(mainImg instanceof Array)) {
-        mainImg.mv(
-          path.resolve(
-            __dirname,
-            '../../static',
-            'images',
-            'posts',
-            mainNameImg,
-          ),
-        );
-      }
-      if (otherImgs && otherImgs instanceof Array) {
-        otherImgs.forEach((file) => {
-          const nameImg = `${v4()}.jpg`;
-
-          otherNameImgs.push(nameImg);
-          file.mv(
-            path.resolve(__dirname, '../../static', 'images', 'posts', nameImg),
-          );
-        });
-      }
+      const [mainNameImg] = FileService.savePostImage(mainImg) || [];
+      const otherNameImgs = FileService.savePostImage(otherImgs) || [];
 
       const draft = await PostsDraftService.create({
         ...req.body,
@@ -80,9 +61,8 @@ class PostsDraftsController {
     try {
       const { id, did } = req.params;
       const main = req.files;
-      const mainNameImg = `${v4()}.jpg`;
-      const otherNameImgs: string[] = [];
       const { mainImg, otherImgs } = main || {};
+
       const author = await AuthorsService.getByUserId({ id: req.user.id });
       const post = await PostsService.getOne({ id });
 
@@ -90,27 +70,9 @@ class PostsDraftsController {
         throw ApiError.NotFound();
       }
 
-      if (mainImg && !(mainImg instanceof Array)) {
-        mainImg.mv(
-          path.resolve(
-            __dirname,
-            '../../static',
-            'images',
-            'posts',
-            mainNameImg,
-          ),
-        );
-      }
-      if (otherImgs && otherImgs instanceof Array) {
-        otherImgs.forEach((file) => {
-          const nameImg = `${v4()}.jpg`;
+      const [mainNameImg] = FileService.savePostImage(mainImg) || [];
+      const otherNameImgs = FileService.savePostImage(otherImgs) || [];
 
-          otherNameImgs.push(nameImg);
-          file.mv(
-            path.resolve(__dirname, '../../static', 'images', 'posts', nameImg),
-          );
-        });
-      }
       const result = await PostsDraftService.update({
         ...req.body,
         postId: Number(id),

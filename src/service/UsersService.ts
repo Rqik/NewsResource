@@ -30,7 +30,7 @@ type UsersRow = {
 type UserProp = {
   firstName: string;
   lastName: string;
-  avatar: string;
+  avatar: string | null;
   login: string;
   email: string;
   password: string;
@@ -54,10 +54,10 @@ class UsersService {
   static async registration({
     firstName,
     lastName,
-    avatar,
     login,
     email,
     password,
+    avatar = null,
   }: UserProp) {
     const isAdmin = adminEmail.includes(email);
     const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password, activate_link, admin, email)

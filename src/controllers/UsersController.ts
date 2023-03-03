@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import path from 'path';
 
 import { ApiError } from '../exceptions/index';
-import { TokensService, UsersService } from '../service';
+import { FileService, TokensService, UsersService } from '../service';
 import getAuthorizationToken from '../shared/get-authorization-token';
 import paginator from '../shared/paginator';
 import {
@@ -30,15 +30,9 @@ class UsersController {
     try {
       const { firstName, lastName, login, password, email } = req.body;
       const ava = req.files;
-      const avatar = `${v4()}.jpg`;
 
       const file = ava?.avatar;
-
-      if (file && !(file instanceof Array)) {
-        file.mv(
-          path.resolve(__dirname, '../../static', 'images', 'avatars', avatar),
-        );
-      }
+      const avatar = FileService.saveAvatar(file);
 
       const userDate = await UsersService.registration({
         password,

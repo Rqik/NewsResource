@@ -1,4 +1,5 @@
 import express from 'express';
+
 import { CategoriesController } from '../controllers';
 import { adminMiddleware } from '../middleware';
 
