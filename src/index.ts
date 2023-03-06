@@ -17,11 +17,17 @@ import {
 } from './router';
 import { errorMiddleware, loggerMiddleware } from './middleware';
 import HttpStatuses from './shared/HttpStatuses';
+import Tables from './database/Tables';
+import db from './db';
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 const apiVersion = '/api/v1';
+(async () => {
+  await new Tables(db).init();
+})();
+
 const jsonBodyMiddleware = express.json();
 
 // Middleware

@@ -19,9 +19,9 @@ CREATE TABLE users (
 	password text NOT NULL,
 	created_at timestamp with time zone DEFAULT NOW(),
 	admin boolean NOT NULL DEFAULT false,
-	activate_link varchar(128)
+	activate_link varchar(128),
 	is_activated boolean NOT NULL DEFAULT false,
-	email text
+	email text,
 
 	CONSTRAINT PK_users_user_id PRIMARY KEY(user_id)
 );
