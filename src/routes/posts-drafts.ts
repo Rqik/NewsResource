@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { PostsDraftsController } from '../controllers';
-import { authMiddleware } from '../middleware';
+import { PostsDraftsController } from '../controllers/index';
+import { authMiddleware } from '../middleware/index';
 
 const router = express.Router();
 

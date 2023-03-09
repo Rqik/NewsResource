@@ -1,8 +1,18 @@
 import express from 'express';
 
-import { AuthController } from '../controllers';
+import { AuthController } from '../controllers/index';
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     description: Welcome to swagger-jsdoc!
+ *     responses:
+ *       200:
+ *         description: Returns a mysterious string.
+ */
 
 router.post('/login', AuthController.login);
 router.post('/logout', AuthController.logout);

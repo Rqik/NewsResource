@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { TagsController } from '../controllers';
-import { adminMiddleware } from '../middleware';
+import { TagsController } from '../controllers/index';
+import { adminMiddleware } from '../middleware/index';
 
 const router = express.Router();
 

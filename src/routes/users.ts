@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { UsersController } from '../controllers';
-import { adminMiddleware } from '../middleware';
+import { UsersController } from '../controllers/index';
+import { adminMiddleware } from '../middleware/index';
 
 const router = express.Router();
 

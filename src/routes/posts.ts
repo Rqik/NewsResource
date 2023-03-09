@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { PostsController } from '../controllers';
-import { authMiddleware } from '../middleware';
+import { PostsController } from '../controllers/index';
+import { authMiddleware } from '../middleware/index';
 
 const router = express.Router();
 const path = '/posts';
