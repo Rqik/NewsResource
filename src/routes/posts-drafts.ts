@@ -26,6 +26,8 @@ router.delete(draft, authMiddleware, PostsDraftsController.delete);
  *       - Posts
  *       - Drafts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Returns a list of draft for news. Only for authorized
  *     parameters:
  *       - name: post_id
@@ -49,39 +51,37 @@ router.delete(draft, authMiddleware, PostsDraftsController.delete);
  *       - Posts
  *       - Drafts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for create post. Only for authorized
- *     parameters:
- *       - name: post_id
- *         in: path
- *         required: true
- *         description: post id
- *         type: string
  *     responses:
  *       200:
  *         description: Return created draft.
  *         content:
- *           application/json:
+ *           multipart/form-data:
  *             schema:
  *                type: object
- *                $ref: "#/components/schemas/Draft"
+ *                $ref: "#/components/schemas/DraftPost"
  * /posts/{post_id}/drafts/{draft_id}:
+ *   parameters:
+ *     - name: post_id
+ *       in: path
+ *       required: true
+ *       description: post id
+ *       type: string
+ *     - name: draft_id
+ *       in: path
+ *       required: true
+ *       description: draft id
+ *       type: string
  *   get:
  *     tags:
  *       - Posts
  *       - Drafts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Return draft. Only for authorized
- *     parameters:
- *       - name: post_id
- *         in: path
- *         required: true
- *         description: post id
- *         type: string
- *       - name: draft_id
- *         in: path
- *         required: true
- *         description: draft id
- *         type: string
  *     responses:
  *       200:
  *         description: Return drafts.
@@ -95,43 +95,25 @@ router.delete(draft, authMiddleware, PostsDraftsController.delete);
  *       - Posts
  *       - Drafts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for update draft. Only for authorized
- *     parameters:
- *       - name: post_id
- *         in: path
- *         required: true
- *         description: post id
- *         type: string
- *       - name: draft_id
- *         in: path
- *         required: true
- *         description: draft id
- *         type: string
  *     responses:
  *       200:
  *         description: Returns updated draft.
  *         content:
- *           application/json:
+ *           multipart/form-data:
  *             schema:
  *                type: object
- *                $ref: "#/components/schemas/Draft"
+ *                $ref: "#/components/schemas/DraftPost"
  *   delete:
  *     tags:
  *       - Posts
  *       - Drafts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for delete draft. Only for authorized
- *     parameters:
- *       - name: post_id
- *         in: path
- *         required: true
- *         description: post id
- *         type: string
- *       - name: draft_id
- *         in: path
- *         required: true
- *         description: draft id
- *         type: string
  *     responses:
  *       200:
  *         description: Return removed draft.
@@ -146,6 +128,8 @@ router.delete(draft, authMiddleware, PostsDraftsController.delete);
  *       - Posts
  *       - Drafts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Publish draft and update news. Only for authorized
  *     parameters:
  *       - name: post_id

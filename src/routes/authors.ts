@@ -16,11 +16,13 @@ router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
 /**
  * @openapi
  * /authors:
- *   security:[]
+ *   security: []
  *   get:
  *     tags:
  *       - Authors
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Returns a list of authors. Only for admin
  *     responses:
  *       200:
@@ -37,6 +39,8 @@ router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
  *     tags:
  *       - Authors
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for create author. Only for admin
  *     requestBody:
  *       content:
@@ -53,16 +57,19 @@ router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
  *               type: object
  *               $ref: "#/components/schemas/Author"
  * /authors/{id}:
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       required: true
+ *       description: 'author id'
+ *       type: string
  *   get:
  *     tags:
  *       - Authors
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Return author. Only for admin
- *       - name: id
- *         in: path
- *         required: true
- *         description: author id
- *         type: string
  *     responses:
  *       200:
  *         description: Returns author.
@@ -75,12 +82,9 @@ router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
  *     tags:
  *       - Authors
  *       - Admin Methods
- *     description: Update author. Only for admin
- *       - name: id
- *         in: path
- *         required: true
- *         description: author id
- *         type: string
+ *     security:
+ *	     - bearerAuth: []
+ *     description: "Update author. Only for admin"
  *     responses:
  *       200:
  *         description: Return updated author.
@@ -93,12 +97,9 @@ router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
  *     tags:
  *       - Authors
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Remove author. Only for admin
- *       - name: id
- *         in: path
- *         required: true
- *         description: author id
- *         type: string
  *     responses:
  *       200:
  *         description: Return removed author.

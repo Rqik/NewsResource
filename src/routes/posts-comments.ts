@@ -44,7 +44,9 @@ router.delete(comment, authMiddleware, PostsCommentsController.delete);
  *     tags:
  *       - Posts
  *       - Comments
- *      - Authorized
+ *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for create comment. Only for authorized
  *     responses:
  *       200:
@@ -71,6 +73,8 @@ router.delete(comment, authMiddleware, PostsCommentsController.delete);
  *       - Posts
  *       - Comments
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for remove comment. Only for authorized
  *     responses:
  *       200:

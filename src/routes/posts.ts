@@ -36,10 +36,12 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *     tags:
  *       - Posts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for create post. Only for authorized
  *     requestBody:
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             $ref: '#/components/schemas/PostPost'
@@ -126,13 +128,15 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *     tags:
  *       - Posts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for update post. Only for authorized
  *     requestBody:
  *       description: Create a new post
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Post'
+ *             $ref: '#/components/schemas/PostPost'
  *     responses:
  *       200:
  *         description: Return post.
@@ -145,6 +149,8 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *     tags:
  *       - Posts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Partial update post. Only for authorized
  *     responses:
  *       200:
@@ -153,6 +159,8 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *     tags:
  *       - Posts
  *       - Authorized
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for remove post. Only for authorized
  *     responses:
  *       200:

@@ -20,6 +20,7 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *   get:
  *     tags:
  *       - Categories
+ *     security: []
  *     description: Returns a list of categories.
  *     responses:
  *       200:
@@ -63,6 +64,7 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *   get:
  *     tags:
  *       - Categories
+ *     security: []
  *     description: Return category.
  *     responses:
  *       200:
@@ -76,6 +78,8 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *     tags:
  *       - Categories
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for update category. Only for admin
  *     requestBody:
  *       content:
@@ -95,6 +99,8 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *     tags:
  *       - Categories
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for delete category. Only for admin
  *     responses:
  *       200:

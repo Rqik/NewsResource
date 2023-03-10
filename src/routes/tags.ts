@@ -35,6 +35,8 @@ router.delete(`${path}/:id`, adminMiddleware, TagsController.delete);
  *     tags:
  *       - Tags
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for create tag. Only for admin
  *     requestBody:
  *       content:
@@ -75,7 +77,17 @@ router.delete(`${path}/:id`, adminMiddleware, TagsController.delete);
  *     tags:
  *       - Tags
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for update tag. Only for admin
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *                title:
+ *                  type: string
  *     responses:
  *       200:
  *         description: Return tag.
@@ -88,6 +100,8 @@ router.delete(`${path}/:id`, adminMiddleware, TagsController.delete);
  *     tags:
  *       - Tags
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for remove tag. Only for admin
  *     responses:
  *       200:

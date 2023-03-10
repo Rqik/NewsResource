@@ -1,6 +1,7 @@
 import { NextFunction, Response } from 'express';
+import ApiError from '../exceptions/ApiError';
 
-import { FileService, PostsService } from '../service/index';
+import { AuthorsService, FileService, PostsService } from '../service/index';
 import paginator from '../shared/paginator';
 import {
   RequestWithBody,
@@ -24,9 +25,15 @@ class PostsController {
     try {
       const main = req.files;
       const { mainImg, otherImgs } = main || {};
+      const {
+        body: { authorId },
+      } = req;
       const [mainNameImg] = FileService.savePostImage(mainImg) || [];
       const otherNameImgs = FileService.savePostImage(otherImgs) || [];
-
+      const author = await AuthorsService.getByUserId({ id: req.user.id });
+      if (author === null || authorId !== author.id) {
+        throw ApiError.BadRequest('Not valid author id');
+      }
       const post = await PostsService.create({
         ...req.body,
         mainImg: mainNameImg,
@@ -35,7 +42,7 @@ class PostsController {
 
       res.send(post);
     } catch (e) {
-      next();
+      next(e);
     }
   }
 

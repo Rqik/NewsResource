@@ -23,6 +23,8 @@ router.delete(`${path}/:id`, adminMiddleware, UsersController.delete);
  *     tags:
  *       - Users
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Returns a list of users. Only for admin
  *     responses:
  *       200:
@@ -30,9 +32,11 @@ router.delete(`${path}/:id`, adminMiddleware, UsersController.delete);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: "#/components/schemas/User"
+ *               allOf:
+ *                 - $ref: "#/components/schemas/Pagination"
+ *                 - properties:
+ *                     data:
+ *                       $ref: "#/components/schemas/Users"
  *   post:
  *     tags:
  *       - Users
@@ -43,16 +47,14 @@ router.delete(`${path}/:id`, adminMiddleware, UsersController.delete);
  *         content:
  *           application/json:
  *             schema:
- *               allOf:
- *                 - $ref: "#/components/schemas/Pagination"
- *                 - properties:
- *                     data:
- *                       $ref: "#/components/schemas/Users"
+ *               $ref: "#/components/schemas/User"
  * /users/{id}:
  *   put:
  *     tags:
  *       - Users
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for update user. Only for admin
  *     parameters:
  *       - name: id
@@ -72,6 +74,8 @@ router.delete(`${path}/:id`, adminMiddleware, UsersController.delete);
  *     tags:
  *       - Users
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Method for remove user. Only for admin.
  *     parameters:
  *       - name: id
@@ -92,6 +96,8 @@ router.delete(`${path}/:id`, adminMiddleware, UsersController.delete);
  *     tags:
  *       - Users
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Return user. Only for admin
  *     parameters:
  *       - name: user_login
@@ -111,6 +117,8 @@ router.delete(`${path}/:id`, adminMiddleware, UsersController.delete);
  *     tags:
  *       - Users
  *       - Admin Methods
+ *     security:
+ *	     - bearerAuth: []
  *     description: Partial update user fields. Only for admin
  *     parameters:
  *       - name: user_login

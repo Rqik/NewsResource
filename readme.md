@@ -4,15 +4,29 @@
 <a href="https://nodejs.org/en/"><img src="https://img.shields.io/badge/node->=18.12.1-ff0062?style=for-the-badge"></a>
 
 
-## __API__
+```console
+// Load
+git clone https://github.com/Rqik/NewsResource.git
 
-post
+// or
+git clone git@github.com:Rqik/NewsResource.git
+```
 
-mainImg
-otherImgs
+2.Open
 
-example
-sort=created_at:desc,first_name:asc
+```console
+// Open folder
+cd NewsResource
+```
 
-props
- // created_at first_name category imgs
+3.Init
+
+```console
+// Install dependencies
+yarn install
+
+//or
+npm install
+```
+
+Rename env.local to env

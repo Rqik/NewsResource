@@ -48,7 +48,7 @@ components:
         - login
         - email
       properties:
-        user_id:
+        id:
           type: integer
           example: 1
           description: The auto-generated id of the user
@@ -115,10 +115,6 @@ components:
     PostPost:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
         title:
           type: string
         created_at:
@@ -131,8 +127,12 @@ components:
           type: string
         mainImg:
           type: string
+          format: binary
         otherImgs:
           type: array
+          items:
+            type: string
+            format: binary
         fk_author_id:
           type: integer
           format: int64
@@ -194,6 +194,39 @@ components:
           type: string
         otherImgs:
           type: array
+        fk_author_id:
+          type: integer
+          format: int64
+          example: 10
+        fk_category_id:
+          type: integer
+          format: int64
+          example: 10
+    DraftPost:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        body:
+          type: string
+        mainImg:
+          type: string
+          format: binary
+        otherImgs:
+          type: array
+          items:
+            type: string
+            format: binary
         fk_author_id:
           type: integer
           format: int64
