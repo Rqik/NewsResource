@@ -7,5 +7,4 @@ import users from './users';
 import postR from './posts';
 import tags from './tags';
 
-const s = 'ss';
-export { s, authors, postR, users, drafts, comments, categories, tags, auth };
+export { authors, postR, users, drafts, comments, categories, tags, auth };

@@ -1,0 +1,201 @@
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        description:
+          type: string
+          example: 'police'
+        fkCategoryId:
+          type: integer
+          format: int64
+          example: 10
+    CategoryPost:
+      type: object
+      properties:
+        description:
+          type: string
+          example: 'police'
+        category:
+          description: 'Related category id'
+          type: integer
+          format: int64
+          example: 10
+    Categories:
+      type: array
+      items:
+        $ref: '#/components/schemas/Category'
+    Pagination:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          example: 26
+        count:
+          type: integer
+          example: 5
+        nextPage:
+          type: string
+          example: 'http://localhost:5000/api/v1/path?page=1'
+    User:
+      type: object
+      required:
+        - firstName
+        - login
+        - email
+      properties:
+        user_id:
+          type: integer
+          example: 1
+          description: The auto-generated id of the user
+        firstName:
+          type: string
+          example: Alex
+        lastName:
+          type: string
+          example: Volkanovski
+        avatar:
+          type: string
+          example: '/'
+        password:
+          type: string
+          format: date-time
+          example: 'secretpass33'
+        createdAt:
+          type: string
+          example: date-time
+        admin:
+          type: boolean
+          example: false
+        activate_link:
+          type: string
+          example: 'asdfasdfasdfasdfasdfasdf'
+        email:
+          type: string
+          example: 'example@gmail.com'
+    Users:
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        body:
+          type: string
+        mainImg:
+          type: string
+        otherImgs:
+          type: array
+        fk_author_id:
+          type: integer
+          format: int64
+          example: 10
+        fk_category_id:
+          type: integer
+          format: int64
+          example: 10
+        isPublished:
+          type: boolean
+    Posts:
+      type: array
+      items:
+        $ref: '#/components/schemas/Posts'
+    Author:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        userId:
+          type: integer
+          format: int64
+          example: 10
+        description:
+          type: string
+    Authors:
+      type: array
+      items:
+        $ref: '#/components/schemas/Author'
+    Draft:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        body:
+          type: string
+        mainImg:
+          type: string
+        otherImgs:
+          type: array
+        fk_author_id:
+          type: integer
+          format: int64
+          example: 10
+        fk_category_id:
+          type: integer
+          format: int64
+          example: 10
+    Drafts:
+      type: array
+      items:
+        $ref: '#/components/schemas/Draft'
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        userId:
+          type: integer
+          format: int64
+          example: 4
+        createdAt:
+          type: string
+          example: date-time
+        body:
+          type: string
+    Comments:
+      type: array
+      items:
+        $ref: '#/components/schemas/Comment'
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        title:
+          type: string
+    Tags:
+      type: array
+      items:
+        $ref: '#/components/schemas/Tags'

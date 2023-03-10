@@ -66,7 +66,7 @@ class TagsService {
   }
 
   static async getOne({ id }: PropsWithId) {
-    const query = `SELECT tag_id id, title
+    const query = `SELECT tag_id, title
                      FROM ${tableName}
                     WHERE tag_id = $1`;
     const { rows }: QueryResult<TagsRow> = await db.query(query, [id]);

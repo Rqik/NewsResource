@@ -1,7 +1,5 @@
 import { NextFunction, Response } from 'express';
-import { QueryResult } from 'pg';
 
-import db from '../db';
 import CategoriesService from '../service/CategoriesService';
 import paginator from '../shared/paginator';
 import {
@@ -11,36 +9,21 @@ import {
   RequestWithQuery,
 } from './types';
 
-const tableName = 'categories';
-type CategoriesRow = {
-  category_id: number;
-  description: string;
-  fk_category_id: number | null;
-};
-
 class CategoriesController {
   static async create(
     req: RequestWithBody<{ description: string; category?: string }>,
     res: Response,
     next: NextFunction,
   ) {
-    const query = `INSERT INTO ${tableName} (description, fk_category_id)
-                   VALUES ($1, $2)
-                RETURNING category_id, description, fk_category_id`;
     try {
       const { description, category } = req.body;
-      const { rows }: QueryResult<CategoriesRow> = await db.query(query, [
+
+      const newCategory = await CategoriesService.create({
         description,
         category,
-      ]);
-
-      const data = rows[0];
-
-      res.send({
-        id: data.category_id,
-        description: data.description,
-        fk_category: data.fk_category_id,
       });
+
+      res.send(newCategory);
     } catch (e) {
       next(e);
     }

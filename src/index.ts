@@ -4,7 +4,6 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
-import swaggerJsDoc from 'swagger-jsdoc';
 
 import 'dotenv/config';
 
@@ -21,6 +20,7 @@ import {
 import { errorMiddleware, loggerMiddleware } from './middleware';
 import HttpStatuses from './shared/HttpStatuses';
 import Tables from './database/Tables';
+import specification from './config/specification';
 import db from './db';
 
 const app = express();
@@ -31,23 +31,9 @@ const apiVersion = '/api/v1';
   await new Tables(db).init();
 })();
 
-const options = {
-  definition: {
-    openapi: '3.0.3',
-    info: {
-      title: 'News Resourse',
-      description: 'Metalamp IRM',
-      version: '0.0.1',
-    },
-    servers: [{ url: 'https://localhost:5000' }],
-  },
-  apis: ['**/*.ts', './routes/*.js'],
-};
-
 const jsonBodyMiddleware = express.json();
-const openapiSpecification3 = swaggerJsDoc(options);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification3));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specification));
 
 // Middleware
 app.use(jsonBodyMiddleware);

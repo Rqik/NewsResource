@@ -5,5 +5,4 @@ type BaseQuery = {
   remove: Query;
 };
 
-// eslint-disable-next-line import/prefer-default-export
-export type { BaseQuery };
+export type { Query, BaseQuery };

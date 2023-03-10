@@ -134,7 +134,7 @@ class CategoriesService {
     return {
       id: category.category_id,
       description: category.description,
-      fk_category: category.fk_category_id,
+      fkCategoryId: category.fk_category_id,
     };
   }
 }
