@@ -18,20 +18,20 @@ router.delete(comment, authMiddleware, PostsCommentsController.delete);
 /**
  * @openapi
  * /posts/{post_id}/comments:
+ *   parameters:
+ *     - name: post_id
+ *       in: path
+ *       required: true
+ *       description: post id
+ *       type: string
  *   get:
  *     tags:
  *       - Posts
  *       - Comments
  *     description: Returns a list of comments for post.
- *     parameters:
- *       - name: post_id
- *         in: path
- *         required: true
- *         description: post id
- *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Returns a list of comments.
  *         content:
  *           application/json:
  *             schema:
@@ -46,12 +46,6 @@ router.delete(comment, authMiddleware, PostsCommentsController.delete);
  *       - Comments
  *      - Authorized
  *     description: Method for create comment. Only for authorized
- *     parameters:
- *       - name: post_id
- *         in: path
- *         required: true
- *         description: post id
- *         type: string
  *     responses:
  *       200:
  *         description: Return created comment.
@@ -61,23 +55,23 @@ router.delete(comment, authMiddleware, PostsCommentsController.delete);
  *               type: object
  *               $ref: "#/components/schemas/Comment"
  * /posts/{post_id}/comments/{comment_id}:
+ *   parameters:
+ *     - name: post_id
+ *       in: path
+ *       required: true
+ *       description: post id
+ *       type: string
+ *     - name: comment_id
+ *       in: path
+ *       required: true
+ *       description: comment id
+ *       type: string
  *   delete:
  *     tags:
  *       - Posts
  *       - Comments
  *       - Authorized
  *     description: Method for remove comment. Only for authorized
- *     parameters:
- *       - name: post_id
- *         in: path
- *         required: true
- *         description: post id
- *         type: string
- *       - name: comment_id
- *         in: path
- *         required: true
- *         description: comment id
- *         type: string
  *     responses:
  *       200:
  *         description: return removed comment.

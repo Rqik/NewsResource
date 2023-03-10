@@ -39,56 +39,93 @@ router.delete(`${path}/:id`, adminMiddleware, UsersController.delete);
  *     description: Method for create user.
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Returns a list of users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: "#/components/schemas/Pagination"
+ *                 - properties:
+ *                     data:
+ *                       $ref: "#/components/schemas/Users"
  * /users/{id}:
  *   put:
  *     tags:
  *       - Users
  *       - Admin Methods
  *     description: Method for update user. Only for admin
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: user id
+ *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/User"
  *   delete:
  *     tags:
  *       - Users
  *       - Admin Methods
  *     description: Method for remove user. Only for admin.
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: user id
+ *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/User"
  * /users/{user_login}:
  *   get:
  *     tags:
  *       - Users
  *       - Admin Methods
  *     description: Return user. Only for admin
+ *     parameters:
+ *       - name: user_login
+ *         in: path
+ *         required: true
+ *         description: user login
+ *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/User"
  *   patch:
  *     tags:
  *       - Users
  *       - Admin Methods
  *     description: Partial update user fields. Only for admin
+ *     parameters:
+ *       - name: user_login
+ *         in: path
+ *         required: true
+ *         description: user login
+ *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/User"
  */
 
 export default router;

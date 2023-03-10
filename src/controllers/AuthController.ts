@@ -29,8 +29,10 @@ class AuthController {
     try {
       const { refreshToken } = req.cookies;
 
+      console.log(refreshToken);
       const token = await UsersService.logout(refreshToken);
       res.clearCookie('refreshToken');
+
       res.json(token);
     } catch (e) {
       next(e);

@@ -16,6 +16,7 @@ router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
 /**
  * @openapi
  * /authors:
+ *   security:[]
  *   get:
  *     tags:
  *       - Authors
@@ -23,7 +24,7 @@ router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
  *     description: Returns a list of authors. Only for admin
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Returns a list of authors
  *         content:
  *           application/json:
  *             schema:
@@ -31,54 +32,81 @@ router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
  *                 - $ref: "#/components/schemas/Pagination"
  *                 - properties:
  *                     data:
- *                       type: array
- *                       items:
- *                         $ref: "#/components/schemas/Authors"
+ *                       $ref: "#/components/schemas/Authors"
  *   post:
  *     tags:
  *       - Authors
  *       - Admin Methods
  *     description: Method for create author. Only for admin
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             $ref: '#/components/schemas/AuthorPost'
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Returns created author.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/Author"
  * /authors/{id}:
  *   get:
  *     tags:
  *       - Authors
  *       - Admin Methods
  *     description: Return author. Only for admin
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: author id
+ *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Returns author.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/Author"
  *   put:
  *     tags:
  *       - Authors
  *       - Admin Methods
  *     description: Update author. Only for admin
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: author id
+ *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return updated author.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/Author"
  *   delete:
  *     tags:
  *       - Authors
  *       - Admin Methods
  *     description: Remove author. Only for admin
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: author id
+ *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return removed author.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/Author"
  */
 
 export default router;

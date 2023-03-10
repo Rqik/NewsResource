@@ -23,7 +23,7 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *     description: Returns a list of categories.
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Returns a list of categories.
  *         content:
  *           application/json:
  *             schema:
@@ -37,6 +37,8 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *       - Categories
  *       - Admin Methods
  *     description: Create category. Only for admin
+ *     security:
+ *	     - bearerAuth: []
  *     requestBody:
  *       content:
  *         application/json:
@@ -45,23 +47,23 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *             $ref: '#/components/schemas/CategoryPost'
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Return created category.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               $ref: "#/components/schemas/Category"
  * /categories/{id}:
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       required: true
+ *       description: category id
+ *       type: string
  *   get:
  *     tags:
  *       - Categories
  *     description: Return category.
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         description: category id
- *         type: string
  *     responses:
  *       200:
  *         description: Return category.
@@ -75,12 +77,6 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *       - Categories
  *       - Admin Methods
  *     description: Method for update category. Only for admin
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         description: category id
- *         type: string
  *     requestBody:
  *       content:
  *         application/json:
@@ -100,12 +96,6 @@ router.delete(category, adminMiddleware, CategoriesController.delete);
  *       - Categories
  *       - Admin Methods
  *     description: Method for delete category. Only for admin
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         description: category id
- *         type: string
  *     responses:
  *       200:
  *         description: Return remove category

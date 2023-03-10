@@ -142,6 +142,7 @@ class TokensService {
     const query = `DELETE ${tableName}
                     WHERE refresh_token = $1
                 RETURNING refresh_token, fk_user_id`;
+
     const { rows }: QueryResult<TokenRow> = await db.query(query, [
       refreshToken,
     ]);

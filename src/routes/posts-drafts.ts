@@ -84,7 +84,12 @@ router.delete(draft, authMiddleware, PostsDraftsController.delete);
  *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Return drafts.
+ *         content:
+ *           application/json:
+ *             schema:
+ *                type: object
+ *                $ref: "#/components/schemas/Draft"
  *   put:
  *     tags:
  *       - Posts
@@ -104,7 +109,12 @@ router.delete(draft, authMiddleware, PostsDraftsController.delete);
  *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Returns updated draft.
+ *         content:
+ *           application/json:
+ *             schema:
+ *                type: object
+ *                $ref: "#/components/schemas/Draft"
  *   delete:
  *     tags:
  *       - Posts
@@ -124,17 +134,19 @@ router.delete(draft, authMiddleware, PostsDraftsController.delete);
  *         type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Return removed draft.
+ *         content:
+ *           application/json:
+ *             schema:
+ *                type: object
+ *                $ref: "#/components/schemas/Draft"
  * /posts/{post_id}/drafts/{draft_id}/publish:
  *   get:
  *     tags:
  *       - Posts
  *       - Drafts
  *       - Authorized
- *     description: Publicate draft and update news. Only for authorized
- *     responses:
- *       200:
- *         description: Returns a list of plants by common name.
+ *     description: Publish draft and update news. Only for authorized
  *     parameters:
  *       - name: post_id
  *         in: path
@@ -146,6 +158,14 @@ router.delete(draft, authMiddleware, PostsDraftsController.delete);
  *         required: true
  *         description: draft id
  *         type: string
+ *     responses:
+ *       200:
+ *         description: Returns publish draft.
+ *         content:
+ *           application/json:
+ *             schema:
+ *                type: object
+ *                $ref: "#/components/schemas/Draft"
  */
 
 export default router;

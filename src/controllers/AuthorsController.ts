@@ -55,6 +55,7 @@ class AuthorsController {
     try {
       const { per_page: perPage = 10, page = 0 } = req.query;
 
+      console.log('sd');
       const { totalCount, count, authors } = await AuthorsService.getAll({
         page: Number(page),
         perPage: Number(perPage),

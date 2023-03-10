@@ -46,23 +46,31 @@ router.delete(`${path}/:id`, adminMiddleware, TagsController.delete);
  *                  type: string
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Return created tag.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
- *               $ref: "#/components/schemas/Tags"
+ *               $ref: "#/components/schemas/Tag"
  * /tags/{id}:
+ *   parameters:
+ *     - name: id
+ *       in: path
+ *       required: true
+ *       description: tag id
+ *       type: string
  *   get:
  *     tags:
  *       - Tags
  *     description: Return tag.
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return tag.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/Tag"
  *   put:
  *     tags:
  *       - Tags
@@ -70,10 +78,12 @@ router.delete(`${path}/:id`, adminMiddleware, TagsController.delete);
  *     description: Method for update tag. Only for admin
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return tag.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/Tag"
  *   delete:
  *     tags:
  *       - Tags
@@ -81,10 +91,12 @@ router.delete(`${path}/:id`, adminMiddleware, TagsController.delete);
  *     description: Method for remove tag. Only for admin
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return removed tag.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: "#/components/schemas/Tag"
  */
 
 export default router;

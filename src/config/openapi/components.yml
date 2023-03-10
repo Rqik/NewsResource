@@ -112,10 +112,41 @@ components:
           example: 10
         isPublished:
           type: boolean
+    PostPost:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        title:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        body:
+          type: string
+        mainImg:
+          type: string
+        otherImgs:
+          type: array
+        fk_author_id:
+          type: integer
+          format: int64
+          example: 10
+        fk_category_id:
+          type: integer
+          format: int64
+          example: 10
+        isPublished:
+          type: boolean
     Posts:
       type: array
       items:
-        $ref: '#/components/schemas/Posts'
+        $ref: '#/components/schemas/Post'
     Author:
       type: object
       properties:
@@ -123,6 +154,15 @@ components:
           type: integer
           format: int64
           example: 10
+        userId:
+          type: integer
+          format: int64
+          example: 10
+        description:
+          type: string
+    AuthorPost:
+      type: object
+      properties:
         userId:
           type: integer
           format: int64
@@ -199,3 +239,16 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Tags'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      in: header
+  header:
+    Authorization:
+      schema:
+        type: string
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRhYmFzYXJhbmVjOTZAbWFpbC5ydSIsImlkIjo4MiwiaXNBY3RpdmF0ZWQiOnRydWUsImlzQWRtaW4iOnRydWUsImlhdCI6MTY3ODQxNjAyNiwiZXhwIjoxNjc4NDE3ODI2fQ.bfApf51WKCBcwGeLD9pAlvzbdGLp_hA6LDmR0skPnO0
+security:
+  - bearerAuth: []

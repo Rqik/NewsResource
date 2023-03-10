@@ -30,29 +30,39 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *                 - $ref: "#/components/schemas/Pagination"
  *                 - properties:
  *                     data:
+ *                       type: object
  *                       $ref: "#/components/schemas/Posts"
  *   post:
  *     tags:
  *       - Posts
  *       - Authorized
  *     description: Method for create post. Only for authorized
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             $ref: '#/components/schemas/PostPost'
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return post.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               $ref: '#/components/schemas/Post'
  * /posts/{id}:
+ *   parameters:
+ *    - name: id
+ *      in: path
+ *      required: true
+ *      description: post id
+ *      type: string
  *   get:
  *     tags:
  *       - Posts
  *     description: Return post.
  *     parameters:
- *      - name: id
- *        in: path
- *        required: true
- *        description: post id
- *        type: string
  *      - name: created_at
  *        in: query
  *        type: string
@@ -103,24 +113,20 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *        description: 'find string'
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
+ *         description: Returns a list of posts.
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: "#/components/schemas/Post"
+ *               allOf:
+ *                 - $ref: "#/components/schemas/Pagination"
+ *                 - properties:
+ *                     data:
+ *                       $ref: "#/components/schemas/Posts"
  *   put:
  *     tags:
  *       - Posts
  *       - Authorized
  *     description: Method for update post. Only for authorized
- *     parameters:
- *      - in: path
- *        post_id: id
- *        required: true
- *        description: post id
- *        type: string
  *     requestBody:
  *       description: Create a new post
  *       content:
@@ -129,13 +135,12 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *             $ref: '#/components/schemas/Post'
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *          content:
- *            application/json:
- *              schema:
- *                type: array
- *                items:
- *                  $ref: "#/components/schemas/Post"
+ *         description: Return post.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               ref: "#/components/schemas/Post"
  *   patch:
  *     tags:
  *       - Posts
@@ -143,10 +148,7 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *     description: Partial update post. Only for authorized
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return post.
  *   delete:
  *     tags:
  *       - Posts
@@ -154,10 +156,12 @@ router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
  *     description: Method for remove post. Only for authorized
  *     responses:
  *       200:
- *         description: Returns a list of plants by common name.
- *     parameters:
- *      - in: path
- *        name: name
+ *         description: Return post.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               ref: "#/components/schemas/Post"
  */
 
 export default router;
