@@ -29,4 +29,16 @@ yarn install
 npm install
 ```
 
-Rename env.local to env
+Quick Start
+
+Rename env.dev to env
+
+```console
+//set db prop
+DB_USER='postgres'
+DB_PASSWORD='root'
+DB_PORT=9000
+DB_DATABASE='FirstTest'
+```
+
+yarn dev

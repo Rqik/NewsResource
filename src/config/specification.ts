@@ -8,9 +8,7 @@ const options: swaggerJsDoc.Options = {
       description: 'Metalamp IRM',
       version: '0.0.1',
     },
-    servers: [
-      { url: 'http://localhost:5000/api/v1', description: 'Dev server' },
-    ],
+    servers: [{ url: process.env.API_URL, description: 'Dev server' }],
   },
   apis: ['**/routes/*.ts', '**/openapi/*.yml'],
 };
