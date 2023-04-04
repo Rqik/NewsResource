@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { PostsDraftsController } from '../controllers/index';
-import { authMiddleware } from '../middleware/index';
+import { authMiddleware, errorHandler } from '../middleware';
 
 const router = express.Router();
 
@@ -11,12 +11,20 @@ const draftsPath = '/drafts';
 const drafts = `${postPath}/:id${draftsPath}`;
 const draft = `${postPath}/:id${draftsPath}/:did`;
 
-router.get(drafts, authMiddleware, PostsDraftsController.getAll);
-router.get(draft, authMiddleware, PostsDraftsController.getOne);
-router.get(`${draft}/publish`, authMiddleware, PostsDraftsController.publish);
-router.post(drafts, authMiddleware, PostsDraftsController.create);
-router.put(draft, authMiddleware, PostsDraftsController.update);
-router.delete(draft, authMiddleware, PostsDraftsController.delete);
+router.get(drafts, authMiddleware, errorHandler(PostsDraftsController.getAll));
+router.get(draft, authMiddleware, errorHandler(PostsDraftsController.getOne));
+router.get(
+  `${draft}/publish`,
+  authMiddleware,
+  errorHandler(PostsDraftsController.publish),
+);
+router.post(drafts, authMiddleware, errorHandler(PostsDraftsController.create));
+router.put(draft, authMiddleware, errorHandler(PostsDraftsController.update));
+router.delete(
+  draft,
+  authMiddleware,
+  errorHandler(PostsDraftsController.delete),
+);
 
 /**
  * @openapi

@@ -2,6 +2,7 @@ import express from 'express';
 
 import { PostsCommentsController } from '../controllers/index';
 import authMiddleware from '../middleware/auth-middleware';
+import { errorHandler } from '../middleware';
 
 const router = express.Router();
 
@@ -11,9 +12,17 @@ const commentPath = '/comments';
 const comments = `${postPath}/:id${commentPath}`;
 const comment = `${postPath}/:id${commentPath}/:cid`;
 
-router.get(comments, PostsCommentsController.getCommentsPost);
-router.post(comments, authMiddleware, PostsCommentsController.create);
-router.delete(comment, authMiddleware, PostsCommentsController.delete);
+router.get(comments, errorHandler(PostsCommentsController.getCommentsPost));
+router.post(
+  comments,
+  authMiddleware,
+  errorHandler(PostsCommentsController.create),
+);
+router.delete(
+  comment,
+  authMiddleware,
+  errorHandler(PostsCommentsController.delete),
+);
 
 /**
  * @openapi

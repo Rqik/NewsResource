@@ -1,18 +1,30 @@
 import express from 'express';
 
 import { CategoriesController } from '../controllers/index';
-import { adminMiddleware } from '../middleware/index';
+import { adminMiddleware, errorHandler } from '../middleware';
 
 const router = express.Router();
 
 const categories = '/categories';
 const category = `${categories}/:id`;
 
-router.get(categories, CategoriesController.getAll);
-router.get(category, CategoriesController.getOne);
-router.post(categories, adminMiddleware, CategoriesController.create);
-router.put(category, adminMiddleware, CategoriesController.update);
-router.delete(category, adminMiddleware, CategoriesController.delete);
+router.get(categories, errorHandler(CategoriesController.getAll));
+router.get(category, errorHandler(CategoriesController.getOne));
+router.post(
+  categories,
+  adminMiddleware,
+  errorHandler(CategoriesController.create),
+);
+router.put(
+  category,
+  adminMiddleware,
+  errorHandler(CategoriesController.update),
+);
+router.delete(
+  category,
+  adminMiddleware,
+  errorHandler(CategoriesController.delete),
+);
 
 /**
  * @openapi

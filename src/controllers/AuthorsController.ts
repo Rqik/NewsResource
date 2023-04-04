@@ -1,4 +1,4 @@
-import { NextFunction, Response } from 'express';
+import { Response } from 'express';
 
 import { AuthorsService } from '../service';
 import paginator from '../shared/paginator';
@@ -13,20 +13,15 @@ class AuthorsController {
   static async create(
     req: RequestWithBody<{ description: string; userId: number }>,
     res: Response,
-    next: NextFunction,
   ) {
-    try {
-      const { description, userId } = req.body;
+    const { description, userId } = req.body;
 
-      const result = await AuthorsService.create({
-        description,
-        userId,
-      });
+    const result = await AuthorsService.create({
+      description,
+      userId,
+    });
 
-      res.send(result);
-    } catch (e) {
-      next(e);
-    }
+    res.send(result);
   }
 
   static async update(
@@ -35,76 +30,50 @@ class AuthorsController {
       { description: string; userId: number }
     >,
     res: Response,
-    next: NextFunction,
   ) {
-    try {
-      const { id } = req.params;
-      const result = await AuthorsService.update({ ...req.body, id });
+    const { id } = req.params;
+    const result = await AuthorsService.update({ ...req.body, id });
 
-      res.send(result);
-    } catch (e) {
-      next(e);
-    }
+    res.send(result);
   }
 
   static async getAll(
     req: RequestWithQuery<{ per_page: string; page: string }>,
     res: Response,
-    next: NextFunction,
   ) {
-    try {
-      const { per_page: perPage = 10, page = 0 } = req.query;
+    const { per_page: perPage = 10, page = 0 } = req.query;
 
-      const { totalCount, count, authors } = await AuthorsService.getAll({
-        page: Number(page),
-        perPage: Number(perPage),
-      });
+    const { totalCount, count, authors } = await AuthorsService.getAll({
+      page: Number(page),
+      perPage: Number(perPage),
+    });
 
-      const pagination = paginator({
-        totalCount,
-        count,
-        req,
-        route: '/authors',
-        page: Number(page),
-        perPage: Number(perPage),
-      });
+    const pagination = paginator({
+      totalCount,
+      count,
+      req,
+      route: '/authors',
+      page: Number(page),
+      perPage: Number(perPage),
+    });
 
-      res.send({ ...pagination, data: authors });
-    } catch (e) {
-      next(e);
-    }
+    res.send({ ...pagination, data: authors });
   }
 
-  static async getOne(
-    req: RequestWithParams<{ id: string }>,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-      const { id } = req.params;
+  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+    const { id } = req.params;
 
-      const result = await AuthorsService.getOne({ id });
+    const result = await AuthorsService.getOne({ id });
 
-      res.send(result);
-    } catch (e) {
-      next(e);
-    }
+    res.send(result);
   }
 
-  static async delete(
-    req: RequestWithParams<{ id: string }>,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-      const { id } = req.params;
+  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+    const { id } = req.params;
 
-      const result = await AuthorsService.delete({ id });
+    const result = await AuthorsService.delete({ id });
 
-      res.send(result);
-    } catch (e) {
-      next(e);
-    }
+    res.send(result);
   }
 }
 

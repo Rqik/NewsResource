@@ -1,0 +1,20 @@
+import { Request, Response, NextFunction } from 'express';
+
+type Controller<T = Request> = (
+  req: T,
+  res: Response,
+  next: NextFunction,
+) => Promise<void>;
+
+const errorHandler =
+  (controller: Controller<any>): Controller =>
+  async (req, res, next) => {
+    try {
+      await controller(req, res, next);
+    } catch (error) {
+      // Обработка ошибки здесь
+      next(error);
+    }
+  };
+
+export default errorHandler;

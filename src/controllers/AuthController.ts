@@ -12,68 +12,51 @@ class AuthController {
     res: Response,
     next: NextFunction,
   ) {
-    try {
-      const { login, password } = req.body;
-      const userData = await UsersService.login({ login, password });
-      if (userData instanceof ApiError) {
-        next(userData);
-      } else {
-        res.cookie('refreshToken', userData.refreshToken, {
-          maxAge: AuthController.maxAge,
-          httpOnly: true,
-        });
-        res.json(userData);
-      }
-    } catch (e) {
-      next(e);
+    const { login, password } = req.body;
+    const userData = await UsersService.login({ login, password });
+    if (userData instanceof ApiError) {
+      next(userData);
+    } else {
+      res.cookie('refreshToken', userData.refreshToken, {
+        maxAge: AuthController.maxAge,
+        httpOnly: true,
+      });
+      res.json(userData);
     }
   }
 
-  static async logout(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { refreshToken } = req.cookies;
+  static async logout(req: Request, res: Response) {
+    const { refreshToken } = req.cookies;
 
-      const token = await UsersService.logout(refreshToken);
-      res.clearCookie('refreshToken');
+    const token = await UsersService.logout(refreshToken);
+    res.clearCookie('refreshToken');
 
-      res.json(token);
-    } catch (e) {
-      next(e);
-    }
+    res.json(token);
   }
 
   static async activate(
     req: RequestWithParams<{ link: string }>,
     res: Response,
-    next: NextFunction,
   ) {
-    try {
-      const { link } = req.params;
+    const { link } = req.params;
 
-      await UsersService.activate(link);
+    await UsersService.activate(link);
 
-      res.redirect(process.env.CLIENT_URL || 'https://ya.ru/');
-    } catch (e) {
-      next(e);
-    }
+    res.redirect(process.env.CLIENT_URL || 'https://ya.ru/');
   }
 
   static async refresh(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { refreshToken } = req.cookies;
+    const { refreshToken } = req.cookies;
 
-      const userData = await UsersService.refresh(refreshToken);
-      if (userData instanceof ApiError) {
-        next(userData);
-      } else {
-        res.cookie('refreshToken', userData.refreshToken, {
-          maxAge: AuthController.maxAge,
-          httpOnly: true,
-        });
-        res.json(userData);
-      }
-    } catch (e) {
-      next(e);
+    const userData = await UsersService.refresh(refreshToken);
+    if (userData instanceof ApiError) {
+      next(userData);
+    } else {
+      res.cookie('refreshToken', userData.refreshToken, {
+        maxAge: AuthController.maxAge,
+        httpOnly: true,
+      });
+      res.json(userData);
     }
   }
 }

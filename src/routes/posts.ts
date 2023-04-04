@@ -1,17 +1,25 @@
 import express from 'express';
 
 import { PostsController } from '../controllers/index';
-import { authMiddleware } from '../middleware/index';
+import { authMiddleware, errorHandler } from '../middleware';
 
 const router = express.Router();
 const path = '/posts';
 
-router.get(path, PostsController.getAll);
-router.get(`${path}/:id`, PostsController.getOne);
-router.post(path, authMiddleware, PostsController.create);
-router.put(`${path}/:id`, authMiddleware, PostsController.update);
-router.patch(`${path}/:id`, authMiddleware, PostsController.partialUpdate);
-router.delete(`${path}/:id`, authMiddleware, PostsController.delete);
+router.get(path, errorHandler(PostsController.getAll));
+router.get(`${path}/:id`, errorHandler(PostsController.getOne));
+router.post(path, authMiddleware, errorHandler(PostsController.create));
+router.put(`${path}/:id`, authMiddleware, errorHandler(PostsController.update));
+router.patch(
+  `${path}/:id`,
+  authMiddleware,
+  errorHandler(PostsController.partialUpdate),
+);
+router.delete(
+  `${path}/:id`,
+  authMiddleware,
+  errorHandler(PostsController.delete),
+);
 
 /**
  * @openapi

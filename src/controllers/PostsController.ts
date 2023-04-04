@@ -22,29 +22,25 @@ class PostsController {
     res: Response,
     next: NextFunction,
   ) {
-    try {
-      const main = req.files;
-      const { mainImg, otherImgs } = main || {};
-      const {
-        body: { authorId },
-      } = req;
-      const [mainNameImg] = FileService.savePostImage(mainImg) || [];
-      const otherNameImgs = FileService.savePostImage(otherImgs) || [];
-      const author = await AuthorsService.getByUserId({ id: req.user.id });
+    const main = req.files;
+    const { mainImg, otherImgs } = main || {};
+    const {
+      body: { authorId },
+    } = req;
+    const [mainNameImg] = FileService.savePostImage(mainImg) || [];
+    const otherNameImgs = FileService.savePostImage(otherImgs) || [];
+    const author = await AuthorsService.getByUserId({ id: req.user.id });
 
-      if (author === null || Number(authorId) !== author.id) {
-        next(ApiError.BadRequest('Not valid author id'));
-      } else {
-        const post = await PostsService.create({
-          ...req.body,
-          mainImg: mainNameImg,
-          otherImgs: otherNameImgs,
-        });
+    if (author === null || Number(authorId) !== author.id) {
+      next(ApiError.BadRequest('Not valid author id'));
+    } else {
+      const post = await PostsService.create({
+        ...req.body,
+        mainImg: mainNameImg,
+        otherImgs: otherNameImgs,
+      });
 
-        res.send(post);
-      }
-    } catch (e) {
-      next(e);
+      res.send(post);
     }
   }
 
@@ -59,26 +55,21 @@ class PostsController {
       }
     >,
     res: Response,
-    next: NextFunction,
   ) {
-    try {
-      const { id } = req.params;
-      const main = req.files;
-      const { mainImg, otherImgs } = main || {};
-      const [mainNameImg] = FileService.savePostImage(mainImg) || [];
-      const otherNameImgs = FileService.savePostImage(otherImgs) || [];
+    const { id } = req.params;
+    const main = req.files;
+    const { mainImg, otherImgs } = main || {};
+    const [mainNameImg] = FileService.savePostImage(mainImg) || [];
+    const otherNameImgs = FileService.savePostImage(otherImgs) || [];
 
-      const post = await PostsService.update({
-        ...req.body,
-        id: Number(id),
-        mainImg: mainNameImg,
-        otherImgs: otherNameImgs,
-      });
+    const post = await PostsService.update({
+      ...req.body,
+      id: Number(id),
+      mainImg: mainNameImg,
+      otherImgs: otherNameImgs,
+    });
 
-      res.send(post);
-    } catch (e) {
-      next(e);
-    }
+    res.send(post);
   }
 
   static async partialUpdate(
@@ -94,17 +85,12 @@ class PostsController {
       }
     >,
     res: Response,
-    next: NextFunction,
   ) {
-    try {
-      const { id } = req.params;
+    const { id } = req.params;
 
-      const post = await PostsService.partialUpdate({ ...req.body, id });
+    const post = await PostsService.partialUpdate({ ...req.body, id });
 
-      res.send(post);
-    } catch (e) {
-      next(e);
-    }
+    res.send(post);
   }
 
   static async getAll(
@@ -124,63 +110,39 @@ class PostsController {
       per_page?: string;
     }>,
     res: Response,
-    next: NextFunction,
   ) {
-    try {
-      const { per_page: perPage = 10, page = 0 } = req.query;
+    const { per_page: perPage = 10, page = 0 } = req.query;
 
-      const { totalCount, count, posts } = await PostsService.getAll(
-        req.query,
-        {
-          page: Number(page),
-          perPage: Number(perPage),
-        },
-      );
+    const { totalCount, count, posts } = await PostsService.getAll(req.query, {
+      page: Number(page),
+      perPage: Number(perPage),
+    });
 
-      const pagination = paginator({
-        totalCount,
-        count,
-        req,
-        route: '/posts',
-        page: Number(page),
-        perPage: Number(perPage),
-      });
+    const pagination = paginator({
+      totalCount,
+      count,
+      req,
+      route: '/posts',
+      page: Number(page),
+      perPage: Number(perPage),
+    });
 
-      res.send({ ...pagination, data: posts });
-    } catch (e) {
-      next(e);
-    }
+    res.send({ ...pagination, data: posts });
   }
 
-  static async getOne(
-    req: RequestWithParams<{ id: string }>,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-      const { id } = req.params;
-      const post = await PostsService.getOne({ id });
+  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+    const { id } = req.params;
+    const post = await PostsService.getOne({ id });
 
-      res.send(post);
-    } catch (e) {
-      next(e);
-    }
+    res.send(post);
   }
 
-  static async delete(
-    req: RequestWithParams<{ id: string }>,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-      const { id } = req.params;
+  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+    const { id } = req.params;
 
-      const post = await PostsService.delete({ id });
+    const post = await PostsService.delete({ id });
 
-      res.send(post);
-    } catch (e) {
-      next(e);
-    }
+    res.send(post);
   }
 }
 

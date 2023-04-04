@@ -1,17 +1,29 @@
 import express from 'express';
 
 import { AuthorsController } from '../controllers/index';
-import { adminMiddleware } from '../middleware/index';
+import { adminMiddleware, errorHandler } from '../middleware';
 
 const router = express.Router();
 
 const path = '/authors';
 
-router.get(path, adminMiddleware, AuthorsController.getAll);
-router.get(`${path}/:id`, adminMiddleware, AuthorsController.getOne);
-router.post(path, adminMiddleware, AuthorsController.create);
-router.put(`${path}/:id`, adminMiddleware, AuthorsController.update);
-router.delete(`${path}/:id`, adminMiddleware, AuthorsController.delete);
+router.get(path, adminMiddleware, errorHandler(AuthorsController.getAll));
+router.get(
+  `${path}/:id`,
+  adminMiddleware,
+  errorHandler(AuthorsController.getOne),
+);
+router.post(path, adminMiddleware, errorHandler(AuthorsController.create));
+router.put(
+  `${path}/:id`,
+  adminMiddleware,
+  errorHandler(AuthorsController.update),
+);
+router.delete(
+  `${path}/:id`,
+  adminMiddleware,
+  errorHandler(AuthorsController.delete),
+);
 
 /**
  * @openapi

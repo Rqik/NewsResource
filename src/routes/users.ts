@@ -1,20 +1,36 @@
 import express from 'express';
 
-import { UsersController } from '../controllers/index';
-import { adminMiddleware } from '../middleware/index';
+import { UsersController } from '../controllers';
+import { adminMiddleware, errorHandler } from '../middleware';
 
 const router = express.Router();
 
 const path = '/users';
 const currentAuthUser = '/user';
 
-router.get(currentAuthUser, UsersController.getCurrentAuth);
-router.get(path, adminMiddleware, UsersController.getAll);
-router.get(`${path}/:login`, adminMiddleware, UsersController.getOne);
+router.get(currentAuthUser, errorHandler(UsersController.getCurrentAuth));
+router.get(path, adminMiddleware, errorHandler(UsersController.getAll));
+router.get(
+  `${path}/:login`,
+  adminMiddleware,
+  errorHandler(UsersController.getOne),
+);
 router.post(path, UsersController.create);
-router.put(`${path}/:id`, adminMiddleware, UsersController.update);
-router.patch(`${path}/:login`, adminMiddleware, UsersController.partialUpdate);
-router.delete(`${path}/:id`, adminMiddleware, UsersController.delete);
+router.put(
+  `${path}/:id`,
+  adminMiddleware,
+  errorHandler(UsersController.update),
+);
+router.patch(
+  `${path}/:login`,
+  adminMiddleware,
+  errorHandler(UsersController.partialUpdate),
+);
+router.delete(
+  `${path}/:id`,
+  adminMiddleware,
+  errorHandler(UsersController.delete),
+);
 
 /**
  * @openapi
