@@ -31,16 +31,18 @@ class PostsController {
       const [mainNameImg] = FileService.savePostImage(mainImg) || [];
       const otherNameImgs = FileService.savePostImage(otherImgs) || [];
       const author = await AuthorsService.getByUserId({ id: req.user.id });
-      if (author === null || authorId !== author.id) {
-        throw ApiError.BadRequest('Not valid author id');
-      }
-      const post = await PostsService.create({
-        ...req.body,
-        mainImg: mainNameImg,
-        otherImgs: otherNameImgs,
-      });
 
-      res.send(post);
+      if (author === null || Number(authorId) !== author.id) {
+        next(ApiError.BadRequest('Not valid author id'));
+      } else {
+        const post = await PostsService.create({
+          ...req.body,
+          mainImg: mainNameImg,
+          otherImgs: otherNameImgs,
+        });
+
+        res.send(post);
+      }
     } catch (e) {
       next(e);
     }

@@ -90,7 +90,7 @@ class PostsDraftService {
       return removedDraft;
     }
 
-    throw ApiError.BadRequest('Tag not found');
+    return ApiError.BadRequest('Tag not found');
   }
 
   static async update({
@@ -127,7 +127,8 @@ class PostsDraftService {
 
       return draft;
     }
-    throw ApiError.BadRequest('Not found drafts');
+
+    return ApiError.BadRequest('Not found drafts');
   }
 
   static async getOne({
@@ -146,7 +147,8 @@ class PostsDraftService {
 
       return draft;
     }
-    throw ApiError.BadRequest('Not found drafts');
+
+    return ApiError.BadRequest('Not found drafts');
   }
 
   static async publish({
@@ -167,7 +169,8 @@ class PostsDraftService {
 
       return draft;
     }
-    throw ApiError.BadRequest('Not found drafts');
+
+    return ApiError.BadRequest('Not found drafts');
   }
 
   private static async checkPostBelongsDraft({

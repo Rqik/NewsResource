@@ -67,7 +67,7 @@ class UsersService {
     const candidate = await UsersService.getOne({ login });
 
     if (candidate !== null) {
-      throw ApiError.BadRequest(`User with this login ${login} exists`);
+      return ApiError.BadRequest(`User with this login ${login} exists`);
     }
 
     const hashPassword = bcrypt.hashSync(password, 7);
@@ -123,12 +123,12 @@ class UsersService {
     const user = await UsersService.getOne({ login });
 
     if (user === null) {
-      throw ApiError.BadRequest(`User ${login} not found`);
+      return ApiError.BadRequest(`User ${login} not found`);
     }
 
     const isPassEquals = await bcrypt.compare(password, user.password);
     if (!isPassEquals) {
-      throw ApiError.BadRequest('Wrong password');
+      return ApiError.BadRequest('Wrong password');
     }
 
     const userDto = new UserDto(user);
@@ -149,18 +149,18 @@ class UsersService {
 
   static async refresh(refreshToken: string) {
     if (!refreshToken) {
-      throw ApiError.UnauthorizeError();
+      return ApiError.UnauthorizeError();
     }
 
     const userData = TokensService.validateRefresh(refreshToken);
     const tokenFromDb = await TokensService.getOne({ refreshToken });
 
     if (!userData && !tokenFromDb) {
-      throw ApiError.UnauthorizeError();
+      return ApiError.UnauthorizeError();
     }
 
     if (typeof userData !== 'object' || userData === null) {
-      throw ApiError.UnauthorizeError();
+      return ApiError.UnauthorizeError();
     }
 
     const user = await UsersService.getById({ id: userData.id });
@@ -187,13 +187,13 @@ class UsersService {
     const user = await UsersService.getOne({ login });
 
     if (user === null) {
-      throw ApiError.BadRequest(`User ${login} not found`);
+      return ApiError.BadRequest(`User ${login} not found`);
     }
 
     const isPassEquals = await bcrypt.compare(password, user.password);
 
     if (!isPassEquals) {
-      throw ApiError.BadRequest('Wrong password');
+      return ApiError.BadRequest('Wrong password');
     }
 
     const query = `UPDATE ${tableName}

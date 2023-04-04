@@ -4,7 +4,7 @@ import { ApiError } from '../exceptions';
 import { TokensService } from '../service';
 import getAuthorizationToken from '../shared/get-authorization-token';
 
-const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
+const adminMiddleware = (req: Request, _: Response, next: NextFunction) => {
   try {
     const token = getAuthorizationToken(req);
 

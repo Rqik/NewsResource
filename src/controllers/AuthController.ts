@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { ApiError } from '../exceptions/index';
 
 import UsersService from '../service/UsersService';
 import { RequestWithBody, RequestWithParams } from './types';
@@ -13,13 +14,16 @@ class AuthController {
   ) {
     try {
       const { login, password } = req.body;
-      const userDate = await UsersService.login({ login, password });
-
-      res.cookie('refreshToken', userDate.refreshToken, {
-        maxAge: AuthController.maxAge,
-        httpOnly: true,
-      });
-      res.json(userDate);
+      const userData = await UsersService.login({ login, password });
+      if (userData instanceof ApiError) {
+        next(userData);
+      } else {
+        res.cookie('refreshToken', userData.refreshToken, {
+          maxAge: AuthController.maxAge,
+          httpOnly: true,
+        });
+        res.json(userData);
+      }
     } catch (e) {
       next(e);
     }
@@ -59,12 +63,15 @@ class AuthController {
       const { refreshToken } = req.cookies;
 
       const userData = await UsersService.refresh(refreshToken);
-
-      res.cookie('refreshToken', userData.refreshToken, {
-        maxAge: AuthController.maxAge,
-        httpOnly: true,
-      });
-      res.json(userData);
+      if (userData instanceof ApiError) {
+        next(userData);
+      } else {
+        res.cookie('refreshToken', userData.refreshToken, {
+          maxAge: AuthController.maxAge,
+          httpOnly: true,
+        });
+        res.json(userData);
+      }
     } catch (e) {
       next(e);
     }

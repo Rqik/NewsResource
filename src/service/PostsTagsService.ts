@@ -74,7 +74,7 @@ class PostsTagsService {
       return rows[0];
     }
 
-    throw ApiError.BadRequest('Tag not found');
+    return ApiError.BadRequest('Tag not found');
   }
 
   private static async checkPostBelongsTags({

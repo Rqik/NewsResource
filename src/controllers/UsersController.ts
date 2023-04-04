@@ -34,7 +34,7 @@ class UsersController {
       const file = ava?.avatar;
       const avatar = FileService.saveAvatar(file);
 
-      const userDate = await UsersService.registration({
+      const userData = await UsersService.registration({
         password,
         login,
         avatar,
@@ -43,11 +43,15 @@ class UsersController {
         email,
       });
 
-      res.cookie('refreshToken', userDate.refreshToken, {
-        maxAge: UsersController.maxAge,
-        httpOnly: true,
-      });
-      res.send({ result: userDate });
+      if (userData instanceof ApiError) {
+        next(userData);
+      } else {
+        res.cookie('refreshToken', userData.refreshToken, {
+          maxAge: UsersController.maxAge,
+          httpOnly: true,
+        });
+        res.send({ result: userData });
+      }
     } catch (e) {
       next(e);
     }

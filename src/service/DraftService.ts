@@ -132,7 +132,7 @@ class DraftService {
     return { totalCount, count, drafts };
   }
 
-  static async delete({ id }: { id: number }): Promise<Draft> {
+  static async delete({ id }: { id: number }): Promise<Draft | ApiError> {
     const query = `DELETE
                      FROM ${tableName}
                     WHERE draft_id = $1
@@ -156,9 +156,8 @@ class DraftService {
 
       return DraftService.convertDraft(data);
     }
-    // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
 
-    throw ApiError.BadRequest('Tag not found');
+    return ApiError.BadRequest('Tag not found');
   }
 
   static convertDraft(draft: DraftsRow): PropsWithId<Draft> {

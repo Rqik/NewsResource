@@ -15,11 +15,11 @@ const errorMiddleware = (
 
   if (err instanceof ApiError) {
     res.status(err.status).json({ message: err.message, error: err.errors });
+  } else {
+    res
+      .status(HttpStatuses.INTERNAL_SERVER)
+      .json({ message: 'Unexpected error' });
   }
-
-  res
-    .status(HttpStatuses.INTERNAL_SERVER)
-    .json({ message: 'Unexpected error' });
 };
 
 export default errorMiddleware;

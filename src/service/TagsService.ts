@@ -96,7 +96,7 @@ class TagsService {
     }
     // TODO:fix эт не работает (узнать про метод next) возможно как-то связать с методом use у корневого app
 
-    throw ApiError.BadRequest('Tag not found');
+    return ApiError.BadRequest('Tag not found');
   }
 
   static convertTag(tag: TagsRow): PropsWithId<TagsProp> {

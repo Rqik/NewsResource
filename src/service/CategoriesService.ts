@@ -127,7 +127,8 @@ class CategoriesService {
 
       return CategoriesService.convertCategory(data);
     }
-    throw ApiError.BadRequest('Category not found');
+
+    return ApiError.BadRequest('Category not found');
   }
 
   private static convertCategory(category: CategoriesRow) {

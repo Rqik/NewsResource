@@ -116,6 +116,7 @@ class PostsService {
 
     await Promise.allSettled(setTags);
     // TODO: return value not converted
+    console.log('333');
 
     return {
       ...data,
@@ -401,7 +402,7 @@ class PostsService {
       };
     }
 
-    throw ApiError.BadRequest('Post not found');
+    return ApiError.BadRequest('Post not found');
   }
 
   private static convertPosts(post: PostFullRow) {
