@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import { ApiError } from '../exceptions/index';
+import { ApiError } from '../../exceptions/index';
 
-import UsersService from '../service/UsersService';
-import { RequestWithBody, RequestWithParams } from './types';
+import UsersService from '../../service/UsersService';
+import { RequestWithBody, RequestWithParams } from '../types';
 
 class AuthController {
   private static maxAge = 30 * 24 * 60 * 60;

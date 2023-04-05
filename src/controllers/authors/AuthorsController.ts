@@ -1,13 +1,13 @@
 import { Response } from 'express';
 
-import { AuthorsService } from '../service';
-import paginator from '../shared/paginator';
+import { AuthorsService } from '../../service/index';
+import paginator from '../../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithQuery,
-} from './types';
+} from '../types';
 
 class AuthorsController {
   static async create(

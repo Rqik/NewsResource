@@ -1,15 +1,15 @@
 import { NextFunction, Response } from 'express';
 
-import { ApiError } from '../exceptions/index';
-import { FileService, TokensService, UsersService } from '../service';
-import getAuthorizationToken from '../shared/get-authorization-token';
-import paginator from '../shared/paginator';
+import { ApiError } from '../../exceptions/index';
+import { FileService, TokensService, UsersService } from '../../service/index';
+import getAuthorizationToken from '../../shared/get-authorization-token';
+import paginator from '../../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithQuery,
-} from './types';
+} from '../types';
 
 class UsersController {
   private static maxAge = 30 * 24 * 60 * 60;

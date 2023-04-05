@@ -1,18 +1,18 @@
 import { Response } from 'express';
 
-import { ApiError } from '../exceptions';
+import { ApiError } from '../../exceptions/index';
 import {
   AuthorsService,
   FileService,
   PostsDraftService,
   PostsService,
-} from '../service';
-import paginator from '../shared/paginator';
+} from '../../service/index';
+import paginator from '../../shared/paginator';
 import {
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithParamsAnQuery,
-} from './types';
+} from '../types';
 
 class PostsDraftsController {
   static async create(

@@ -1,18 +1,18 @@
 import { Response } from 'express';
 
-import { ApiError } from '../exceptions';
+import { ApiError } from '../../exceptions/index';
 import {
   CommentsService,
   PostsCommentsService,
   TokensService,
-} from '../service';
-import getAuthorizationToken from '../shared/get-authorization-token';
-import paginator from '../shared/paginator';
+} from '../../service/index';
+import getAuthorizationToken from '../../shared/get-authorization-token';
+import paginator from '../../shared/paginator';
 import {
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithParamsAnQuery,
-} from './types';
+} from '../types';
 
 class PostsCommentsController {
   static async create(

@@ -1,13 +1,13 @@
 import { Response } from 'express';
 
-import CategoriesService from '../service/CategoriesService';
-import paginator from '../shared/paginator';
+import CategoriesService from '../../service/CategoriesService';
+import paginator from '../../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithQuery,
-} from './types';
+} from '../types';
 
 class CategoriesController {
   static async create(

@@ -1,14 +1,14 @@
 import { NextFunction, Response } from 'express';
-import ApiError from '../exceptions/ApiError';
+import ApiError from '../../exceptions/ApiError';
 
-import { AuthorsService, FileService, PostsService } from '../service/index';
-import paginator from '../shared/paginator';
+import { AuthorsService, FileService, PostsService } from '../../service/index';
+import paginator from '../../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithQuery,
-} from './types';
+} from '../types';
 
 class PostsController {
   static async create(

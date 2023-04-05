@@ -1,13 +1,13 @@
 import { Response } from 'express';
 
-import TagsService from '../service/TagsService';
-import paginator from '../shared/paginator';
+import TagsService from '../../service/TagsService';
+import paginator from '../../shared/paginator';
 import {
   RequestWithBody,
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithQuery,
-} from './types';
+} from '../types';
 
 class TagsController {
   static async create(req: RequestWithBody<{ title: string }>, res: Response) {
