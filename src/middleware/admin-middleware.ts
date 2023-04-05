@@ -9,22 +9,22 @@ const adminMiddleware = (req: Request, _: Response, next: NextFunction) => {
     const token = getAuthorizationToken(req);
 
     if (!token) {
-      throw ApiError.NotFound();
+      return next(ApiError.NotFound());
     }
 
     const decodeData = TokensService.validateAccess(token);
 
     if (!decodeData || typeof decodeData !== 'object') {
-      throw ApiError.NotFound();
+      return next(ApiError.NotFound());
     }
 
-    if (!decodeData.isAdmin || !decodeData.isActivated) {
-      throw ApiError.NotFound();
+    if (!decodeData?.isAdmin || !decodeData.isActivated) {
+      return next(ApiError.NotFound());
     }
 
-    next();
+    return next();
   } catch (e) {
-    next(ApiError.NotFound());
+    return next(ApiError.NotFound());
   }
 };
 

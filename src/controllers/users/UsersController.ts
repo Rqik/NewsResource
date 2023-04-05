@@ -1,4 +1,5 @@
 import { NextFunction, Response } from 'express';
+import { JwtPayload } from 'jsonwebtoken';
 
 import { ApiError } from '../../exceptions/index';
 import { FileService, TokensService, UsersService } from '../../service/index';
@@ -101,11 +102,13 @@ class UsersController {
     res: Response,
   ) {
     const { per_page: perPage = 20, page = 0 } = req.query;
+    console.log(' console.log(totalCount, users, count) ');
 
     const { totalCount, users, count } = await UsersService.getAll({
       page: Number(page),
       perPage: Number(perPage),
     });
+
     const pagination = paginator({
       totalCount,
       count,
@@ -114,40 +117,44 @@ class UsersController {
       page: Number(page),
       perPage: Number(perPage),
     });
+
     res.send({ ...pagination, data: users });
   }
 
   static async getOne(
     req: RequestWithParams<{ login: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     const { login } = req.params;
     const result = await UsersService.getOne({ login });
     if (result === null) {
-      throw ApiError.BadRequest(`User ${login} not found`);
+      next(ApiError.BadRequest(`User ${login} not found`));
+    } else {
+      res.send(result);
     }
-    res.send(result);
   }
 
   static async getCurrentAuth(
     req: RequestWithParams<{ login: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     const accessToken = getAuthorizationToken(req);
     const tokenData = TokensService.validateAccess(accessToken);
 
     if (tokenData === null || typeof tokenData === 'string') {
-      throw ApiError.BadRequest('Invalid Authorization token');
+      next(ApiError.BadRequest('Invalid Authorization token'));
     }
 
-    const { id } = tokenData;
+    const { id } = tokenData as JwtPayload;
     const result = await UsersService.getById({ id });
 
     if (result === null) {
-      throw ApiError.BadRequest(`User ${id} not found`);
+      next(ApiError.BadRequest(`User ${id} not found`));
+    } else {
+      res.send(result);
     }
-
-    res.send(result);
   }
 
   static async delete(req: RequestWithParams<{ id: string }>, res: Response) {

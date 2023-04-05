@@ -6,25 +6,26 @@ import getAuthorizationToken from '../shared/get-authorization-token';
 
 const authMiddleware = (req: Request, _: Response, next: NextFunction) => {
   if (req.method === 'OPTIONS') {
-    next();
+    return next();
   }
 
   try {
     const token = getAuthorizationToken(req);
 
     if (!token) {
-      throw ApiError.UnauthorizeError();
+      return next(ApiError.UnauthorizeError());
     }
 
     const decodeData = TokensService.validateAccess(token);
     if (decodeData === null) {
-      next(ApiError.UnauthorizeError());
+      return next(ApiError.UnauthorizeError());
     }
 
-    req.user = decodeData;
-    next();
+    req.locals.user = decodeData;
+
+    return next();
   } catch (e) {
-    next(ApiError.UnauthorizeError());
+    return next(ApiError.UnauthorizeError());
   }
 };
 

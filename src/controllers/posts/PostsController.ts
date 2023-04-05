@@ -29,7 +29,7 @@ class PostsController {
     } = req;
     const [mainNameImg] = FileService.savePostImage(mainImg) || [];
     const otherNameImgs = FileService.savePostImage(otherImgs) || [];
-    const author = await AuthorsService.getByUserId({ id: req.user.id });
+    const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
 
     if (author === null || Number(authorId) !== author.id) {
       next(ApiError.BadRequest('Not valid author id'));

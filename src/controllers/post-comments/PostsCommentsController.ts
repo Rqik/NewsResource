@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 
 import { ApiError } from '../../exceptions/index';
 import {
@@ -18,6 +18,7 @@ class PostsCommentsController {
   static async create(
     req: RequestWithParamsAndBody<{ id: string }, { body: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     const { id: postId } = req.params;
     const { body } = req.body;
@@ -26,20 +27,20 @@ class PostsCommentsController {
     const tokenData = TokensService.validateAccess(accessToken);
 
     if (tokenData === null || typeof tokenData === 'string') {
-      throw ApiError.BadRequest('Invalid Authorization token');
+      next(ApiError.BadRequest('Invalid Authorization token'));
+    } else {
+      const { id: userId } = tokenData;
+      const comment = await CommentsService.create({
+        userId,
+        body,
+      });
+      await PostsCommentsService.create({
+        postId: Number(postId),
+        commentId: comment.id,
+      });
+
+      res.send(comment);
     }
-
-    const { id: userId } = tokenData;
-    const comment = await CommentsService.create({
-      userId,
-      body,
-    });
-    await PostsCommentsService.create({
-      postId: Number(postId),
-      commentId: comment.id,
-    });
-
-    res.send(comment);
   }
 
   static async getCommentsPost(
