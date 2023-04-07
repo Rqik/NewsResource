@@ -11,22 +11,21 @@ import {
   RequestWithParamsAndBody,
   RequestWithQuery,
 } from '../types';
+import UserDto, { IUser } from './users.dto';
 
 class UsersController {
   private static maxAge = 30 * 24 * 60 * 60;
 
   static async create(
-    req: RequestWithBody<{
-      firstName: string;
-      lastName: string;
-      login: string;
-      password: string;
-      email: string;
-    }>,
+    req: RequestWithBody<IUser>,
     res: Response,
     next: NextFunction,
   ) {
-    const { firstName, lastName, login, password, email } = req.body;
+    const { error, value } = new UserDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
+    const { firstName, lastName, login, password, email } = value;
     const ava = req.files;
 
     const file = ava?.avatar;
@@ -42,47 +41,33 @@ class UsersController {
     });
 
     if (userData instanceof ApiError) {
-      next(userData);
-    } else {
-      res.cookie('refreshToken', userData.refreshToken, {
-        maxAge: UsersController.maxAge,
-        httpOnly: true,
-      });
-      res.send({ result: userData });
+      return next(userData);
     }
+    res.cookie('refreshToken', userData.refreshToken, {
+      maxAge: UsersController.maxAge,
+      httpOnly: true,
+    });
+
+    return res.send({ result: userData });
   }
 
   static async update(
-    req: RequestWithParamsAndBody<
-      { id: string },
-      {
-        firstName: string;
-        lastName: string;
-        avatar: string;
-        login: string;
-        password: string;
-        email: string;
-      }
-    >,
+    req: RequestWithParamsAndBody<{ id: string }, IUser>,
     res: Response,
+    next: NextFunction,
   ) {
     const { id } = req.params;
+    const { error, value } = new UserDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
+    const result = await UsersService.update({ ...value, id });
 
-    const result = await UsersService.update({ ...req.body, id });
-
-    res.send(result);
+    return res.send(result);
   }
 
   static async partialUpdate(
-    req: RequestWithParamsAndBody<
-      { login: string },
-      {
-        firstName?: string;
-        lastName?: string;
-        avatar?: string;
-        password?: string;
-      }
-    >,
+    req: RequestWithParamsAndBody<{ login: string }, Partial<IUser>>,
     res: Response,
   ) {
     const bodyValues = Object.values(req.body);
@@ -165,5 +150,4 @@ class UsersController {
     res.send(result);
   }
 }
-
 export default UsersController;

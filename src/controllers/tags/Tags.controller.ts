@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 
 import TagsService from '../../service/TagsService';
 import paginator from '../../shared/paginator';
@@ -8,24 +8,36 @@ import {
   RequestWithParamsAndBody,
   RequestWithQuery,
 } from '../types';
+import TagDto from './tags.dto';
 
 class TagsController {
-  static async create(req: RequestWithBody<{ title: string }>, res: Response) {
-    const { title } = req.body;
-    const tag = await TagsService.create({ title });
+  static async create(
+    req: RequestWithBody<{ title: string }>,
+    res: Response,
+    next: NextFunction,
+  ) {
+    const { error, value } = new TagDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
+    const tag = await TagsService.create(value);
 
-    res.send(tag);
+    return res.send(tag);
   }
 
   static async update(
     req: RequestWithParamsAndBody<{ id: string }, { title: string }>,
     res: Response,
+    next: NextFunction,
   ) {
     const { id } = req.params;
-    const { title } = req.body;
-    const tag = await TagsService.update({ title, id });
+    const { error, value } = new TagDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
+    const tag = await TagsService.update({ ...value, id });
 
-    res.send(tag);
+    return res.send(tag);
   }
 
   static async getAll(

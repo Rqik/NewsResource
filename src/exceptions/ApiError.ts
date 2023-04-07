@@ -36,6 +36,14 @@ class ApiError extends Error {
   static BadRequest(message: string, errors = []) {
     return new ApiError({ status: HttpStatuses.BAD_REQUEST, message, errors });
   }
+
+  static ValidationFailed(errors: Error[] = []) {
+    return new ApiError({
+      status: HttpStatuses.VALIDATION_FAILED,
+      message: 'Validation error.',
+      errors,
+    });
+  }
 }
 
 export default ApiError;

@@ -4,7 +4,7 @@ type Controller<T = Request> = (
   req: T,
   res: Response,
   next: NextFunction,
-) => Promise<void>;
+) => Promise<unknown>;
 
 const errorHandler =
   (controller: Controller<any>): Controller =>

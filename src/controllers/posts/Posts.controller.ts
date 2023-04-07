@@ -9,16 +9,12 @@ import {
   RequestWithParamsAndBody,
   RequestWithQuery,
 } from '../types';
+import type { IPost } from './posts.dto';
+import PostsDto from './posts.dto';
 
 class PostsController {
   static async create(
-    req: RequestWithBody<{
-      title: string;
-      authorId: number;
-      categoryId: number;
-      body: string;
-      tags: number[] | string;
-    }>,
+    req: RequestWithBody<IPost>,
     res: Response,
     next: NextFunction,
   ) {
@@ -27,35 +23,37 @@ class PostsController {
     const {
       body: { authorId },
     } = req;
+
+    const { error, value } = new PostsDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
+
     const [mainNameImg] = FileService.savePostImage(mainImg) || [];
     const otherNameImgs = FileService.savePostImage(otherImgs) || [];
     const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
 
     if (author === null || Number(authorId) !== author.id) {
-      next(ApiError.BadRequest('Not valid author id'));
-    } else {
-      const post = await PostsService.create({
-        ...req.body,
-        mainImg: mainNameImg,
-        otherImgs: otherNameImgs,
-      });
-
-      res.send(post);
+      return next(ApiError.BadRequest('Not valid author id'));
     }
+    const post = await PostsService.create({
+      ...value,
+      mainImg: mainNameImg,
+      otherImgs: otherNameImgs,
+    });
+
+    return res.send(post);
   }
 
   static async update(
-    req: RequestWithParamsAndBody<
-      { id: string },
-      {
-        title: string;
-        authorId: number;
-        categoryId: number;
-        body: string;
-      }
-    >,
+    req: RequestWithParamsAndBody<{ id: string }, IPost>,
     res: Response,
+    next: NextFunction,
   ) {
+    const { error, value } = new PostsDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
     const { id } = req.params;
     const main = req.files;
     const { mainImg, otherImgs } = main || {};
@@ -63,13 +61,13 @@ class PostsController {
     const otherNameImgs = FileService.savePostImage(otherImgs) || [];
 
     const post = await PostsService.update({
-      ...req.body,
+      ...value,
       id: Number(id),
       mainImg: mainNameImg,
       otherImgs: otherNameImgs,
     });
 
-    res.send(post);
+    return res.send(post);
   }
 
   static async partialUpdate(

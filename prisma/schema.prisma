@@ -68,7 +68,6 @@ model Post {
   fk_author_id   Int?
   fk_category_id Int?
   updated_at     DateTime?         @updatedAt @db.Timestamptz(6)
-  is_publicate   Boolean           @default(false)
   is_published   Boolean           @default(true)
   authors        Author?           @relation(fields: [fk_author_id], references: [author_id], map: "fk_posts_author_id")
   categories     Category?         @relation(fields: [fk_category_id], references: [category_id], map: "fk_posts_category_id")

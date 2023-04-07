@@ -7,7 +7,7 @@ type RequestWithQuery<T> = Request<unknown, unknown, unknown, T>;
 type RequestWithParamsAnQuery<T, B> = Request<T, unknown, unknown, B>;
 
 interface BaseValidator {
-  validate(): void;
+  validate(): unknown;
 }
 
 export type {

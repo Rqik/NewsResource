@@ -1,28 +1,35 @@
 import { NextFunction, Request, Response } from 'express';
-import { ApiError } from '../../exceptions/index';
 
+import { ApiError } from '../../exceptions/index';
 import UsersService from '../../service/UsersService';
 import { RequestWithBody, RequestWithParams } from '../types';
+import AuthDto, { IAuth } from './auth.dto';
 
 class AuthController {
   private static maxAge = 30 * 24 * 60 * 60;
 
   static async login(
-    req: RequestWithBody<{ login: string; password: string }>,
+    req: RequestWithBody<IAuth>,
     res: Response,
     next: NextFunction,
   ) {
-    const { login, password } = req.body;
-    const userData = await UsersService.login({ login, password });
-    if (userData instanceof ApiError) {
-      next(userData);
-    } else {
-      res.cookie('refreshToken', userData.refreshToken, {
-        maxAge: AuthController.maxAge,
-        httpOnly: true,
-      });
-      res.json(userData);
+    const { error, value } = new AuthDto(req.body).validate();
+
+    if (error) {
+      return next(ApiError.ValidationFailed([error]));
     }
+
+    const userData = await UsersService.login(value);
+    if (userData instanceof ApiError) {
+      return next(userData);
+    }
+
+    res.cookie('refreshToken', userData.refreshToken, {
+      maxAge: AuthController.maxAge,
+      httpOnly: true,
+    });
+
+    return res.json(userData);
   }
 
   static async logout(req: Request, res: Response) {
