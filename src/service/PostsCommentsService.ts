@@ -1,6 +1,7 @@
 import { QueryResult } from 'pg';
 
 import db from '../db';
+import prisma from '../prisma';
 import CommentsService from './CommentsService';
 import { PropsWithId } from './types';
 

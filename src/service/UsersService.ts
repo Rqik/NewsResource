@@ -1,6 +1,7 @@
 import { QueryResult } from 'pg';
 import bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
+import { User } from '@prisma/client';
 
 import db from '../db';
 import UserDto from '../dtos/UserDto';
@@ -9,8 +10,21 @@ import AuthorsService from './AuthorsService';
 import { PropsWithId } from './types';
 import MailService from './MailService';
 import TokensService from './TokensService';
+import prisma from '../prisma';
 
 const tableName = 'users';
+
+// TODO: обозначить выбираемые поля
+// const baseSelectedFields = {
+//   select: {
+//     user_id: true,
+//     first_name: true,
+//     last_name: true,
+//     avatar: true,
+//     login: true,
+//     admin: true,
+//   },
+// };
 
 type UsersRow = {
   user_id: number;
@@ -22,7 +36,7 @@ type UsersRow = {
   created_at: string;
   admin: boolean;
   is_activated: boolean;
-  activate_link?: string;
+  activate_link: string;
   email?: string;
   total_count?: number;
 };
@@ -36,14 +50,14 @@ type UserProp = {
   password: string;
 };
 
-type User = {
+type UserConverted = {
   id: number;
   firstName: string;
-  lastName: string;
-  avatar: string;
+  lastName: string | null;
+  avatar: string | null;
   login: string;
   password: string;
-  createdAt: string;
+  createdAt: Date | string | null;
   isAdmin: boolean;
   email: string;
   activateLink?: string;
@@ -60,33 +74,35 @@ class UsersService {
     avatar = null,
   }: UserProp) {
     const isAdmin = adminEmail.includes(email);
-    const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password, activate_link, admin, email)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                     RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, password, activate_link, email, is_activated`;
+    // TODO:проверить работает ли unique
+    // const query = `INSERT INTO ${tableName} (first_name, last_name, avatar, login, password, activate_link, admin, email)
+    //                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    //                  RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, password, activate_link, email, is_activated`;
 
-    const candidate = await UsersService.getOne({ login });
+    // const candidate = await UsersService.getOne({ login });
 
-    if (candidate !== null) {
-      return ApiError.BadRequest(`User with this login ${login} exists`);
-    }
+    // if (candidate !== null) {
+    //   return ApiError.BadRequest(`User with this login ${login} exists`);
+    // }
 
     const hashPassword = bcrypt.hashSync(password, 7);
     const activateLink = uuid();
     await MailService.sendActivationMail({ to: email, link: activateLink });
 
-    const { rows }: QueryResult<UsersRow> = await db.query(query, [
-      firstName,
-      lastName,
-      avatar,
-      login,
-      hashPassword,
-      activateLink,
-      isAdmin,
-      email,
-    ]);
+    const user = await prisma.user.create({
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        avatar,
+        login,
+        activate_link: activateLink,
+        admin: isAdmin,
+        email,
+        password: hashPassword,
+      },
+    });
 
-    const user = UsersService.convertCase(rows[0]);
-    const userDto = new UserDto(user);
+    const userDto = new UserDto(UsersService.convertCase(user));
     const tokens = TokensService.generateTokens({ ...userDto });
     await TokensService.create({
       userId: userDto.id,
@@ -97,26 +113,25 @@ class UsersService {
   }
 
   static async activate(activateLink: string) {
-    const queryUser = `SELECT *
-                         FROM ${tableName}
-                        WHERE activate_link = $1`;
-    const { rows }: QueryResult<UsersRow> = await db.query(queryUser, [
-      activateLink,
-    ]);
-
-    const user = UsersService.convertCase(rows[0]);
-
-    if (!user.isActivated) {
-      const queryActivate = `UPDATE ${tableName}
-                                SET is_activated = $1
-                              WHERE user_id = $2
-                          RETURNING user_id, first_name, last_name, avatar, login, admin, created_at, is_activated`;
-      const { rows: userRows } = await db.query(queryActivate, [true, user.id]);
-
-      return UsersService.convertCase(userRows[0]);
+    const user = await prisma.user.findFirst({
+      where: {
+        activate_link: { equals: activateLink },
+        is_activated: false,
+      },
+    });
+    if (!user) {
+      return user;
     }
+    const userUpdated = await prisma.user.update({
+      where: {
+        user_id: user.user_id,
+      },
+      data: {
+        is_activated: true,
+      },
+    });
 
-    return user;
+    return UsersService.convertCase(userUpdated);
   }
 
   static async login({ login, password }: { login: string; password: string }) {
@@ -164,6 +179,11 @@ class UsersService {
     }
 
     const user = await UsersService.getById({ id: userData.id });
+
+    if (!user) {
+      return ApiError.UnauthorizeError();
+    }
+
     const userDto = new UserDto(user);
     const tokens = TokensService.generateTokens({ ...userDto });
 
@@ -196,27 +216,19 @@ class UsersService {
       return ApiError.BadRequest('Wrong password');
     }
 
-    const query = `UPDATE ${tableName}
-                      SET first_name = $1,
-                          last_name = $2,
-                          avatar = $3,
-                          login = $4,
-                          password = $5
-                    WHERE user_id = $6
-                RETURNING user_id, first_name, last_name, avatar, login, admin, created_at`;
+    const userUpdated = await prisma.user.update({
+      where: {
+        user_id: Number(id),
+      },
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        avatar,
+        login,
+      },
+    });
 
-    const { rows }: QueryResult<UsersRow> = await db.query(query, [
-      firstName,
-      lastName,
-      avatar,
-      login,
-      password,
-      id,
-    ]);
-
-    const data = rows[0];
-
-    return UsersService.convertCase(data);
+    return UsersService.convertCase(userUpdated);
   }
 
   static async partialUpdate(body: Partial<UserProp>) {
@@ -241,62 +253,46 @@ class UsersService {
   }
 
   static async getAll({ page, perPage }: { page: number; perPage: number }) {
-    const { rows, rowCount: count }: QueryResult<UsersRow> = await db.query(
-      `SELECT user_id, first_name, last_name, avatar, login, admin, created_at,
-              count(*) OVER() AS total_count
-         FROM ${tableName}
-        LIMIT $1
-       OFFSET $2
-         `,
-      [perPage, page * perPage],
-    );
-    const users = rows.map((user) => UsersService.convertCase(user));
-    const totalCount = rows[0].total_count || null;
+    const [totalCount, data] = await prisma.$transaction([
+      prisma.user.count(),
+      prisma.user.findMany({ skip: page * perPage, take: perPage }),
+    ]);
+
+    const users = data.map((user) => UsersService.convertCase(user));
 
     return {
-      count,
+      count: data.length,
       totalCount,
       users,
     };
   }
 
   static async getOne({ login }: { login: string }) {
-    const query = `SELECT *
-                     FROM ${tableName}
-                    WHERE login = $1`;
-    const { rows }: QueryResult<UsersRow> = await db.query(query, [login]);
+    const user = await prisma.user.findUnique({
+      where: { login },
+    });
 
-    if (rows.length === 0) {
-      return null;
-    }
-    const data = rows[0];
-
-    return UsersService.convertCase(data);
+    return user ? UsersService.convertCase(user) : user;
   }
 
-  static async getById({ id }: { id: string }) {
-    const query = `SELECT *
-                     FROM ${tableName}
-                    WHERE user_id = $1`;
-    const { rows }: QueryResult<UsersRow> = await db.query(query, [id]);
-    const data = rows[0];
+  static async getById({ id }: { id: number }) {
+    const user = await prisma.user.findUnique({
+      where: { user_id: id },
+    });
 
-    return UsersService.convertCase(data);
+    return user ? UsersService.convertCase(user) : user;
   }
 
   static async delete({ id }: PropsWithId) {
-    const query = `DELETE
-                     FROM ${tableName}
-                    WHERE user_id = $1
-                RETURNING user_id, first_name, last_name, avatar, login, admin`;
     await AuthorsService.deleteUserAuthors({ id });
-    const { rows }: QueryResult<UsersRow> = await db.query(query, [id]);
-    const data = rows[0];
+    const user = await prisma.user.delete({
+      where: { user_id: Number(id) },
+    });
 
-    return UsersService.convertCase(data);
+    return UsersService.convertCase(user);
   }
 
-  static convertCase(user: UsersRow): User {
+  static convertCase(user: UsersRow | User): UserConverted {
     return {
       id: user.user_id,
       firstName: user.first_name,

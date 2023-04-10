@@ -133,7 +133,7 @@ model User {
   password      String
   created_at    DateTime? @default(now()) @db.Timestamptz(6)
   admin         Boolean   @default(false)
-  activate_link String?   @db.VarChar(128)
+  activate_link String    @db.VarChar(128)
   email         String?
   is_activated  Boolean   @default(false)
   authors       Author[]
