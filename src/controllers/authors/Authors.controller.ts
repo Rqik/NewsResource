@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 
 import { AuthorsService } from '../../service/index';
 import paginator from '../../shared/paginator';
@@ -8,33 +8,41 @@ import {
   RequestWithParamsAndBody,
   RequestWithQuery,
 } from '../types';
+import type { IAuthor } from './authors.dto';
+import AuthorsDto from './authors.dto';
 
 class AuthorsController {
   static async create(
-    req: RequestWithBody<{ description: string; userId: number }>,
+    req: RequestWithBody<IAuthor>,
     res: Response,
+    next: NextFunction,
   ) {
-    const { description, userId } = req.body;
+    const { error, value } = new AuthorsDto(req.body).validate();
 
-    const result = await AuthorsService.create({
-      description,
-      userId,
-    });
+    if (error) {
+      return next(error);
+    }
 
-    res.send(result);
+    const result = await AuthorsService.create(value);
+
+    return res.send(result);
   }
 
   static async update(
-    req: RequestWithParamsAndBody<
-      { id: string },
-      { description: string; userId: number }
-    >,
+    req: RequestWithParamsAndBody<{ id: string }, IAuthor>,
     res: Response,
+    next: NextFunction,
   ) {
     const { id } = req.params;
-    const result = await AuthorsService.update({ ...req.body, id });
+    const { error, value } = new AuthorsDto(req.body).validate();
 
-    res.send(result);
+    if (error) {
+      return next(error);
+    }
+
+    const result = await AuthorsService.update({ ...value, id });
+
+    return res.send(result);
   }
 
   static async getAll(

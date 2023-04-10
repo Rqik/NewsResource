@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 
 import CategoriesService from '../../service/CategoriesService';
 import paginator from '../../shared/paginator';
@@ -8,37 +8,43 @@ import {
   RequestWithParamsAndBody,
   RequestWithQuery,
 } from '../types';
+import CategoriesDto, { ICategory } from './categories.dto';
 
 class CategoriesController {
   static async create(
-    req: RequestWithBody<{ description: string; category?: string }>,
+    req: RequestWithBody<ICategory>,
     res: Response,
+    next: NextFunction,
   ) {
-    const { description, category } = req.body;
+    const { error, value } = new CategoriesDto(req.body).validate();
 
-    const newCategory = await CategoriesService.create({
-      description,
-      category,
-    });
+    if (error) {
+      return next(error);
+    }
 
-    res.send(newCategory);
+    const newCategory = await CategoriesService.create(value);
+
+    return res.send(newCategory);
   }
 
   static async update(
-    req: RequestWithParamsAndBody<
-      { id: string },
-      { description: string; category?: string }
-    >,
+    req: RequestWithParamsAndBody<{ id: string }, ICategory>,
     res: Response,
+    next: NextFunction,
   ) {
     const { id } = req.params;
-    const { description, category } = req.body;
+    const { error, value } = new CategoriesDto(req.body).validate();
+
+    if (error) {
+      return next(error);
+    }
+
     const categoryUpdated = await CategoriesService.update({
       id: Number(id),
-      description,
-      category,
+      ...value,
     });
-    res.send(categoryUpdated);
+
+    return res.send(categoryUpdated);
   }
 
   static async getAll(

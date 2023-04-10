@@ -9,14 +9,6 @@ interface IPost {
   tags: number[] | string;
 }
 
-const postSchema = Joi.object<IPost>({
-  title: Joi.string().min(1).required(),
-  authorId: Joi.number().required(),
-  categoryId: Joi.number().required(),
-  body: Joi.string().min(1).required(),
-  tags: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.number())),
-});
-
 class PostsDto implements IPost, BaseValidator {
   title: string;
 
@@ -37,7 +29,20 @@ class PostsDto implements IPost, BaseValidator {
   }
 
   validate() {
-    return postSchema.validate(this);
+    return PostsDto.getSchema.validate(this);
+  }
+
+  static get getSchema() {
+    return Joi.object<IPost>({
+      title: Joi.string().min(1).required(),
+      authorId: Joi.number().required(),
+      categoryId: Joi.number().required(),
+      body: Joi.string().min(1).required(),
+      tags: Joi.alternatives().try(
+        Joi.string(),
+        Joi.array().items(Joi.number()),
+      ),
+    });
   }
 }
 export type { IPost };

@@ -1,64 +1,61 @@
 import { Response, NextFunction } from 'express';
 
-import { ApiError } from '../../exceptions/index';
+import { ApiError } from '../../exceptions';
 import {
   AuthorsService,
   FileService,
   PostsDraftService,
   PostsService,
-} from '../../service/index';
+} from '../../service';
 import paginator from '../../shared/paginator';
 import {
   RequestWithParams,
   RequestWithParamsAndBody,
   RequestWithParamsAnQuery,
 } from '../types';
+import PostsDraftsDto, { IPostDrafts } from './posts-drafts.dto';
 
 class PostsDraftsController {
   static async create(
-    req: RequestWithParamsAndBody<
-      { id: string },
-      {
-        body: string;
-        title: string;
-        categoryId: number;
-      }
-    >,
+    req: RequestWithParamsAndBody<{ id: string }, IPostDrafts>,
     res: Response,
     next: NextFunction,
   ) {
     const { id } = req.params;
     const main = req.files;
     const { mainImg, otherImgs } = main || {};
-
+    const { error, value } = new PostsDraftsDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
     const author = await PostsDraftsController.authorValidate(req);
     if (author instanceof ApiError) {
-      next(ApiError.NotFound());
-    } else {
-      const [mainNameImg] = FileService.savePostImage(mainImg) || [];
-      const otherNameImgs = FileService.savePostImage(otherImgs) || [];
-
-      const draft = await PostsDraftService.create({
-        ...req.body,
-        postId: Number(id),
-        authorId: author.id,
-        mainImg: mainNameImg,
-        otherImgs: otherNameImgs,
-      });
-
-      res.send(draft);
+      return next(ApiError.NotFound());
     }
+    const [mainNameImg] = FileService.savePostImage(mainImg) || [];
+    const otherNameImgs = FileService.savePostImage(otherImgs) || [];
+
+    const draft = await PostsDraftService.create({
+      ...value,
+      postId: Number(id),
+      authorId: author.id,
+      mainImg: mainNameImg,
+      otherImgs: otherNameImgs,
+    });
+
+    return res.send(draft);
   }
 
   static async update(
-    req: RequestWithParamsAndBody<
-      { id: string; did: string },
-      { body: string; title: string; categoryId: number }
-    >,
+    req: RequestWithParamsAndBody<{ id: string; did: string }, IPostDrafts>,
     res: Response,
     next: NextFunction,
   ) {
     const { id, did } = req.params;
+    const { error, value } = new PostsDraftsDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
     const main = req.files;
     const { mainImg, otherImgs } = main || {};
 
@@ -66,22 +63,21 @@ class PostsDraftsController {
     const post = await PostsService.getOne({ id });
 
     if (author === null || post.author.id !== author.id) {
-      next(ApiError.NotFound());
-    } else {
-      const [mainNameImg] = FileService.savePostImage(mainImg) || [];
-      const otherNameImgs = FileService.savePostImage(otherImgs) || [];
-
-      const result = await PostsDraftService.update({
-        ...req.body,
-        postId: Number(id),
-        draftId: Number(did),
-        authorId: author.id,
-        mainImg: mainNameImg,
-        otherImgs: otherNameImgs,
-      });
-
-      res.send(result);
+      return next(ApiError.NotFound());
     }
+    const [mainNameImg] = FileService.savePostImage(mainImg) || [];
+    const otherNameImgs = FileService.savePostImage(otherImgs) || [];
+
+    const result = await PostsDraftService.update({
+      ...value,
+      postId: Number(id),
+      draftId: Number(did),
+      authorId: author.id,
+      mainImg: mainNameImg,
+      otherImgs: otherNameImgs,
+    });
+
+    return res.send(result);
   }
 
   static async getAll(

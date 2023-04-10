@@ -1,26 +1,38 @@
 import Joi from 'joi';
 import { BaseValidator } from '../types';
 
-interface ITag {
+interface IPostDrafts {
+  body: string;
   title: string;
+  categoryId: number;
 }
 
-const tagSchema = Joi.object<ITag>({
-  title: Joi.string().min(1).required(),
-});
+class PostsDraftsDto implements IPostDrafts, BaseValidator {
+  title: string;
 
-class PostsDraftsDto implements ITag, BaseValidator {
-  title!: string;
+  body: string;
 
-  constructor(postDrafts: ITag) {
-    Object.entries(postDrafts).forEach(([key, value]: (keyof ITag)[]) => {
-      this[key] = value;
-    });
+  categoryId: number;
+
+  constructor(postDrafts: IPostDrafts) {
+    this.title = postDrafts.title;
+
+    this.body = postDrafts.body;
+
+    this.categoryId = postDrafts.categoryId;
   }
 
   validate() {
-    return tagSchema.validate(this);
+    return PostsDraftsDto.getSchema.validate(this);
+  }
+
+  static get getSchema() {
+    return Joi.object<IPostDrafts>({
+      body: Joi.string().min(1).required(),
+      title: Joi.string().min(1).required(),
+      categoryId: Joi.number().required(),
+    });
   }
 }
-export type { ITag };
+export type { IPostDrafts };
 export default PostsDraftsDto;

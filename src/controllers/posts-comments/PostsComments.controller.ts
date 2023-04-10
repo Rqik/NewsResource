@@ -13,34 +13,39 @@ import {
   RequestWithParamsAndBody,
   RequestWithParamsAnQuery,
 } from '../types';
+import PostsCommentsDto, { IPostsComments } from './posts-comments.dto';
 
 class PostsCommentsController {
   static async create(
-    req: RequestWithParamsAndBody<{ id: string }, { body: string }>,
+    req: RequestWithParamsAndBody<{ id: string }, IPostsComments>,
     res: Response,
     next: NextFunction,
   ) {
     const { id: postId } = req.params;
-    const { body } = req.body;
     const accessToken = getAuthorizationToken(req);
+
+    const { error, value } = new PostsCommentsDto(req.body).validate();
+    if (error) {
+      return next(error);
+    }
+
     // TODO:
     const tokenData = TokensService.validateAccess(accessToken);
 
     if (tokenData === null || typeof tokenData === 'string') {
-      next(ApiError.BadRequest('Invalid Authorization token'));
-    } else {
-      const { id: userId } = tokenData;
-      const comment = await CommentsService.create({
-        userId,
-        body,
-      });
-      await PostsCommentsService.create({
-        postId: Number(postId),
-        commentId: comment.id,
-      });
-
-      res.send(comment);
+      return next(ApiError.BadRequest('Invalid Authorization token'));
     }
+    const { id: userId } = tokenData;
+    const comment = await CommentsService.create({
+      userId,
+      ...value,
+    });
+    await PostsCommentsService.create({
+      postId: Number(postId),
+      commentId: comment.id,
+    });
+
+    return res.send(comment);
   }
 
   static async getCommentsPost(
