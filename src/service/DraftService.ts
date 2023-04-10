@@ -1,7 +1,7 @@
-import { QueryResult } from 'pg';
+import { Draft } from '@prisma/client';
 
-import db from '../db';
-import { ApiError } from '../exceptions/index';
+import { ApiError } from '../exceptions';
+import prisma from '../prisma';
 import { PropsWithId } from './types';
 
 type DraftsRow = {
@@ -17,19 +17,17 @@ type DraftsRow = {
   total_count?: number;
 };
 
-type Draft = {
+type DraftConverted = {
   id: number;
   createdAt: Date;
-  updatedAt: Date;
-  authorId: number;
-  body: string;
-  title: string;
-  categoryId: number;
-  mainImg: string;
+  updatedAt: Date | null;
+  authorId: number | null;
+  body: string | null;
+  title: string | null;
+  categoryId: number | null;
+  mainImg: string | null;
   otherImgs: string[];
 };
-
-const tableName = 'drafts';
 
 class DraftService {
   static async create({
@@ -39,21 +37,17 @@ class DraftService {
     categoryId,
     mainImg,
     otherImgs,
-  }: Omit<Draft, 'createdAt' | 'updatedAt' | 'id'>) {
-    const query = `INSERT INTO ${tableName} (fk_author_id, body, title, fk_category_id, main_img, other_imgs)
-                        VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING draft_id, created_at, updated_at, fk_author_id, body, title, fk_category_id, main_img, other_imgs`;
-
-    const { rows }: QueryResult<DraftsRow> = await db.query(query, [
-      Number(authorId),
-      body,
-      title,
-      categoryId,
-      mainImg,
-      otherImgs,
-    ]);
-
-    const draft = rows[0];
+  }: Omit<DraftConverted, 'createdAt' | 'updatedAt' | 'id'>) {
+    const draft = await prisma.draft.create({
+      data: {
+        fk_author_id: Number(authorId),
+        body,
+        title,
+        fk_category_id: categoryId,
+        main_img: mainImg,
+        other_imgs: otherImgs,
+      },
+    });
 
     return DraftService.convertDraft(draft);
   }
@@ -66,101 +60,85 @@ class DraftService {
     categoryId,
     mainImg,
     otherImgs,
-  }: Omit<Draft, 'updatedAt' | 'createdAt'>) {
-    const query = `UPDATE ${tableName}
-                      SET body = $1,
-                          fk_author_id = $2,
-                          updated_at = NOW(),
-                          title = $3,
-                          main_img = $4,
-                          other_imgs = $5,
-                          fk_category_id = $6
-                    WHERE draft_id = $7
-                RETURNING draft_id, created_at, updated_at, fk_author_id, body, title, main_img, other_imgs, fk_category_id`;
-
-    const { rows }: QueryResult<DraftsRow> = await db.query(query, [
-      body,
-      authorId,
-      title,
-      mainImg,
-      otherImgs,
-      categoryId,
-      id,
-    ]);
-
-    const draft = rows[0];
+  }: Omit<DraftConverted, 'updatedAt' | 'createdAt'>) {
+    const draft = await prisma.draft.update({
+      where: { draft_id: id },
+      data: {
+        fk_author_id: Number(authorId),
+        body,
+        title,
+        fk_category_id: categoryId,
+        main_img: mainImg,
+        other_imgs: otherImgs,
+      },
+    });
 
     return DraftService.convertDraft(draft);
   }
 
-  static async getOne({
-    id,
-    authorId,
-  }: {
-    id: number;
-    authorId: number;
-  }): Promise<Draft> {
-    const query = `SELECT *
-                     FROM ${tableName}
-                    WHERE draft_id = $1 AND fk_author_id = $2`;
-    const { rows }: QueryResult<DraftsRow> = await db.query(query, [
-      id,
-      authorId,
-    ]);
-    const draft = rows[0];
+  static async getOne({ id }: { id: number }): Promise<DraftConverted | null> {
+    const draft = await prisma.draft.findUnique({
+      where: { draft_id: id },
+    });
 
-    return DraftService.convertDraft(draft);
+    return draft ? DraftService.convertDraft(draft) : draft;
   }
 
   static async getDrafts(
     { dIds, authorId }: { dIds: number[]; authorId: number },
     { page, perPage }: { page: number; perPage: number },
   ) {
-    const query = `SELECT draft_id AS id, created_at AS "createdAt", updated_at as "updatedAt", fk_author_id AS "authorId", body,
-                          count(*) OVER() AS total_count
-                     FROM ${tableName}
-                    WHERE draft_id = ANY ($1) AND fk_author_id = $2
-                    LIMIT $3
-                   OFFSET $4
-      `;
+    const [totalCount, data] = await prisma.$transaction([
+      prisma.draft.count({
+        where: {
+          draft_id: { in: dIds },
+          fk_author_id: authorId,
+        },
+      }),
+      prisma.draft.findMany({
+        where: {
+          draft_id: { in: dIds },
+          fk_author_id: authorId,
+        },
+        skip: page * perPage,
+        take: perPage,
+      }),
+    ]);
 
-    const { rows: drafts, rowCount: count }: QueryResult<DraftsRow> =
-      await db.query(query, [dIds, authorId, perPage, page * perPage]);
+    const drafts = data.map((draft) => DraftService.convertDraft(draft));
 
-    const totalCount = drafts[0]?.total_count || null;
-
-    return { totalCount, count, drafts };
+    return { totalCount, count: data.length, drafts };
   }
 
-  static async delete({ id }: { id: number }): Promise<Draft | ApiError> {
-    const query = `DELETE
-                     FROM ${tableName}
-                    WHERE draft_id = $1
-                RETURNING draft_id, created_at, updated_at, fk_author_id, body`;
-    const queryPostsTags = `DELETE
-                             FROM post_${tableName}
-                            WHERE fk_draft_id = $1
+  static async delete({
+    id,
+  }: {
+    id: number;
+  }): Promise<DraftConverted | ApiError> {
+    const selectData = await prisma.draft.findUnique({
+      where: { draft_id: id },
+    });
 
-    `;
-    const selectData: QueryResult<DraftsRow> = await db.query(
-      `SELECT * FROM ${tableName}
-          WHERE draft_id = $1
-      `,
-      [id],
-    );
-
-    if (selectData.rows.length > 0) {
-      await db.query(queryPostsTags, [id]);
-      const { rows }: QueryResult<DraftsRow> = await db.query(query, [id]);
-      const data = rows[0];
-
-      return DraftService.convertDraft(data);
+    if (selectData === null) {
+      return ApiError.BadRequest('Draft not found');
     }
 
-    return ApiError.BadRequest('Tag not found');
+    await prisma.postsOnDrafts.deleteMany({
+      where: {
+        fk_draft_id: id,
+      },
+    });
+
+    const draft = await prisma.draft.delete({
+      where: {
+        draft_id: id,
+      },
+    });
+
+    return DraftService.convertDraft(draft);
   }
 
-  static convertDraft(draft: DraftsRow): PropsWithId<Draft> {
+  static convertDraft(draft: DraftsRow | Draft): PropsWithId<DraftConverted> {
     return {
       id: draft.draft_id,
       createdAt: draft.created_at,

@@ -20,15 +20,14 @@ class PostsCommentsService {
     commentId: number;
     postId: number;
   }) {
-    const query = `INSERT INTO ${tableName} (fk_post_id, fk_comment_id)
-                        VALUES ($1, $2)`;
+    const connect = await prisma.postsOnComments.create({
+      data: {
+        fk_comment_id: commentId,
+        fk_post_id: postId,
+      },
+    });
 
-    const { rows }: QueryResult<PostCommentRow> = await db.query(query, [
-      postId,
-      commentId,
-    ]);
-
-    return rows;
+    return connect;
   }
 
   static async getPostComments(

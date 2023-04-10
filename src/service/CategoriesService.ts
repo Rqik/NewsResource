@@ -2,6 +2,7 @@ import { QueryResult } from 'pg';
 
 import db from '../db';
 import { ApiError } from '../exceptions';
+import prisma from '../prisma';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
 const tableName = 'categories';
@@ -33,19 +34,16 @@ class CategoriesService {
     category,
   }: {
     description: string;
-    category?: string;
+    category?: number;
   }) {
-    const query = `INSERT INTO ${tableName} (description, fk_category_id)
-                   VALUES ($1, $2)
-                RETURNING category_id, description, fk_category_id`;
-    const { rows }: QueryResult<CategoriesRow> = await db.query(query, [
-      description,
-      category,
-    ]);
+    const newCategory = await prisma.category.create({
+      data: {
+        description,
+        fk_category_id: category,
+      },
+    });
 
-    const data = rows[0];
-
-    return CategoriesService.convertCategory(data);
+    return CategoriesService.convertCategory(newCategory);
   }
 
   static async update({
@@ -55,57 +53,47 @@ class CategoriesService {
   }: {
     id: number;
     description: string;
-    category?: string;
+    category?: number;
   }) {
-    const query = `UPDATE ${tableName}
-                      SET description = $1,
-                          fk_category_id = $2
-                    WHERE category_id = $3
-                RETURNING category_id, description, fk_category_id`;
-    const { rows }: QueryResult<CategoriesRow> = await db.query(query, [
-      description,
-      category,
-      id,
-    ]);
-    const data = rows[0];
+    const data = await prisma.category.update({
+      where: {
+        category_id: id,
+      },
+      data: {
+        description,
+        fk_category_id: category,
+      },
+    });
 
     return CategoriesService.convertCategory(data);
   }
 
   static async getAll({ page, perPage }: { page: number; perPage: number }) {
-    const { rows, rowCount: count }: QueryResult<CategoriesRow> =
-      await db.query(
-        `SELECT *,
-                count(*) OVER() AS total_count
-           FROM ${tableName}
-          LIMIT $1
-         OFFSET $2
-           `,
-        [perPage, page * perPage],
-      );
+    const [totalCount, data] = await prisma.$transaction([
+      prisma.category.count(),
+      prisma.category.findMany({
+        skip: page * perPage,
+        take: perPage,
+      }),
+    ]);
 
-    const totalCount = rows[0].total_count || null;
-
-    const categories = rows.map((category) =>
+    const categories = data.map((category) =>
       CategoriesService.convertCategory(category),
     );
 
     return {
       totalCount,
-      count,
+      count: categories.length,
       categories,
     };
   }
 
   static async getOne({ id }: { id: number }) {
-    const query = `SELECT *
-                     FROM ${tableName}
-                    WHERE category_id = $1`;
-    const { rows }: QueryResult<CategoriesRow> = await db.query(query, [id]);
+    const data = await prisma.category.findUnique({
+      where: { category_id: id },
+    });
 
-    const data = rows[0];
-
-    return CategoriesService.convertCategory(data);
+    return data ? CategoriesService.convertCategory(data) : data;
   }
 
   static async delete({ id }: { id: number }) {

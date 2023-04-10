@@ -135,11 +135,11 @@ class PostsService {
     otherImgs = [],
   }: {
     id: number;
-    title: string;
-    authorId: number;
-    categoryId: number;
-    body: string;
-    mainImg: string;
+    authorId: number | null;
+    body: string | null;
+    title: string | null;
+    categoryId: number | null;
+    mainImg: string | null;
     otherImgs: string[];
   }) {
     const query = `UPDATE ${tableName}

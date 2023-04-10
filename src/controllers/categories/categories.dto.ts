@@ -3,13 +3,13 @@ import { BaseValidator } from '../types';
 
 interface ICategory {
   description: string;
-  category?: string;
+  category?: number;
 }
 
 class CategoriesDto implements ICategory, BaseValidator {
   description: string;
 
-  category?: string;
+  category?: number;
 
   constructor(post: ICategory) {
     this.description = post.description;
@@ -23,7 +23,7 @@ class CategoriesDto implements ICategory, BaseValidator {
   static get getSchema() {
     return Joi.object<ICategory>({
       description: Joi.string().required(),
-      category: Joi.string(),
+      category: Joi.number(),
     });
   }
 }

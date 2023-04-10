@@ -143,7 +143,7 @@ class PostsDraftService {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftService.getOne({ id: draftId, authorId });
+      const draft = await DraftService.getOne({ id: draftId });
 
       return draft;
     }
@@ -162,15 +162,18 @@ class PostsDraftService {
   }) {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
-    if (isBelongs) {
-      const draft = await DraftService.getOne({ id: draftId, authorId });
+    if (!isBelongs) {
+      return ApiError.BadRequest('Not found drafts');
+    }
+    const draft = await DraftService.getOne({ id: draftId });
 
-      await PostsService.update({ ...draft, id: postId });
-
-      return draft;
+    if (draft === null) {
+      return ApiError.BadRequest('Not found drafts');
     }
 
-    return ApiError.BadRequest('Not found drafts');
+    await PostsService.update({ ...draft, id: postId });
+
+    return draft;
   }
 
   private static async checkPostBelongsDraft({
