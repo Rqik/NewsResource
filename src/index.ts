@@ -5,8 +5,6 @@ import path from 'path';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 
-import 'dotenv/config';
-
 import {
   auth,
   authors,
@@ -22,9 +20,10 @@ import HttpStatuses from './shared/HttpStatuses';
 import Tables from './database/Tables';
 import specification from './config/specification';
 import db from './db';
+import config from './config';
 
 const app = express();
-const port = process.env.PORT || 5000;
+const { port } = config;
 
 const apiVersion = '/api/v1';
 (async () => {

@@ -1,30 +1,31 @@
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport/index';
+import config from '../config';
 
 class MailService {
   transporter: ReturnType<typeof nodemailer.createTransport>;
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST as string,
-      port: process.env.SMTP_PORT as unknown as number,
+      host: config.smtpHost,
+      port: config.smtpPort,
       secure: false,
       auth: {
-        user: process.env.SMTP_USER as string,
-        pass: process.env.SMTP_PASSWORD as string,
+        user: config.smtpUser,
+        pass: config.smtpPassword,
       },
     } as SMTPTransport.Options);
   }
 
   async sendActivationMail({ to, link }: { to: string; link: string }) {
     await this.transporter.sendMail({
-      from: process.env.SMTP_USER,
+      from: config.smtpUser,
       to,
-      subject: `Activate profile ${process.env.API_URL}`,
+      subject: `Activate profile ${config.apiUrl}`,
       text: '',
       html: `</div>
         Для активации перейдите по ссылке
-        <a href="${process.env.API_URL}/activate/${link}">${process.env.API_URL}/activate/${link}</a>
+        <a href="$config.apiUrl}/activate/${link}">${config.apiUrl}/activate/${link}</a>
         </div>`,
     });
   }

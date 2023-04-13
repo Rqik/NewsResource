@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import config from '../../config';
 
 import { ApiError } from '../../exceptions/index';
 import UsersService from '../../service/UsersService';
@@ -49,7 +50,7 @@ class AuthController {
 
     await UsersService.activate(link);
 
-    res.redirect(process.env.CLIENT_URL || 'https://ya.ru/');
+    res.redirect(config.clientUrl || 'https://ya.ru/');
   }
 
   static async refresh(req: Request, res: Response, next: NextFunction) {

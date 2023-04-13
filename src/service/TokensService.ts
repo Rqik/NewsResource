@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import config from '../config';
 
 import type UserDto from '../dtos/UserDto';
 import prisma from '../prisma';
@@ -17,30 +18,19 @@ type Token = {
 
 class TokensService {
   static generateTokens(payload: UserDto) {
-    const accessToken = jwt.sign(
-      payload,
-      process.env.JWT_ACCESS_SECRET as string,
-      {
-        expiresIn: '30m',
-      },
-    );
-    const refreshToken = jwt.sign(
-      payload,
-      process.env.JWT_REFRESH_SECRET as string,
-      {
-        expiresIn: '30d',
-      },
-    );
+    const accessToken = jwt.sign(payload, config.jwtAccessSecret, {
+      expiresIn: '30m',
+    });
+    const refreshToken = jwt.sign(payload, config.jwtRefreshSecret, {
+      expiresIn: '30d',
+    });
 
     return { accessToken, refreshToken };
   }
 
   static validateAccess(token: string) {
     try {
-      const userData = jwt.verify(
-        token,
-        process.env.JWT_ACCESS_SECRET as string,
-      );
+      const userData = jwt.verify(token, config.jwtAccessSecret as string);
 
       return userData;
     } catch (error) {
@@ -50,10 +40,7 @@ class TokensService {
 
   static validateRefresh(token: string) {
     try {
-      const userData = jwt.verify(
-        token,
-        process.env.JWT_REFRESH_SECRET as string,
-      );
+      const userData = jwt.verify(token, config.jwtRefreshSecret);
 
       return userData;
     } catch (error) {

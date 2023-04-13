@@ -1,4 +1,5 @@
 import swaggerJsDoc from 'swagger-jsdoc';
+import config from '../config';
 
 const options: swaggerJsDoc.Options = {
   definition: {
@@ -8,7 +9,7 @@ const options: swaggerJsDoc.Options = {
       description: 'Metalamp IRM',
       version: '0.0.1',
     },
-    servers: [{ url: process.env.API_URL, description: 'Dev server' }],
+    servers: [{ url: config.apiUrl, description: 'Dev server' }],
   },
   apis: ['**/routes/*.ts', '**/openapi/*.yml'],
 };

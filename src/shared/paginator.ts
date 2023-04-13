@@ -1,5 +1,6 @@
 import querystring from 'querystring';
 import { Request } from 'express';
+import config from '../config';
 
 const paginator = ({
   totalCount,
@@ -29,9 +30,7 @@ const paginator = ({
     totalCount !== null && totalCount > (Number(page) + 1) * Number(perPage);
 
   if (addNextPageUrl) {
-    pagination.nextPage = `${
-      process.env.API_URL
-    }${route}?${querystring.stringify({
+    pagination.nextPage = `${config.apiUrl}${route}?${querystring.stringify({
       ...req.query,
       page: Number(page) + 1,
     })}`;
