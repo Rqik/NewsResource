@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { QueryResult } from 'pg';
 
-import db from '../db';
 import type UserDto from '../dtos/UserDto';
+import prisma from '../prisma';
 
 const tableName = 'tokens';
 
@@ -77,28 +76,29 @@ class TokensService {
 
       return tkn;
     }
-    const query = `INSERT INTO ${tableName} (refresh_token, fk_user_id)
-                        VALUES ($1, $2)
-                     RETURNING refresh_token, fk_user_id
-    `;
-    const { rows }: QueryResult<TokenRow> = await db.query(query, [
-      refreshToken,
-      userId,
-    ]);
 
-    return TokensService.convertCase(rows[0]);
+    const token = await prisma.token.create({
+      data: {
+        refresh_token: refreshToken,
+        fk_user_id: userId,
+      },
+    });
+
+    return TokensService.convertCase(token);
   }
 
   static async getById({ userId }: { userId: number }): Promise<Token | null> {
-    const query = `SELECT * FROM ${tableName}
-                    WHERE fk_user_id = $1
-    `;
-    const { rows }: QueryResult<TokenRow> = await db.query(query, [userId]);
-    if (rows.length === 0) {
+    const token = await prisma.token.findFirst({
+      where: {
+        fk_user_id: userId,
+      },
+    });
+
+    if (token === null) {
       return null;
     }
 
-    return TokensService.convertCase(rows[0]);
+    return TokensService.convertCase(token);
   }
 
   static async getOne({
@@ -106,17 +106,16 @@ class TokensService {
   }: {
     refreshToken: string;
   }): Promise<Token | null> {
-    const query = `SELECT * FROM ${tableName}
-                    WHERE refresh_token = $1
-    `;
-    const { rows }: QueryResult<TokenRow> = await db.query(query, [
-      refreshToken,
-    ]);
-    if (rows.length === 0) {
+    const token = await prisma.token.findUnique({
+      where: {
+        refresh_token: refreshToken,
+      },
+    });
+    if (token === null) {
       return null;
     }
 
-    return TokensService.convertCase(rows[0]);
+    return TokensService.convertCase(token);
   }
 
   static async update({
@@ -126,28 +125,26 @@ class TokensService {
     refreshToken: string;
     userId: number;
   }) {
-    const query = `UPDATE ${tableName}
-                      SET refresh_token = $1
-                    WHERE fk_user_id = $2
-                RETURNING refresh_token, fk_user_id`;
-    const { rows }: QueryResult<TokenRow> = await db.query(query, [
-      refreshToken,
-      userId,
-    ]);
+    const token = await prisma.token.update({
+      where: {
+        fk_user_id: userId,
+      },
+      data: {
+        refresh_token: refreshToken,
+      },
+    });
 
-    return TokensService.convertCase(rows[0]);
+    return TokensService.convertCase(token);
   }
 
   static async delete({ refreshToken }: { refreshToken: string }) {
-    const query = `DELETE ${tableName}
-                    WHERE refresh_token = $1
-                RETURNING refresh_token, fk_user_id`;
+    const token = await prisma.token.delete({
+      where: {
+        refresh_token: refreshToken,
+      },
+    });
 
-    const { rows }: QueryResult<TokenRow> = await db.query(query, [
-      refreshToken,
-    ]);
-
-    return TokensService.convertCase(rows[0]);
+    return TokensService.convertCase(token);
   }
 
   static convertCase(token: TokenRow): Token {

@@ -2,6 +2,7 @@ import { QueryResult } from 'pg';
 
 import db from '../db';
 import { ApiError } from '../exceptions/index';
+import prisma from '../prisma';
 import DraftService from './DraftService';
 import PostsService from './PostsService';
 
@@ -32,10 +33,6 @@ class PostsDraftService {
     mainImg: string;
     otherImgs: string[];
   }) {
-    const query = `INSERT INTO ${tableName} (fk_post_id, fk_draft_id)
-                        VALUES ($1, $2)
-                     RETURNING ${returnCols}`;
-
     const draft = await DraftService.create({
       body,
       authorId,
@@ -45,7 +42,12 @@ class PostsDraftService {
       otherImgs,
     });
 
-    await db.query(query, [postId, draft.id]);
+    await prisma.postsOnDrafts.create({
+      data: {
+        fk_draft_id: draft.id,
+        fk_post_id: postId,
+      },
+    });
 
     return draft;
   }
@@ -134,7 +136,6 @@ class PostsDraftService {
   static async getOne({
     postId,
     draftId,
-    authorId,
   }: {
     postId: number;
     draftId: number;
@@ -154,11 +155,9 @@ class PostsDraftService {
   static async publish({
     postId,
     draftId,
-    authorId,
   }: {
     postId: number;
     draftId: number;
-    authorId: number;
   }) {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
@@ -183,15 +182,14 @@ class PostsDraftService {
     postId: number;
     draftId: number;
   }) {
-    const query = `SELECT *
-                     FROM ${tableName}
-                    WHERE fk_post_id = $1 AND fk_draft_id = $2`;
-    const { rows }: QueryResult<PostDraftRow> = await db.query(query, [
-      postId,
-      draftId,
-    ]);
+    const data = await prisma.postsOnDrafts.findMany({
+      where: {
+        fk_draft_id: draftId,
+        fk_post_id: postId,
+      },
+    });
 
-    return rows.length > 0;
+    return data.length > 0;
   }
 }
 

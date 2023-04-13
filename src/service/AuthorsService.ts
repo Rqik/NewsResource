@@ -1,88 +1,87 @@
-import { QueryResult } from 'pg';
+import { Author } from '@prisma/client';
 
-import db from '../db';
+import { ApiError } from '../exceptions/index';
+import prisma from '../prisma';
 import { PropsWithId } from './types';
-
-const tableName = 'authors';
 
 type AuthorsRow = {
   author_id: number;
   fk_user_id: number;
-  description: string;
+  description: string | null;
   total_count?: number;
 };
 
-type Author = {
+type AuthorConverted = {
   id: number;
   userId: number;
-  description: string;
+  description: string | null;
 };
 
 type AuthorProp = { description: string; userId: number };
 class AuthorsService {
   static async create({ description, userId }: AuthorProp) {
-    const query = `INSERT INTO ${tableName} (description, fk_user_id)
-                        VALUES ($1, $2)
-                     RETURNING author_id, description, fk_user_id`;
-
-    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [
-      description,
-      userId,
-    ]);
-    const author = rows[0];
+    const author = await prisma.author.create({
+      data: {
+        description,
+        fk_user_id: userId,
+      },
+    });
 
     return AuthorsService.convertCase(author);
   }
 
   static async update({ id, description, userId }: PropsWithId<AuthorProp>) {
-    const query = `UPDATE ${tableName}
-                      SET description = $1,
-                          fk_user_id = $2
-                    WHERE author_id = $3
-                RETURNING author_id, description, fk_user_id`;
-    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [
-      description,
-      userId,
-      id,
-    ]);
-    const author = rows[0];
+    const author = await prisma.author.update({
+      where: {
+        author_id: Number(id),
+      },
+      data: {
+        description,
+        fk_user_id: userId,
+      },
+    });
 
     return AuthorsService.convertCase(author);
   }
 
   static async getAll({ page, perPage }: { page: number; perPage: number }) {
-    const { rows, rowCount: count }: QueryResult<AuthorsRow> = await db.query(
-      `SELECT *,
-              count(*) OVER() AS total_count
-         FROM ${tableName}
-        LIMIT $1
-       OFFSET $2
-           `,
-      [perPage, page * perPage],
-    );
-    const authors = rows.map((author) => AuthorsService.convertCase(author));
-    const totalCount = rows[0]?.total_count || null;
+    const [totalCount, data] = await prisma.$transaction([
+      prisma.author.count(),
+      prisma.author.findMany({
+        skip: page * perPage,
+        take: perPage,
+      }),
+    ]);
+    const authors = data.map((author) => AuthorsService.convertCase(author));
 
-    return { authors, count, totalCount };
+    return { authors, count: data.length, totalCount };
   }
 
   static async getOne({ id }: PropsWithId) {
-    const query = `SELECT *
-                     FROM ${tableName}
-                    WHERE author_id = $1`;
-    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [id]);
-    const author = rows[0];
+    const author = await prisma.author.findUnique({
+      where: {
+        author_id: Number(id),
+      },
+    });
+
+    if (author === null) {
+      return ApiError.BadRequest('Not found Author');
+    }
 
     return AuthorsService.convertCase(author);
   }
 
   static async getByUserId({ id }: PropsWithId) {
     try {
-      const query = `SELECT *
-          FROM ${tableName}
-        WHERE fk_user_id = $1`;
-      const { rows }: QueryResult<AuthorsRow> = await db.query(query, [id]);
-      const author = rows[0];
+      const author = await prisma.author.findFirst({
+        where: {
+          fk_user_id: Number(id),
+        },
+      });
+
+      if (author === null) {
+        return ApiError.BadRequest('Not found Author');
+      }
 
       return AuthorsService.convertCase(author);
     } catch {
@@ -91,27 +90,26 @@ class AuthorsService {
   }
 
   static async deleteUserAuthors({ id }: PropsWithId) {
-    const query = `DELETE FROM ${tableName}
-                    WHERE fk_user_id = $1
-                RETURNING author_id, description, fk_user_id`;
-
-    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [id]);
-
-    return rows.map((author) => AuthorsService.convertCase(author));
-  }
-
-  static async delete({ id }: PropsWithId) {
-    const query = `DELETE FROM ${tableName}
-                    WHERE author_id = $1
-                RETURNING author_id, description, fk_user_id`;
-
-    const { rows }: QueryResult<AuthorsRow> = await db.query(query, [id]);
-    const author = rows[0];
+    const author = await prisma.author.delete({
+      where: {
+        fk_user_id: Number(id),
+      },
+    });
 
     return AuthorsService.convertCase(author);
   }
 
-  static convertCase(author: AuthorsRow): Author {
+  static async delete({ id }: PropsWithId) {
+    const author = await prisma.author.delete({
+      where: {
+        author_id: Number(id),
+      },
+    });
+
+    return AuthorsService.convertCase(author);
+  }
+
+  static convertCase(author: AuthorsRow | Author): AuthorConverted {
     return {
       id: author.author_id,
       description: author.description,

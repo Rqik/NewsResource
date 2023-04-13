@@ -9,7 +9,7 @@ generator client {
 
 model Author {
   author_id   Int     @id(map: "pk_authors_author_id") @default(autoincrement())
-  fk_user_id  Int
+  fk_user_id  Int     @unique
   description String? @db.VarChar(512)
   users       User    @relation(fields: [fk_user_id], references: [user_id], map: "fk_authors_user_id")
   drafts      Draft[]
@@ -117,8 +117,8 @@ model Tag {
 }
 
 model Token {
-  refresh_token String @id(map: "pk_pk_refresh_token")
-  fk_user_id    Int?
+  refresh_token String @id(map: "pk_refresh_token")
+  fk_user_id    Int    @unique
   users         User?  @relation(fields: [fk_user_id], references: [user_id], map: "fk_tokens_user_id")
 
   @@map("tokens")

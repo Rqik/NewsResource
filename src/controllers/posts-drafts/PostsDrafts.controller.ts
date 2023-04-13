@@ -62,6 +62,10 @@ class PostsDraftsController {
     const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
     const post = await PostsService.getOne({ id });
 
+    if (author instanceof ApiError) {
+      return next(author);
+    }
+
     if (author === null || post.author.id !== author.id) {
       return next(ApiError.NotFound());
     }
@@ -165,7 +169,6 @@ class PostsDraftsController {
       const result = await PostsDraftService.publish({
         postId: Number(id),
         draftId: Number(did),
-        authorId: author.id,
       });
 
       res.send(result);
@@ -175,10 +178,17 @@ class PostsDraftsController {
   private static async authorValidate(req: RequestWithParams<{ id: string }>) {
     const { id } = req.params;
 
-    const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
-    const post = await PostsService.getOne({ id });
+    if (req.locals.user.id !== id) {
+      return ApiError.NotFound();
+    }
 
-    if (author === null || post.author.id !== author.id) {
+    const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
+
+    if (author instanceof ApiError) {
+      return author;
+    }
+
+    if (author === null) {
       return ApiError.NotFound();
     }
 

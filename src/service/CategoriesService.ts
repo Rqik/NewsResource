@@ -1,11 +1,4 @@
-import { QueryResult } from 'pg';
-
-import db from '../db';
-import { ApiError } from '../exceptions';
 import prisma from '../prisma';
-
-/* eslint-disable @typescript-eslint/no-empty-function */
-const tableName = 'categories';
 
 type CategoriesRow = {
   category_id: number;
@@ -97,26 +90,14 @@ class CategoriesService {
   }
 
   static async delete({ id }: { id: number }) {
-    const query = `DELETE
-                     FROM ${tableName}
-                    WHERE category_id = $1
-                RETURNING category_id, description, fk_category_id`;
+    // TODO:проверить data !== null
+    const data = await prisma.category.delete({
+      where: {
+        category_id: id,
+      },
+    });
 
-    const selectData: QueryResult<CategoriesRow> = await db.query(
-      `SELECT *
-         FROM ${tableName}
-        WHERE category_id = $1`,
-      [id],
-    );
-
-    if (selectData.rows.length > 0) {
-      const { rows }: QueryResult<CategoriesRow> = await db.query(query, [id]);
-      const data = rows[0];
-
-      return CategoriesService.convertCategory(data);
-    }
-
-    return ApiError.BadRequest('Category not found');
+    return CategoriesService.convertCategory(data);
   }
 
   private static convertCategory(category: CategoriesRow) {

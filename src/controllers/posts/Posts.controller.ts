@@ -32,7 +32,9 @@ class PostsController {
     const [mainNameImg] = FileService.savePostImage(mainImg) || [];
     const otherNameImgs = FileService.savePostImage(otherImgs) || [];
     const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
-
+    if (author instanceof ApiError) {
+      return next(author);
+    }
     if (author === null || Number(authorId) !== author.id) {
       return next(ApiError.BadRequest('Not valid author id'));
     }

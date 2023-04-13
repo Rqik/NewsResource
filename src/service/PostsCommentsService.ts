@@ -42,6 +42,15 @@ class PostsCommentsService {
 
     const commentIds = rows.map((el) => el.fk_comment_id);
 
+    const comm = await prisma.postsOnComments.findMany({
+      where: {
+        posts: {
+          post_id: Number(id),
+        },
+      },
+    });
+    console.log('comm', comm);
+
     const { totalCount, count, comments } = await CommentsService.getComments(
       { commentIds },
       { page, perPage },
@@ -57,12 +66,14 @@ class PostsCommentsService {
     postId: number;
     commentId: number;
   }) {
-    const query = `DELETE
-                     FROM ${tableName}
-                    WHERE fk_post_id = $1 AND fk_comment_id = $2`;
-
-    await db.query(query, [postId, commentId]);
-
+    await prisma.postsOnComments.delete({
+      where: {
+        fk_comment_id_fk_post_id: {
+          fk_comment_id: commentId,
+          fk_post_id: postId,
+        },
+      },
+    });
     const comment = await CommentsService.delete({ id: commentId });
 
     return comment;

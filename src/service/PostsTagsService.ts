@@ -2,6 +2,7 @@ import { QueryResult } from 'pg';
 
 import db from '../db';
 import ApiError from '../exceptions/ApiError';
+import prisma from '../prisma';
 import type { TagFilters } from './PostsService';
 import TagsService from './TagsService';
 import { PropsWithId } from './types';
@@ -16,19 +17,20 @@ const returnCols = 'fk_post_id, fk_tag_id';
 
 class PostsTagsService {
   static async create({ postId, tagId }: { postId: number; tagId: number }) {
-    const query = `INSERT INTO ${tableName} (fk_post_id, fk_tag_id)
-                        VALUES ($1, $2)
-                     RETURNING ${returnCols}`;
-
-    await db.query(query, [postId, tagId]);
+    await prisma.postsOnTags.create({
+      data: {
+        fk_post_id: postId,
+        fk_tag_id: tagId,
+      },
+    });
   }
 
   static async getPostTags({ id }: PropsWithId) {
-    const query = `SELECT *
-                     FROM ${tableName}
-                    WHERE fk_post_id = $1
-                    `;
-    const { rows }: QueryResult<PostTagRow> = await db.query(query, [id]);
+    const rows = await prisma.postsOnTags.findMany({
+      where: {
+        fk_post_id: Number(id),
+      },
+    });
 
     const tIds = rows.map((el) => el.fk_tag_id);
 
@@ -62,16 +64,19 @@ class PostsTagsService {
   }
 
   static async delete({ postId, tagId }: { postId: number; tagId: number }) {
-    const queryPostsTags = `DELETE
-                              FROM post_${tableName}
-                             WHERE fk_post_id = $1 AND fk_tag_id = $2
-`;
     const isBelongs = await this.checkPostBelongsTags({ postId, tagId });
 
     if (isBelongs) {
-      const { rows } = await db.query(queryPostsTags, [postId, tagId]);
+      const data = await prisma.postsOnTags.delete({
+        where: {
+          fk_post_id_fk_tag_id: {
+            fk_post_id: postId,
+            fk_tag_id: tagId,
+          },
+        },
+      });
 
-      return rows[0];
+      return data;
     }
 
     return ApiError.BadRequest('Tag not found');
@@ -84,15 +89,14 @@ class PostsTagsService {
     postId: number;
     tagId: number;
   }) {
-    const query = `SELECT *
-                     FROM ${tableName}
-                    WHERE fk_post_id = $1 AND fk_tag_id = $2`;
-    const { rows }: QueryResult<PostTagRow> = await db.query(query, [
-      postId,
-      tagId,
-    ]);
+    const data = await prisma.postsOnTags.findMany({
+      where: {
+        fk_post_id: postId,
+        fk_tag_id: tagId,
+      },
+    });
 
-    return rows.length > 0;
+    return data.length > 0;
   }
 }
 
