@@ -1,10 +1,10 @@
 import { QueryResult } from 'pg';
 
-import db from '../db';
-import { ApiError } from '../exceptions/index';
-import prisma from '../prisma';
-import DraftService from './DraftService';
-import PostsService from './PostsService';
+import db from '../../db';
+import { ApiError } from '../../exceptions/index';
+import prisma from '../../prisma';
+import DraftsService from '../drafts/Drafts.service';
+import PostsService from '../posts/Posts.service';
 
 type PostDraftRow = {
   fk_draft_id: number;
@@ -15,7 +15,7 @@ type PostDraftRow = {
 const tableName = 'posts_drafts';
 const returnCols = 'fk_post_id, fk_draft_id';
 
-class PostsDraftService {
+class PostsDraftsService {
   static async create({
     postId,
     authorId,
@@ -33,7 +33,7 @@ class PostsDraftService {
     mainImg: string;
     otherImgs: string[];
   }) {
-    const draft = await DraftService.create({
+    const draft = await DraftsService.create({
       body,
       authorId,
       title,
@@ -64,7 +64,7 @@ class PostsDraftService {
 
     const dIds = rows.map((el) => el.fk_draft_id);
 
-    const { totalCount, count, drafts } = await DraftService.getDrafts(
+    const { totalCount, count, drafts } = await DraftsService.getDrafts(
       { dIds, authorId },
       { page, perPage },
     );
@@ -87,7 +87,7 @@ class PostsDraftService {
 
     if (isBelongs) {
       await db.query(queryPostTags, [postId, draftId]);
-      const removedDraft = await DraftService.delete({ id: draftId });
+      const removedDraft = await DraftsService.delete({ id: draftId });
 
       return removedDraft;
     }
@@ -117,7 +117,7 @@ class PostsDraftService {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftService.update({
+      const draft = await DraftsService.update({
         id: draftId,
         body,
         authorId,
@@ -144,7 +144,7 @@ class PostsDraftService {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftService.getOne({ id: draftId });
+      const draft = await DraftsService.getOne({ id: draftId });
 
       return draft;
     }
@@ -164,7 +164,7 @@ class PostsDraftService {
     if (!isBelongs) {
       return ApiError.BadRequest('Not found drafts');
     }
-    const draft = await DraftService.getOne({ id: draftId });
+    const draft = await DraftsService.getOne({ id: draftId });
 
     if (draft === null) {
       return ApiError.BadRequest('Not found drafts');
@@ -193,4 +193,4 @@ class PostsDraftService {
   }
 }
 
-export default PostsDraftService;
+export default PostsDraftsService;

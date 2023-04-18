@@ -1,8 +1,8 @@
 import { Draft } from '@prisma/client';
 
-import { ApiError } from '../exceptions';
-import prisma from '../prisma';
-import { PropsWithId } from './types';
+import { ApiError } from '../../exceptions/index';
+import prisma from '../../prisma';
+import { PropsWithId } from '../types';
 
 type DraftsRow = {
   draft_id: number;
@@ -29,7 +29,7 @@ type DraftConverted = {
   otherImgs: string[];
 };
 
-class DraftService {
+class DraftsService {
   static async create({
     authorId,
     body,
@@ -49,7 +49,7 @@ class DraftService {
       },
     });
 
-    return DraftService.convertDraft(draft);
+    return DraftsService.convertDraft(draft);
   }
 
   static async update({
@@ -73,7 +73,7 @@ class DraftService {
       },
     });
 
-    return DraftService.convertDraft(draft);
+    return DraftsService.convertDraft(draft);
   }
 
   static async getOne({ id }: { id: number }): Promise<DraftConverted | null> {
@@ -81,7 +81,7 @@ class DraftService {
       where: { draft_id: id },
     });
 
-    return draft ? DraftService.convertDraft(draft) : draft;
+    return draft ? DraftsService.convertDraft(draft) : draft;
   }
 
   static async getDrafts(
@@ -105,7 +105,7 @@ class DraftService {
       }),
     ]);
 
-    const drafts = data.map((draft) => DraftService.convertDraft(draft));
+    const drafts = data.map((draft) => DraftsService.convertDraft(draft));
 
     return { totalCount, count: data.length, drafts };
   }
@@ -135,7 +135,7 @@ class DraftService {
       },
     });
 
-    return DraftService.convertDraft(draft);
+    return DraftsService.convertDraft(draft);
   }
 
   static convertDraft(draft: DraftsRow | Draft): PropsWithId<DraftConverted> {
@@ -153,4 +153,4 @@ class DraftService {
   }
 }
 
-export default DraftService;
+export default DraftsService;

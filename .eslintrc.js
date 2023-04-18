@@ -24,7 +24,8 @@ module.exports = {
         endOfLine: 'auto',
       },
     ],
-    'newline-before-return': 'warn'
+    'newline-before-return': 'warn',
+    'import/prefer-default-export': 'off',
   },
   settings: {
     'import/resolver': {

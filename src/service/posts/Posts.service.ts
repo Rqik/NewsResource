@@ -1,13 +1,13 @@
 import { QueryResult } from 'pg';
 
-import db from '../db';
-import { ApiError } from '../exceptions';
-import { queryCategoriesRecursive } from './CategoriesService';
-import CommentsService, { CommentRow } from './CommentsService';
-import PostsCommentsService from './PostsCommentsService';
-import PostsTagsService from './PostsTagsService';
-import TagsService, { TagsRow } from './TagsService';
-import { PropsWithId } from './types';
+import db from '../../db';
+import { ApiError } from '../../exceptions/index';
+import { queryCategoriesRecursive } from '../categories/Categories.service';
+import CommentsService, { CommentRow } from '../comments/Comments.service';
+import PostsCommentsService from '../posts-comments/PostsComments.service';
+import PostsTagsService from '../posts-tags/PostsTags.service';
+import TagsService, { TagsRow } from '../tags/Tags.service';
+import { PropsWithId } from '../types';
 
 const tableName = 'posts';
 

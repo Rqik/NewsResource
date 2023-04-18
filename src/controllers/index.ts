@@ -1,19 +1,8 @@
-import AuthController from './auth/Auth.controller';
-import AuthorsController from './authors/Authors.controller';
-import CategoriesController from './categories/CategoriesController';
-import PostsCommentsController from './posts-comments/PostsComments.controller';
-import PostsDraftsController from './posts-drafts/PostsDrafts.controller';
-import TagsController from './tags/Tags.controller';
-import UsersController from './users/Users.controller';
-import PostsController from './posts/Posts.controller';
-
-export {
-  AuthController,
-  AuthorsController,
-  CategoriesController,
-  PostsCommentsController,
-  PostsDraftsController,
-  TagsController,
-  UsersController,
-  PostsController,
-};
+export { AuthorsController } from './authors/index';
+export { CategoriesController } from './categories/index';
+export { PostsCommentsController } from './posts-comments';
+export { PostsDraftsController } from './posts-drafts';
+export { TagsController } from './tags';
+export { UsersController } from './users';
+export { PostsController } from './posts';
+export { AuthController } from './auth/index';

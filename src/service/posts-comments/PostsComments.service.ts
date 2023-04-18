@@ -1,9 +1,9 @@
 import { QueryResult } from 'pg';
 
-import db from '../db';
-import prisma from '../prisma';
-import CommentsService from './CommentsService';
-import { PropsWithId } from './types';
+import db from '../../db';
+import prisma from '../../prisma';
+import CommentsService from '../comments/Comments.service';
+import { PropsWithId } from '../types';
 
 const tableName = 'posts_comments';
 

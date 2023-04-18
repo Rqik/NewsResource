@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 
-import TagsService from '../../service/TagsService';
+import TagsService from '../../service/tags/Tags.service';
 import paginator from '../../shared/paginator';
 import {
   RequestWithBody,

@@ -1,8 +1,8 @@
 import { Author } from '@prisma/client';
 
-import { ApiError } from '../exceptions/index';
-import prisma from '../prisma';
-import { PropsWithId } from './types';
+import { ApiError } from '../../exceptions/index';
+import prisma from '../../prisma';
+import { PropsWithId } from '../types';
 
 type AuthorsRow = {
   author_id: number;

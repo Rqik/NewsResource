@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import config from '../config';
+import config from '../../config';
 
-import type UserDto from '../dtos/UserDto';
-import prisma from '../prisma';
+import type UserDto from '../../dtos/UserDto';
+import prisma from '../../prisma';
 
 const tableName = 'tokens';
 
@@ -16,7 +16,7 @@ type Token = {
   userId: number;
 };
 
-class TokensService {
+class TokenService {
   static generateTokens(payload: UserDto) {
     const accessToken = jwt.sign(payload, config.jwtAccessSecret, {
       expiresIn: '30m',
@@ -55,11 +55,11 @@ class TokensService {
     refreshToken: string;
     userId: number;
   }): Promise<Token> {
-    const tokenData = await TokensService.getById({ userId });
+    const tokenData = await TokenService.getById({ userId });
     // TODO:fix это не работает как надо. если вызвать увидишь ошибку
     if (tokenData) {
       tokenData.refreshToken = refreshToken;
-      const tkn = await TokensService.update(tokenData);
+      const tkn = await TokenService.update(tokenData);
 
       return tkn;
     }
@@ -71,7 +71,7 @@ class TokensService {
       },
     });
 
-    return TokensService.convertCase(token);
+    return TokenService.convertCase(token);
   }
 
   static async getById({ userId }: { userId: number }): Promise<Token | null> {
@@ -85,7 +85,7 @@ class TokensService {
       return null;
     }
 
-    return TokensService.convertCase(token);
+    return TokenService.convertCase(token);
   }
 
   static async getOne({
@@ -102,7 +102,7 @@ class TokensService {
       return null;
     }
 
-    return TokensService.convertCase(token);
+    return TokenService.convertCase(token);
   }
 
   static async update({
@@ -121,7 +121,7 @@ class TokensService {
       },
     });
 
-    return TokensService.convertCase(token);
+    return TokenService.convertCase(token);
   }
 
   static async delete({ refreshToken }: { refreshToken: string }) {
@@ -131,7 +131,7 @@ class TokensService {
       },
     });
 
-    return TokensService.convertCase(token);
+    return TokenService.convertCase(token);
   }
 
   static convertCase(token: TokenRow): Token {
@@ -142,4 +142,4 @@ class TokensService {
   }
 }
 
-export default TokensService;
+export default TokenService;

@@ -3,14 +3,14 @@ import bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 import { User } from '@prisma/client';
 
-import db from '../db';
-import UserDto from '../dtos/UserDto';
-import { ApiError } from '../exceptions';
-import AuthorsService from './AuthorsService';
-import { PropsWithId } from './types';
-import MailService from './MailService';
-import TokensService from './TokensService';
-import prisma from '../prisma';
+import db from '../../db';
+import UserDto from '../../dtos/UserDto';
+import { ApiError } from '../../exceptions/index';
+import AuthorsService from '../authors/Authors.service';
+import { PropsWithId } from '../types';
+import MailService from '../mail/Mail.service';
+import TokenService from '../token/Token.service';
+import prisma from '../../prisma';
 
 const tableName = 'users';
 
@@ -103,8 +103,8 @@ class UsersService {
     });
 
     const userDto = new UserDto(UsersService.convertCase(user));
-    const tokens = TokensService.generateTokens({ ...userDto });
-    await TokensService.create({
+    const tokens = TokenService.generateTokens({ ...userDto });
+    await TokenService.create({
       userId: userDto.id,
       refreshToken: tokens.refreshToken,
     });
@@ -147,8 +147,8 @@ class UsersService {
     }
 
     const userDto = new UserDto(user);
-    const tokens = TokensService.generateTokens({ ...userDto });
-    await TokensService.create({
+    const tokens = TokenService.generateTokens({ ...userDto });
+    await TokenService.create({
       userId: userDto.id,
       refreshToken: tokens.refreshToken,
     });
@@ -157,7 +157,7 @@ class UsersService {
   }
 
   static async logout(refreshToken: string) {
-    const token = await TokensService.delete({ refreshToken });
+    const token = await TokenService.delete({ refreshToken });
 
     return token;
   }
@@ -167,8 +167,8 @@ class UsersService {
       return ApiError.UnauthorizeError();
     }
 
-    const userData = TokensService.validateRefresh(refreshToken);
-    const tokenFromDb = await TokensService.getOne({ refreshToken });
+    const userData = TokenService.validateRefresh(refreshToken);
+    const tokenFromDb = await TokenService.getOne({ refreshToken });
 
     if (!userData && !tokenFromDb) {
       return ApiError.UnauthorizeError();
@@ -185,9 +185,9 @@ class UsersService {
     }
 
     const userDto = new UserDto(user);
-    const tokens = TokensService.generateTokens({ ...userDto });
+    const tokens = TokenService.generateTokens({ ...userDto });
 
-    await TokensService.create({
+    await TokenService.create({
       userId: userDto.id,
       refreshToken: tokens.refreshToken,
     });

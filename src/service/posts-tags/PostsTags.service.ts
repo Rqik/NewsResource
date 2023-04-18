@@ -1,11 +1,11 @@
 import { QueryResult } from 'pg';
 
-import db from '../db';
-import ApiError from '../exceptions/ApiError';
-import prisma from '../prisma';
-import type { TagFilters } from './PostsService';
-import TagsService from './TagsService';
-import { PropsWithId } from './types';
+import db from '../../db';
+import ApiError from '../../exceptions/ApiError';
+import prisma from '../../prisma';
+import type { TagFilters } from '../posts/Posts.service';
+import TagsService from '../tags/Tags.service';
+import { PropsWithId } from '../types';
 
 type PostTagRow = {
   fk_tag_id: number;

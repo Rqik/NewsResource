@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
 
 import { ApiError } from '../../exceptions/index';
-import UsersService from '../../service/UsersService';
+import UsersService from '../../service/users/Users.service';
 import { RequestWithBody, RequestWithParams } from '../types';
 import AuthDto, { IAuth } from './auth.dto';
 

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import ApiError from '../exceptions/ApiError';
-import TokensService from '../service/TokensService';
+import TokenService from '../service/token/Token.service';
 import getAuthorizationToken from '../shared/get-authorization-token';
 
 const authMiddleware = (req: Request, _: Response, next: NextFunction) => {
@@ -16,7 +16,7 @@ const authMiddleware = (req: Request, _: Response, next: NextFunction) => {
       return next(ApiError.UnauthorizeError());
     }
 
-    const decodeData = TokensService.validateAccess(token);
+    const decodeData = TokenService.validateAccess(token);
     if (decodeData === null) {
       return next(ApiError.UnauthorizeError());
     }

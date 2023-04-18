@@ -1,9 +1,9 @@
 import { QueryResult } from 'pg';
 
-import db from '../db';
-import { ApiError } from '../exceptions';
-import prisma from '../prisma';
-import { PropsWithId } from './types';
+import db from '../../db';
+import { ApiError } from '../../exceptions/index';
+import prisma from '../../prisma';
+import { PropsWithId } from '../types';
 
 const tableName = 'tags';
 type TagsRow = {

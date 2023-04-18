@@ -1,6 +1,6 @@
 import { NextFunction, Response } from 'express';
 
-import CategoriesService from '../../service/CategoriesService';
+import CategoriesService from '../../service/categories/Categories.service';
 import paginator from '../../shared/paginator';
 import {
   RequestWithBody,
