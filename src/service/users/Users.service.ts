@@ -5,12 +5,12 @@ import { User } from '@prisma/client';
 
 import db from '../../db';
 import UserDto from '../../dtos/UserDto';
-import { ApiError } from '../../exceptions/index';
+import { ApiError } from '../../exceptions';
 import AuthorsService from '../authors/Authors.service';
 import { PropsWithId } from '../types';
 import MailService from '../mail/Mail.service';
 import TokenService from '../token/Token.service';
-import prisma from '../../prisma';
+import prisma from '../../client';
 
 const tableName = 'users';
 

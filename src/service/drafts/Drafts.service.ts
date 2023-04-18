@@ -1,7 +1,7 @@
 import { Draft } from '@prisma/client';
 
-import { ApiError } from '../../exceptions/index';
-import prisma from '../../prisma';
+import { ApiError } from '../../exceptions';
+import prisma from '../../client';
 import { PropsWithId } from '../types';
 
 type DraftsRow = {

@@ -2,7 +2,7 @@ import { QueryResult } from 'pg';
 
 import db from '../../db';
 import ApiError from '../../exceptions/ApiError';
-import prisma from '../../prisma';
+import prisma from '../../client';
 import type { TagFilters } from '../posts/Posts.service';
 import TagsService from '../tags/Tags.service';
 import { PropsWithId } from '../types';

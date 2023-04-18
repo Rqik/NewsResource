@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { ApiError } from '../exceptions/index';
+import { ApiError } from '../exceptions';
 import HttpStatuses from '../shared/HttpStatuses';
 
 const errorMiddleware = (

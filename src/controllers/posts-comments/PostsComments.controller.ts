@@ -1,11 +1,11 @@
 import { Response, NextFunction } from 'express';
 
-import { ApiError } from '../../exceptions/index';
+import { ApiError } from '../../exceptions';
 import {
   CommentsService,
   PostsCommentsService,
   TokensService,
-} from '../../service/index';
+} from '../../service';
 import getAuthorizationToken from '../../shared/get-authorization-token';
 import paginator from '../../shared/paginator';
 import {

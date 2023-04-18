@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { CategoriesController } from '../controllers/index';
+import { CategoriesController } from '../controllers';
 import { adminMiddleware, errorHandler } from '../middleware';
 
 const router = express.Router();

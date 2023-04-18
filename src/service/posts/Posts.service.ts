@@ -1,7 +1,7 @@
 import { QueryResult } from 'pg';
 
 import db from '../../db';
-import { ApiError } from '../../exceptions/index';
+import { ApiError } from '../../exceptions';
 import { queryCategoriesRecursive } from '../categories/Categories.service';
 import CommentsService, { CommentRow } from '../comments/Comments.service';
 import PostsCommentsService from '../posts-comments/PostsComments.service';

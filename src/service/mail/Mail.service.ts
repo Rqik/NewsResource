@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import SMTPTransport from 'nodemailer/lib/smtp-transport/index';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import config from '../../config';
 
 class MailService {

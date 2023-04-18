@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import config from '../../config';
 
 import type UserDto from '../../dtos/UserDto';
-import prisma from '../../prisma';
+import prisma from '../../client';
 
 const tableName = 'tokens';
 

@@ -1,6 +1,6 @@
 import { Comment } from '@prisma/client';
 
-import prisma from '../../prisma';
+import prisma from '../../client';
 
 type CommentRow = {
   comment_id: number;
