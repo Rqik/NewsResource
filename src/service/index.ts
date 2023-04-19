@@ -8,5 +8,5 @@ export { PostsService } from './posts';
 export { PostsCommentsService } from './posts-comments';
 export { PostsDraftsService } from './posts-drafts';
 export { MailService } from './mail';
-export { TokenService } from './token';
+export { TokensService } from './tokens';
 export { FileService } from './file';

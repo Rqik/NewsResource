@@ -4,7 +4,7 @@ import { ApiError } from '../../exceptions';
 import {
   AuthorsService,
   FileService,
-  PostsDraftService,
+  PostsDraftsService,
   PostsService,
 } from '../../service';
 import paginator from '../../shared/paginator';
@@ -35,7 +35,7 @@ class PostsDraftsController {
     const [mainNameImg] = FileService.savePostImage(mainImg) || [];
     const otherNameImgs = FileService.savePostImage(otherImgs) || [];
 
-    const draft = await PostsDraftService.create({
+    const draft = await PostsDraftsService.create({
       ...value,
       postId: Number(id),
       authorId: author.id,
@@ -72,7 +72,7 @@ class PostsDraftsController {
     const [mainNameImg] = FileService.savePostImage(mainImg) || [];
     const otherNameImgs = FileService.savePostImage(otherImgs) || [];
 
-    const result = await PostsDraftService.update({
+    const result = await PostsDraftsService.update({
       ...value,
       postId: Number(id),
       draftId: Number(did),
@@ -99,7 +99,7 @@ class PostsDraftsController {
       next(author);
     } else {
       const { totalCount, count, drafts } =
-        await PostsDraftService.getDraftsPost(
+        await PostsDraftsService.getDraftsPost(
           {
             postId: Number(id),
             authorId: author.id,
@@ -132,7 +132,7 @@ class PostsDraftsController {
     if (author instanceof ApiError) {
       next(author);
     } else {
-      const result = await PostsDraftService.getOne({
+      const result = await PostsDraftsService.getOne({
         postId: Number(id),
         draftId: Number(did),
         authorId: author.id,
@@ -148,7 +148,7 @@ class PostsDraftsController {
   ) {
     const { id, did } = req.params;
     await PostsDraftsController.authorValidate(req);
-    const result = await PostsDraftService.delete({
+    const result = await PostsDraftsService.delete({
       postId: Number(id),
       draftId: Number(did),
     });
@@ -166,7 +166,7 @@ class PostsDraftsController {
     if (author instanceof ApiError) {
       next(author);
     } else {
-      const result = await PostsDraftService.publish({
+      const result = await PostsDraftsService.publish({
         postId: Number(id),
         draftId: Number(did),
       });

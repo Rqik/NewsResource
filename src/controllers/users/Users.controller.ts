@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 
 import { ApiError } from '../../exceptions';
-import { FileService, TokenService, UsersService } from '../../service';
+import { FileService, TokensService, UsersService } from '../../service';
 import getAuthorizationToken from '../../shared/get-authorization-token';
 import paginator from '../../shared/paginator';
 import {
@@ -126,7 +126,7 @@ class UsersController {
     next: NextFunction,
   ) {
     const accessToken = getAuthorizationToken(req);
-    const tokenData = TokenService.validateAccess(accessToken);
+    const tokenData = TokensService.validateAccess(accessToken);
 
     if (tokenData === null || typeof tokenData === 'string') {
       next(ApiError.BadRequest('Invalid Authorization token'));

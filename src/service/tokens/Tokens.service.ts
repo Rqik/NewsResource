@@ -16,7 +16,7 @@ type Token = {
   userId: number;
 };
 
-class TokenService {
+class TokensService {
   static generateTokens(payload: UserDto) {
     const accessToken = jwt.sign(payload, config.jwtAccessSecret, {
       expiresIn: '30m',
@@ -55,11 +55,11 @@ class TokenService {
     refreshToken: string;
     userId: number;
   }): Promise<Token> {
-    const tokenData = await TokenService.getById({ userId });
+    const tokenData = await TokensService.getById({ userId });
     // TODO:fix это не работает как надо. если вызвать увидишь ошибку
     if (tokenData) {
       tokenData.refreshToken = refreshToken;
-      const tkn = await TokenService.update(tokenData);
+      const tkn = await TokensService.update(tokenData);
 
       return tkn;
     }
@@ -71,7 +71,7 @@ class TokenService {
       },
     });
 
-    return TokenService.convertCase(token);
+    return TokensService.convertCase(token);
   }
 
   static async getById({ userId }: { userId: number }): Promise<Token | null> {
@@ -85,7 +85,7 @@ class TokenService {
       return null;
     }
 
-    return TokenService.convertCase(token);
+    return TokensService.convertCase(token);
   }
 
   static async getOne({
@@ -102,7 +102,7 @@ class TokenService {
       return null;
     }
 
-    return TokenService.convertCase(token);
+    return TokensService.convertCase(token);
   }
 
   static async update({
@@ -121,7 +121,7 @@ class TokenService {
       },
     });
 
-    return TokenService.convertCase(token);
+    return TokensService.convertCase(token);
   }
 
   static async delete({ refreshToken }: { refreshToken: string }) {
@@ -131,7 +131,7 @@ class TokenService {
       },
     });
 
-    return TokenService.convertCase(token);
+    return TokensService.convertCase(token);
   }
 
   static convertCase(token: TokenRow): Token {
@@ -142,4 +142,4 @@ class TokenService {
   }
 }
 
-export default TokenService;
+export default TokensService;
