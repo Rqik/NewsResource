@@ -1,8 +1,7 @@
-# __News Api__
+# **News Api**
 
 <a href="https://www.npmjs.com/"><img src="https://img.shields.io/badge/npm-v8.19.2-blue?style=for-the-badge"></a>
 <a href="https://nodejs.org/en/"><img src="https://img.shields.io/badge/node->=18.12.1-ff0062?style=for-the-badge"></a>
-
 
 ```console
 // Load
@@ -37,8 +36,18 @@ Rename env.dev to env
 //set db prop
 DB_USER='postgres'
 DB_PASSWORD='root'
-DB_PORT=9000
-DB_DATABASE='FirstTest'
+DB_PORT=5432
+DB_NAME='FirstTest'
 ```
 
 yarn dev
+
+docker
+
+run
+
+docker-compose up
+
+stop
+
+docker-compose down

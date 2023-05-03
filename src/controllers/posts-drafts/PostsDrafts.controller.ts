@@ -6,7 +6,7 @@ import {
   FileService,
   PostsDraftsService,
   PostsService,
-} from '../../service';
+} from '../../services/index';
 import paginator from '../../shared/paginator';
 import {
   RequestWithParams,

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { ApiError } from '../exceptions';
-import { TokensService } from '../service';
+import { TokensService } from '../services/index';
 import getAuthorizationToken from '../shared/get-authorization-token';
 
 const adminMiddleware = (req: Request, _: Response, next: NextFunction) => {
@@ -11,6 +11,7 @@ const adminMiddleware = (req: Request, _: Response, next: NextFunction) => {
     if (!token) {
       return next(ApiError.NotFound());
     }
+    console.log('token', token);
 
     const decodeData = TokensService.validateAccess(token);
 

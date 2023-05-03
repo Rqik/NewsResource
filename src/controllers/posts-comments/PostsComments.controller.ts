@@ -5,7 +5,7 @@ import {
   CommentsService,
   PostsCommentsService,
   TokensService,
-} from '../../service';
+} from '../../services/index';
 import getAuthorizationToken from '../../shared/get-authorization-token';
 import paginator from '../../shared/paginator';
 import {

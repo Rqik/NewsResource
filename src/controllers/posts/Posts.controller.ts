@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import ApiError from '../../exceptions/ApiError';
 
-import { AuthorsService, FileService, PostsService } from '../../service';
+import { AuthorsService, FileService, PostsService } from '../../services/index';
 import paginator from '../../shared/paginator';
 import {
   RequestWithBody,

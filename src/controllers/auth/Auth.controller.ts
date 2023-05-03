@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
 
 import { ApiError } from '../../exceptions/index';
-import { UsersService } from '../../service/index';
+import { UsersService } from '../../services/index';
 import { RequestWithBody, RequestWithParams } from '../types';
 import AuthDto, { IAuth } from './auth.dto';
 
@@ -47,6 +47,7 @@ class AuthController {
     res: Response,
   ) {
     const { link } = req.params;
+    console.log(link);
 
     await UsersService.activate(link);
 

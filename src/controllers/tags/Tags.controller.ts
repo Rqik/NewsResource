@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 
-import { TagsService } from '../../service';
+import { TagsService } from '../../services/index';
 import paginator from '../../shared/paginator';
 import {
   RequestWithBody,

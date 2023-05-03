@@ -9,6 +9,8 @@
 # production
 /build
 /dist
+/db
+/db_test
 
 # misc
 .env

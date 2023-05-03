@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 
 import { ApiError } from '../../exceptions';
-import { FileService, TokensService, UsersService } from '../../service';
+import { FileService, TokensService, UsersService } from '../../services/index';
 import getAuthorizationToken from '../../shared/get-authorization-token';
 import paginator from '../../shared/paginator';
 import {
@@ -87,7 +87,6 @@ class UsersController {
     res: Response,
   ) {
     const { per_page: perPage = 20, page = 0 } = req.query;
-    console.log(' console.log(totalCount, users, count) ');
 
     const { totalCount, users, count } = await UsersService.getAll({
       page: Number(page),

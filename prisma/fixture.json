@@ -1,0 +1,18 @@
+{
+  "user": {
+    "first_name": "Игорь",
+    "last_name": "джабраилов",
+    "avatar": null,
+    "login": "test_login",
+    "password": "secret",
+    "admin": true,
+    "activate_link": "ea4d142b-b317-4a1c-8e96-c1bcd81396a2",
+    "email": "tabasaranec96@mail.ru"
+  },
+  "category": [
+    {
+      "description": "связана с 18",
+      "category": 18
+    }
+  ]
+}

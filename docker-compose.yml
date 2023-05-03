@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  api:
+    container_name: api
+    build: ./
+    restart: always
+    ports:
+      - '${PORT}:${PORT}'
+    depends_on:
+      - postgres
+  postgres:
+    container_name: postgres
+    image: postgres:15.2
+    restart: always
+    ports:
+      - '${DB_PORT}:${DB_PORT}'
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_USER: ${DB_USER}
+    volumes:
+      - ./db:/var/lib/postgresql/data
+  pgadmin-compose:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "placeholder@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "fakepassword123!"
+    ports:
+      - "16543:80"
+    depends_on:
+      - postgres

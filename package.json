@@ -3,25 +3,31 @@
   "version": "1.0.0",
   "description": "My first api",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "yarn watch && yarn dev",
-    "watch": "tsc -w",
-    "dev": "nodemon --inspect ./dist/index.js",
-    "build": "rimraf --inspect ./build && npx tsc",
-    "lint": "npx eslint ./src",
-    "lint:fix": "yarn lint --fix",
-    "dev2": "npx nodemon"
-  },
-  "keywords": [
-    "api",
-    "nodejs",
-    "RESTfull"
-  ],
   "author": "Arsen Gadjiusmanov",
   "license": "ISC",
+  "scripts": {
+    "test": "jest",
+    "start": "npm run watch && npm run dev",
+    "watch": "tsc -w",
+    "dev": "nodemon --inspect ./dist/index.js",
+    "prisma": "npx prisma generate",
+    "build": "rimraf --inspect ./build && npx tsc",
+    "lint": "npx eslint ./src",
+    "lint:fix": "npm run lint --fix",
+    "seed": "npx prisma db seed",
+    "dev2": "nodemon --inspect ./dist/index.js --exitcrash"
+  },
+  "keywords": [
+    "API",
+    "nodejs",
+    "RESTfull",
+    "express"
+  ],
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
-    "@prisma/client": "^4.12.0",
+    "@prisma/client": "^4.13.0",
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/cors": "^2.8.13",
@@ -45,6 +51,7 @@
   "devDependencies": {
     "@types/express": "^4.17.14",
     "@types/express-fileupload": "^1.4.1",
+    "@types/jest": "^29.5.1",
     "@types/node": "^18.11.11",
     "@types/pg": "^8.6.5",
     "@types/swagger-jsdoc": "^6.0.1",
@@ -57,11 +64,13 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "jest": "^29.5.0",
     "nodemon": "^2.0.20",
     "prettier": "2.8.0",
-    "prisma": "^4.12.0",
+    "prisma": "^4.13.0",
     "rimraf": "^3.0.2",
+    "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.3"
+    "typescript": "^4.9.5"
   }
 }

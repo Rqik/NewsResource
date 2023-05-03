@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import ApiError from '../exceptions/ApiError';
-import { TokensService } from '../service';
+import { TokensService } from '../services/index';
 import getAuthorizationToken from '../shared/get-authorization-token';
 
 const authMiddleware = (req: Request, _: Response, next: NextFunction) => {

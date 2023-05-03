@@ -17,8 +17,8 @@ const envVarsSchema = Joi.object({
   DB_USER: Joi.string().required(),
   DB_PASSWORD: Joi.string().required(),
   DB_HOST: Joi.string().required(),
-  DB_PORT: Joi.number().default(9000),
-  DB_DATABASE: Joi.string().required(),
+  DB_PORT: Joi.number().default(5432),
+  DB_NAME: Joi.string().required(),
 
   API_URL: Joi.string()
     .uri({ scheme: ['http', 'https'] })
@@ -27,7 +27,7 @@ const envVarsSchema = Joi.object({
     .uri({ scheme: ['http', 'https'] })
     .required(),
   DATABASE_URL: Joi.string().default(
-    'postgresql://postgres:root@localhost:9000/FirstTest?schema=public',
+    'postgresql://postgres:root@localhost:5432/FirstTest?schema=public',
   ),
 })
   .unknown()
@@ -54,7 +54,7 @@ const config = {
   dbPassword: envVars.DB_PASSWORD,
   dbHost: envVars.DB_HOST,
   dbPort: envVars.DB_PORT,
-  dbDatabase: envVars.DB_DATABASE,
+  dbName: envVars.DB_NAME,
   apiUrl: envVars.API_URL,
   clientUrl: envVars.CLIENT_URL,
   databaseUrl: envVars.DATABASE_URL,
