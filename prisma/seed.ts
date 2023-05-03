@@ -7,11 +7,11 @@ console.log('sdfsdfdsfs');
 async function main() {
   const data = fs.readFileSync('./prisma/fixture.json');
   const users = JSON.parse(data.toString());
-  await Object.entries(users).forEach(async ([keys, values]) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    await prisma[keys].create({ data: values });
-  });
+  // await Object.entries(users).forEach(async ([keys, values]) => {
+  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //   // @ts-ignore
+  //   await prisma[keys].create({ data: values });
+  // });
   prisma.user.create({
     data: {
       first_name: 'Игорь',
