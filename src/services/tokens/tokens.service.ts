@@ -139,7 +139,7 @@ class TokensService {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  convertCase(token: TokenRow): Token {
+  private convertCase(token: TokenRow): Token {
     return {
       refreshToken: token.refresh_token,
       userId: token.fk_user_id,

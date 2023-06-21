@@ -26,7 +26,7 @@ class TagsService {
       },
     });
 
-    return this.convertTag(tag);
+    return this.convertCase(tag);
   }
 
   async update({ id, title }: PropsWithId<TagsProp>) {
@@ -39,7 +39,7 @@ class TagsService {
       },
     });
 
-    return this.convertTag(tag);
+    return this.convertCase(tag);
   }
 
   async getAll({ page, perPage }: { page: number; perPage: number }) {
@@ -51,7 +51,7 @@ class TagsService {
       }),
     ]);
 
-    const tags = data.map((tag) => this.convertTag(tag));
+    const tags = data.map((tag) => this.convertCase(tag));
 
     return {
       totalCount,
@@ -67,7 +67,7 @@ class TagsService {
       },
     });
 
-    return tags.map((tag) => this.convertTag(tag));
+    return tags.map((tag) => this.convertCase(tag));
   }
 
   async getOne({ id }: PropsWithId) {
@@ -80,7 +80,7 @@ class TagsService {
       return ApiError.BadRequest(`Tag by ${id} not found`);
     }
 
-    return this.convertTag(tag);
+    return this.convertCase(tag);
   }
 
   async delete({ id }: PropsWithId) {
@@ -90,11 +90,11 @@ class TagsService {
       },
     });
 
-    return this.convertTag(tag);
+    return this.convertCase(tag);
   }
 
   // eslint-disable-next-line class-methods-use-this
-  convertTag(tag: TagsRow): PropsWithId<TagsProp> {
+  convertCase(tag: TagsRow): PropsWithId<TagsProp> {
     return {
       id: tag.tag_id,
       title: tag.title,

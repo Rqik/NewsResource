@@ -310,7 +310,7 @@ class UsersService {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  convertCase(user: UsersRow | User): UserConverted {
+  private convertCase(user: UsersRow | User): UserConverted {
     return {
       id: user.user_id,
       firstName: user.first_name,

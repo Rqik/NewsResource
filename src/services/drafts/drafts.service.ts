@@ -54,7 +54,7 @@ class DraftsService {
       },
     });
 
-    return this.convertDraft(draft);
+    return this.convertCase(draft);
   }
 
   async update({
@@ -78,7 +78,7 @@ class DraftsService {
       },
     });
 
-    return this.convertDraft(draft);
+    return this.convertCase(draft);
   }
 
   async getOne({ id }: { id: number }): Promise<DraftConverted | null> {
@@ -86,7 +86,7 @@ class DraftsService {
       where: { draft_id: id },
     });
 
-    return draft ? this.convertDraft(draft) : draft;
+    return draft ? this.convertCase(draft) : draft;
   }
 
   async getDrafts(
@@ -110,7 +110,7 @@ class DraftsService {
       }),
     ]);
 
-    const drafts = data.map((draft) => this.convertDraft(draft));
+    const drafts = data.map((draft) => this.convertCase(draft));
 
     return { totalCount, count: data.length, drafts };
   }
@@ -136,11 +136,11 @@ class DraftsService {
       },
     });
 
-    return this.convertDraft(draft);
+    return this.convertCase(draft);
   }
 
   // eslint-disable-next-line class-methods-use-this
-  convertDraft(draft: DraftsRow | Draft): PropsWithId<DraftConverted> {
+  private convertCase(draft: DraftsRow | Draft): PropsWithId<DraftConverted> {
     return {
       id: draft.draft_id,
       createdAt: draft.created_at,

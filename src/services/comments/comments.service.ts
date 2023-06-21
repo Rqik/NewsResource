@@ -34,7 +34,7 @@ class CommentsService {
       },
     });
 
-    return this.convertComment(comment);
+    return this.convertCase(comment);
   }
 
   async getComments(
@@ -56,7 +56,7 @@ class CommentsService {
       }),
     ]);
 
-    const comments = data.map((comment) => this.convertComment(comment));
+    const comments = data.map((comment) => this.convertCase(comment));
 
     return { totalCount, count: data.length, comments };
   }
@@ -68,11 +68,11 @@ class CommentsService {
       },
     });
 
-    return this.convertComment(comment);
+    return this.convertCase(comment);
   }
 
   // eslint-disable-next-line class-methods-use-this
-  convertComment(comment: CommentRow | Comment): CommentConverted {
+  private convertCase(comment: CommentRow | Comment): CommentConverted {
     return {
       id: comment.comment_id,
       userId: comment.fk_user_id,

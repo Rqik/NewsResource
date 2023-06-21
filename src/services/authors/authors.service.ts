@@ -30,7 +30,7 @@ class AuthorsService {
       },
     });
 
-    return AuthorsService.convertCase(author);
+    return this.convertCase(author);
   }
 
   async update({ id, description, userId }: PropsWithId<AuthorProp>) {
@@ -44,7 +44,7 @@ class AuthorsService {
       },
     });
 
-    return AuthorsService.convertCase(author);
+    return this.convertCase(author);
   }
 
   async getAll({ page, perPage }: { page: number; perPage: number }) {
@@ -55,7 +55,7 @@ class AuthorsService {
         take: perPage,
       }),
     ]);
-    const authors = data.map((author) => AuthorsService.convertCase(author));
+    const authors = data.map((author) => this.convertCase(author));
 
     return { authors, count: data.length, totalCount };
   }
@@ -71,7 +71,7 @@ class AuthorsService {
       return ApiError.BadRequest('Not found Author');
     }
 
-    return AuthorsService.convertCase(author);
+    return this.convertCase(author);
   }
 
   async getByUserId({ id }: PropsWithId) {
@@ -86,7 +86,7 @@ class AuthorsService {
         return ApiError.BadRequest('Not found Author');
       }
 
-      return AuthorsService.convertCase(author);
+      return this.convertCase(author);
     } catch {
       return null;
     }
@@ -99,7 +99,7 @@ class AuthorsService {
       },
     });
 
-    return AuthorsService.convertCase(author);
+    return this.convertCase(author);
   }
 
   async delete({ id }: PropsWithId) {
@@ -109,9 +109,10 @@ class AuthorsService {
       },
     });
 
-    return AuthorsService.convertCase(author);
+    return this.convertCase(author);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   convertCase(author: AuthorsRow | Author): AuthorConverted {
     return {
       id: author.author_id,

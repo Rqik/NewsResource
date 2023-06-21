@@ -38,7 +38,7 @@ class CategoriesService {
       },
     });
 
-    return CategoriesService.convertCategory(newCategory);
+    return this.convertCase(newCategory);
   }
 
   async update({
@@ -60,7 +60,7 @@ class CategoriesService {
       },
     });
 
-    return CategoriesService.convertCategory(data);
+    return this.convertCase(data);
   }
 
   async getAll({ page, perPage }: { page: number; perPage: number }) {
@@ -72,9 +72,7 @@ class CategoriesService {
       }),
     ]);
 
-    const categories = data.map((category) =>
-      CategoriesService.convertCategory(category),
-    );
+    const categories = data.map((category) => this.convertCase(category));
 
     return {
       totalCount,
@@ -88,7 +86,7 @@ class CategoriesService {
       where: { category_id: id },
     });
 
-    return data ? CategoriesService.convertCategory(data) : data;
+    return data ? this.convertCase(data) : data;
   }
 
   async delete({ id }: { id: number }) {
@@ -99,10 +97,11 @@ class CategoriesService {
       },
     });
 
-    return CategoriesService.convertCategory(data);
+    return this.convertCase(data);
   }
 
-  private convertCategory(category: CategoriesRow) {
+  // eslint-disable-next-line class-methods-use-this
+  private convertCase(category: CategoriesRow) {
     return {
       id: category.category_id,
       description: category.description,

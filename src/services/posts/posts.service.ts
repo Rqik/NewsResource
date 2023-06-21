@@ -346,7 +346,7 @@ class PostsService {
     const { rows, rowCount: count }: QueryResult<PostFullRow> =
       await this.db.query(querySelect, [...values, perPage, page * perPage]);
     const totalCount = rows[0]?.total_count || null;
-    const posts = rows.map((post) => PostsService.convertPosts(post));
+    const posts = rows.map((post) => this.convertCase(post));
 
     return {
       totalCount,
@@ -385,7 +385,7 @@ class PostsService {
     const tags = await this.postsTagsService.getPostTags({ id });
 
     return {
-      ...this.convertPosts({ ...data, tags: [], comments: [] }),
+      ...this.convertCase({ ...data, tags: [], comments: [] }),
       tags,
       comments,
     };
@@ -415,7 +415,7 @@ class PostsService {
     return ApiError.BadRequest('Post not found');
   }
 
-  private convertPosts(post: PostFullRow) {
+  convertCase(post: PostFullRow) {
     const {
       post_id: id,
       title,
@@ -439,8 +439,8 @@ class PostsService {
       fk_category_id: rootCategoryId,
     } = post;
 
-    const comments = cm.map((c) => this.commentsService.convertComment(c));
-    const tags = ts.map((t) => this.tagsService.convertTag(t));
+    const comments = cm.map((c) => this.commentsService.convertCase(c));
+    const tags = ts.map((t) => this.tagsService.convertCase(t));
 
     return {
       id,
