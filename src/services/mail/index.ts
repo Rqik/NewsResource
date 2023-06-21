@@ -1,2 +1,2 @@
 // eslint-disable-next-line import/prefer-default-export
-export { default as MailService } from './Mail.service';
+export { default as MailService } from './mail.service';

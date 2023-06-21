@@ -1,6 +1,6 @@
 import { Comment } from '@prisma/client';
 
-import prisma from '../../client';
+import prisma from '@/client';
 
 type CommentRow = {
   comment_id: number;
@@ -18,34 +18,36 @@ type CommentConverted = {
 };
 
 class CommentsService {
-  static async create({
+  constructor(private prismaClient: typeof prisma) {}
+
+  async create({
     userId,
     body,
   }: {
     userId: number;
     body: string;
   }): Promise<CommentConverted> {
-    const comment = await prisma.comment.create({
+    const comment = await this.prismaClient.comment.create({
       data: {
         fk_user_id: userId,
         body,
       },
     });
 
-    return CommentsService.convertComment(comment);
+    return this.convertComment(comment);
   }
 
-  static async getComments(
+  async getComments(
     { commentIds }: { commentIds: number[] },
     { page, perPage }: { page: number; perPage: number },
   ) {
-    const [totalCount, data] = await prisma.$transaction([
-      prisma.comment.count({
+    const [totalCount, data] = await this.prismaClient.$transaction([
+      this.prismaClient.comment.count({
         where: {
           comment_id: { in: commentIds },
         },
       }),
-      prisma.comment.findMany({
+      this.prismaClient.comment.findMany({
         where: {
           comment_id: { in: commentIds },
         },
@@ -54,24 +56,23 @@ class CommentsService {
       }),
     ]);
 
-    const comments = data.map((comment) =>
-      CommentsService.convertComment(comment),
-    );
+    const comments = data.map((comment) => this.convertComment(comment));
 
     return { totalCount, count: data.length, comments };
   }
 
-  static async delete({ id }: { id: number }): Promise<CommentConverted> {
-    const comment = await prisma.comment.delete({
+  async delete({ id }: { id: number }): Promise<CommentConverted> {
+    const comment = await this.prismaClient.comment.delete({
       where: {
         comment_id: id,
       },
     });
 
-    return CommentsService.convertComment(comment);
+    return this.convertComment(comment);
   }
 
-  static convertComment(comment: CommentRow | Comment): CommentConverted {
+  // eslint-disable-next-line class-methods-use-this
+  convertComment(comment: CommentRow | Comment): CommentConverted {
     return {
       id: comment.comment_id,
       userId: comment.fk_user_id,
@@ -82,4 +83,4 @@ class CommentsService {
 }
 
 export type { CommentRow };
-export default CommentsService;
+export default new CommentsService(prisma);

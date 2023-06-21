@@ -1,7 +1,9 @@
 import { Draft } from '@prisma/client';
+import { boundClass } from 'autobind-decorator';
 
-import { ApiError } from '../../exceptions/index';
-import prisma from '../../client';
+import prisma from '@/client';
+import { ApiError } from '@/exceptions';
+
 import { PropsWithId } from '../types';
 
 type DraftsRow = {
@@ -29,8 +31,11 @@ type DraftConverted = {
   otherImgs: string[];
 };
 
+@boundClass
 class DraftsService {
-  static async create({
+  constructor(private prismaClient: typeof prisma) {}
+
+  async create({
     authorId,
     body,
     title,
@@ -38,7 +43,7 @@ class DraftsService {
     mainImg,
     otherImgs,
   }: Omit<DraftConverted, 'createdAt' | 'updatedAt' | 'id'>) {
-    const draft = await prisma.draft.create({
+    const draft = await this.prismaClient.draft.create({
       data: {
         fk_author_id: Number(authorId),
         body,
@@ -49,10 +54,10 @@ class DraftsService {
       },
     });
 
-    return DraftsService.convertDraft(draft);
+    return this.convertDraft(draft);
   }
 
-  static async update({
+  async update({
     id,
     authorId,
     body,
@@ -61,7 +66,7 @@ class DraftsService {
     mainImg,
     otherImgs,
   }: Omit<DraftConverted, 'updatedAt' | 'createdAt'>) {
-    const draft = await prisma.draft.update({
+    const draft = await this.prismaClient.draft.update({
       where: { draft_id: id },
       data: {
         fk_author_id: Number(authorId),
@@ -73,29 +78,29 @@ class DraftsService {
       },
     });
 
-    return DraftsService.convertDraft(draft);
+    return this.convertDraft(draft);
   }
 
-  static async getOne({ id }: { id: number }): Promise<DraftConverted | null> {
-    const draft = await prisma.draft.findUnique({
+  async getOne({ id }: { id: number }): Promise<DraftConverted | null> {
+    const draft = await this.prismaClient.draft.findUnique({
       where: { draft_id: id },
     });
 
-    return draft ? DraftsService.convertDraft(draft) : draft;
+    return draft ? this.convertDraft(draft) : draft;
   }
 
-  static async getDrafts(
+  async getDrafts(
     { dIds, authorId }: { dIds: number[]; authorId: number },
     { page, perPage }: { page: number; perPage: number },
   ) {
-    const [totalCount, data] = await prisma.$transaction([
-      prisma.draft.count({
+    const [totalCount, data] = await this.prismaClient.$transaction([
+      this.prismaClient.draft.count({
         where: {
           draft_id: { in: dIds },
           fk_author_id: authorId,
         },
       }),
-      prisma.draft.findMany({
+      this.prismaClient.draft.findMany({
         where: {
           draft_id: { in: dIds },
           fk_author_id: authorId,
@@ -105,17 +110,13 @@ class DraftsService {
       }),
     ]);
 
-    const drafts = data.map((draft) => DraftsService.convertDraft(draft));
+    const drafts = data.map((draft) => this.convertDraft(draft));
 
     return { totalCount, count: data.length, drafts };
   }
 
-  static async delete({
-    id,
-  }: {
-    id: number;
-  }): Promise<DraftConverted | ApiError> {
-    const selectData = await prisma.draft.findUnique({
+  async delete({ id }: { id: number }): Promise<DraftConverted | ApiError> {
+    const selectData = await this.prismaClient.draft.findUnique({
       where: { draft_id: id },
     });
 
@@ -123,22 +124,23 @@ class DraftsService {
       return ApiError.BadRequest('Draft not found');
     }
 
-    await prisma.postsOnDrafts.deleteMany({
+    await this.prismaClient.postsOnDrafts.deleteMany({
       where: {
         fk_draft_id: id,
       },
     });
 
-    const draft = await prisma.draft.delete({
+    const draft = await this.prismaClient.draft.delete({
       where: {
         draft_id: id,
       },
     });
 
-    return DraftsService.convertDraft(draft);
+    return this.convertDraft(draft);
   }
 
-  static convertDraft(draft: DraftsRow | Draft): PropsWithId<DraftConverted> {
+  // eslint-disable-next-line class-methods-use-this
+  convertDraft(draft: DraftsRow | Draft): PropsWithId<DraftConverted> {
     return {
       id: draft.draft_id,
       createdAt: draft.created_at,
@@ -153,4 +155,4 @@ class DraftsService {
   }
 }
 
-export default DraftsService;
+export default new DraftsService(prisma);

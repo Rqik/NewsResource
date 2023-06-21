@@ -1,4 +1,5 @@
 import Joi from 'joi';
+
 import { BaseValidator } from '../types';
 
 interface IUser {
@@ -38,7 +39,8 @@ class UserDto implements IUser, BaseValidator {
   avatar: string | null = null;
 
   constructor(user: IUser) {
-    Object.entries(user).forEach(([key, value]: (keyof IUser)[]) => {
+    Object.entries(user).forEach((val) => {
+      const [key, value] = val as [keyof IUser, any];
       this[key] = value;
     });
   }

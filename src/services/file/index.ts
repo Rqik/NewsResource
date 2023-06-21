@@ -1,2 +1,2 @@
 // eslint-disable-next-line import/prefer-default-export
-export { default as FileService } from './File.service';
+export { default as FileService } from './file.service';

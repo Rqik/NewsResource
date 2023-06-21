@@ -1,4 +1,5 @@
 import Joi from 'joi';
+
 import { BaseValidator } from '../types';
 
 interface IAuth {

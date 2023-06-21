@@ -1,2 +1,2 @@
 // eslint-disable-next-line import/prefer-default-export
-export { default as CommentsService } from './Comments.service';
+export { default as CommentsService } from './comments.service';

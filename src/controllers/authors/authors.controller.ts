@@ -1,7 +1,9 @@
-import { Response, NextFunction } from 'express';
+import { boundClass } from 'autobind-decorator';
+import { NextFunction, Response } from 'express';
 
-import { AuthorsService } from '../../services/index';
-import paginator from '../../shared/paginator';
+import { AuthorsService } from '@/services';
+import paginator from '@/shared/paginator';
+
 import {
   RequestWithBody,
   RequestWithParams,
@@ -11,8 +13,11 @@ import {
 import type { IAuthor } from './authors.dto';
 import AuthorsDto from './authors.dto';
 
+@boundClass
 class AuthorsController {
-  static async create(
+  constructor(private authorsService: typeof AuthorsService) {}
+
+  async create(
     req: RequestWithBody<IAuthor>,
     res: Response,
     next: NextFunction,
@@ -23,12 +28,12 @@ class AuthorsController {
       return next(error);
     }
 
-    const result = await AuthorsService.create(value);
+    const result = await this.authorsService.create(value);
 
     return res.send(result);
   }
 
-  static async update(
+  async update(
     req: RequestWithParamsAndBody<{ id: string }, IAuthor>,
     res: Response,
     next: NextFunction,
@@ -40,18 +45,18 @@ class AuthorsController {
       return next(error);
     }
 
-    const result = await AuthorsService.update({ ...value, id });
+    const result = await this.authorsService.update({ ...value, id });
 
     return res.send(result);
   }
 
-  static async getAll(
+  async getAll(
     req: RequestWithQuery<{ per_page: string; page: string }>,
     res: Response,
   ) {
     const { per_page: perPage = 10, page = 0 } = req.query;
 
-    const { totalCount, count, authors } = await AuthorsService.getAll({
+    const { totalCount, count, authors } = await this.authorsService.getAll({
       page: Number(page),
       perPage: Number(perPage),
     });
@@ -68,21 +73,21 @@ class AuthorsController {
     res.send({ ...pagination, data: authors });
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
 
-    const result = await AuthorsService.getOne({ id });
+    const result = await this.authorsService.getOne({ id });
 
     res.send(result);
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  async delete(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
 
-    const result = await AuthorsService.delete({ id });
+    const result = await this.authorsService.delete({ id });
 
     res.send(result);
   }
 }
 
-export default AuthorsController;
+export default new AuthorsController(AuthorsService);

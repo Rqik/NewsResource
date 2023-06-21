@@ -1,8 +1,10 @@
+import { boundClass } from 'autobind-decorator';
 import { QueryResult } from 'pg';
 
-import db from '../../db';
-import prisma from '../../client';
-import CommentsService from '../comments/Comments.service';
+import prisma from '@/client';
+import db from '@/db';
+
+import { CommentsService } from '../comments';
 import { PropsWithId } from '../types';
 
 const tableName = 'posts_comments';
@@ -12,15 +14,15 @@ type PostCommentRow = {
   fk_comment_id: number;
 };
 
+@boundClass
 class PostsCommentsService {
-  static async create({
-    commentId,
-    postId,
-  }: {
-    commentId: number;
-    postId: number;
-  }) {
-    const connect = await prisma.postsOnComments.create({
+  constructor(
+    private prismaClient: typeof prisma,
+    private commentsService: typeof CommentsService,
+  ) {}
+
+  async create({ commentId, postId }: { commentId: number; postId: number }) {
+    const connect = await this.prismaClient.postsOnComments.create({
       data: {
         fk_comment_id: commentId,
         fk_post_id: postId,
@@ -30,7 +32,7 @@ class PostsCommentsService {
     return connect;
   }
 
-  static async getPostComments(
+  async getPostComments(
     { id }: PropsWithId,
     { page, perPage }: { page: number; perPage: number },
   ) {
@@ -42,31 +44,22 @@ class PostsCommentsService {
 
     const commentIds = rows.map((el) => el.fk_comment_id);
 
-    const comm = await prisma.postsOnComments.findMany({
+    const comm = await this.prismaClient.postsOnComments.findMany({
       where: {
         posts: {
           post_id: Number(id),
         },
       },
     });
-    console.log('comm', comm);
 
-    const { totalCount, count, comments } = await CommentsService.getComments(
-      { commentIds },
-      { page, perPage },
-    );
+    const { totalCount, count, comments } =
+      await this.commentsService.getComments({ commentIds }, { page, perPage });
 
     return { totalCount, count, comments };
   }
 
-  static async delete({
-    postId,
-    commentId,
-  }: {
-    postId: number;
-    commentId: number;
-  }) {
-    await prisma.postsOnComments.delete({
+  async delete({ postId, commentId }: { postId: number; commentId: number }) {
+    await this.prismaClient.postsOnComments.delete({
       where: {
         fk_comment_id_fk_post_id: {
           fk_comment_id: commentId,
@@ -74,10 +67,10 @@ class PostsCommentsService {
         },
       },
     });
-    const comment = await CommentsService.delete({ id: commentId });
+    const comment = await this.commentsService.delete({ id: commentId });
 
     return comment;
   }
 }
 
-export default PostsCommentsService;
+export default new PostsCommentsService(prisma, CommentsService);

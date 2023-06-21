@@ -1,4 +1,4 @@
-import prisma from '../../client';
+import prisma from '@/client';
 
 type CategoriesRow = {
   category_id: number;
@@ -22,14 +22,16 @@ const queryCategoriesRecursive = (nameTemplate = 'catR') => `
 `;
 
 class CategoriesService {
-  static async create({
+  constructor(private prismaClient: typeof prisma) {}
+
+  async create({
     description,
     category,
   }: {
     description: string;
     category?: number;
   }) {
-    const newCategory = await prisma.category.create({
+    const newCategory = await this.prismaClient.category.create({
       data: {
         description,
         fk_category_id: category,
@@ -39,7 +41,7 @@ class CategoriesService {
     return CategoriesService.convertCategory(newCategory);
   }
 
-  static async update({
+  async update({
     id,
     description,
     category,
@@ -48,7 +50,7 @@ class CategoriesService {
     description: string;
     category?: number;
   }) {
-    const data = await prisma.category.update({
+    const data = await this.prismaClient.category.update({
       where: {
         category_id: id,
       },
@@ -61,10 +63,10 @@ class CategoriesService {
     return CategoriesService.convertCategory(data);
   }
 
-  static async getAll({ page, perPage }: { page: number; perPage: number }) {
-    const [totalCount, data] = await prisma.$transaction([
-      prisma.category.count(),
-      prisma.category.findMany({
+  async getAll({ page, perPage }: { page: number; perPage: number }) {
+    const [totalCount, data] = await this.prismaClient.$transaction([
+      this.prismaClient.category.count(),
+      this.prismaClient.category.findMany({
         skip: page * perPage,
         take: perPage,
       }),
@@ -81,17 +83,17 @@ class CategoriesService {
     };
   }
 
-  static async getOne({ id }: { id: number }) {
-    const data = await prisma.category.findUnique({
+  async getOne({ id }: { id: number }) {
+    const data = await this.prismaClient.category.findUnique({
       where: { category_id: id },
     });
 
     return data ? CategoriesService.convertCategory(data) : data;
   }
 
-  static async delete({ id }: { id: number }) {
+  async delete({ id }: { id: number }) {
     // TODO:проверить data !== null
-    const data = await prisma.category.delete({
+    const data = await this.prismaClient.category.delete({
       where: {
         category_id: id,
       },
@@ -100,7 +102,7 @@ class CategoriesService {
     return CategoriesService.convertCategory(data);
   }
 
-  private static convertCategory(category: CategoriesRow) {
+  private convertCategory(category: CategoriesRow) {
     return {
       id: category.category_id,
       description: category.description,
@@ -110,4 +112,4 @@ class CategoriesService {
 }
 
 export { queryCategoriesRecursive };
-export default CategoriesService;
+export default new CategoriesService(prisma);

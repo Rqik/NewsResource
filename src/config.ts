@@ -1,4 +1,5 @@
 import 'dotenv/config';
+
 import Joi from 'joi';
 
 const envVarsSchema = Joi.object({
@@ -10,10 +11,13 @@ const envVarsSchema = Joi.object({
 
   JWT_ACCESS_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
+  JWT_ACCESS_EXPIRES_IN: Joi.string().default('30m'),
+  JWT_REFRESH_EXPIRES_IN: Joi.string().default('30d'),
   SMTP_HOST: Joi.string().required(),
   SMTP_PORT: Joi.number().required(),
   SMTP_USER: Joi.string().required(),
   SMTP_PASSWORD: Joi.string().required(),
+
   DB_USER: Joi.string().required(),
   DB_PASSWORD: Joi.string().required(),
   DB_HOST: Joi.string().required(),
@@ -46,6 +50,8 @@ const config = {
   port: envVars.PORT,
   jwtAccessSecret: envVars.JWT_ACCESS_SECRET,
   jwtRefreshSecret: envVars.JWT_REFRESH_SECRET,
+  jwtAccessExpireIn: envVars.JWT_ACCESS_EXPIRES_IN,
+  jwtRefreshExpireIn: envVars.JWT_REFRESH_EXPIRES_IN,
   smtpHost: envVars.SMTP_HOST,
   smtpPort: envVars.SMTP_PORT,
   smtpUser: envVars.SMTP_USER,

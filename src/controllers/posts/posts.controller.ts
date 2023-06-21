@@ -1,8 +1,10 @@
+import { boundClass } from 'autobind-decorator';
 import { NextFunction, Response } from 'express';
-import ApiError from '../../exceptions/ApiError';
 
-import { AuthorsService, FileService, PostsService } from '../../services/index';
-import paginator from '../../shared/paginator';
+import ApiError from '@/exceptions/ApiError';
+import { AuthorsService, FileService, PostsService } from '@/services';
+import paginator from '@/shared/paginator';
+
 import {
   RequestWithBody,
   RequestWithParams,
@@ -12,12 +14,15 @@ import {
 import type { IPost } from './posts.dto';
 import PostsDto from './posts.dto';
 
+@boundClass
 class PostsController {
-  static async create(
-    req: RequestWithBody<IPost>,
-    res: Response,
-    next: NextFunction,
-  ) {
+  constructor(
+    private postsService: typeof PostsService,
+    private authorsService: typeof AuthorsService,
+    private fileService: typeof FileService,
+  ) {}
+
+  async create(req: RequestWithBody<IPost>, res: Response, next: NextFunction) {
     const main = req.files;
     const { mainImg, otherImgs } = main || {};
     const {
@@ -29,16 +34,18 @@ class PostsController {
       return next(error);
     }
 
-    const [mainNameImg] = FileService.savePostImage(mainImg) || [];
-    const otherNameImgs = FileService.savePostImage(otherImgs) || [];
-    const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
+    const [mainNameImg] = this.fileService.savePostImage(mainImg) || [];
+    const otherNameImgs = this.fileService.savePostImage(otherImgs) || [];
+    const author = await this.authorsService.getByUserId({
+      id: req.locals.user.id,
+    });
     if (author instanceof ApiError) {
       return next(author);
     }
     if (author === null || Number(authorId) !== author.id) {
       return next(ApiError.BadRequest('Not valid author id'));
     }
-    const post = await PostsService.create({
+    const post = await this.postsService.create({
       ...value,
       mainImg: mainNameImg,
       otherImgs: otherNameImgs,
@@ -47,7 +54,7 @@ class PostsController {
     return res.send(post);
   }
 
-  static async update(
+  async update(
     req: RequestWithParamsAndBody<{ id: string }, IPost>,
     res: Response,
     next: NextFunction,
@@ -59,10 +66,10 @@ class PostsController {
     const { id } = req.params;
     const main = req.files;
     const { mainImg, otherImgs } = main || {};
-    const [mainNameImg] = FileService.savePostImage(mainImg) || [];
-    const otherNameImgs = FileService.savePostImage(otherImgs) || [];
+    const [mainNameImg] = this.fileService.savePostImage(mainImg) || [];
+    const otherNameImgs = this.fileService.savePostImage(otherImgs) || [];
 
-    const post = await PostsService.update({
+    const post = await this.postsService.update({
       ...value,
       id: Number(id),
       mainImg: mainNameImg,
@@ -72,7 +79,7 @@ class PostsController {
     return res.send(post);
   }
 
-  static async partialUpdate(
+  async partialUpdate(
     req: RequestWithParamsAndBody<
       { id: string },
       {
@@ -88,12 +95,12 @@ class PostsController {
   ) {
     const { id } = req.params;
 
-    const post = await PostsService.partialUpdate({ ...req.body, id });
+    const post = await this.postsService.partialUpdate({ ...req.body, id });
 
     res.send(post);
   }
 
-  static async getAll(
+  async getAll(
     req: RequestWithQuery<{
       created_at?: string;
       created_at__lt?: string;
@@ -113,10 +120,13 @@ class PostsController {
   ) {
     const { per_page: perPage = 10, page = 0 } = req.query;
 
-    const { totalCount, count, posts } = await PostsService.getAll(req.query, {
-      page: Number(page),
-      perPage: Number(perPage),
-    });
+    const { totalCount, count, posts } = await this.postsService.getAll(
+      req.query,
+      {
+        page: Number(page),
+        perPage: Number(perPage),
+      },
+    );
 
     const pagination = paginator({
       totalCount,
@@ -130,20 +140,20 @@ class PostsController {
     res.send({ ...pagination, data: posts });
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
-    const post = await PostsService.getOne({ id });
+    const post = await this.postsService.getOne({ id });
 
     res.send(post);
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  async delete(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
 
-    const post = await PostsService.delete({ id });
+    const post = await this.postsService.delete({ id });
 
     res.send(post);
   }
 }
 
-export default PostsController;
+export default new PostsController(PostsService, AuthorsService);

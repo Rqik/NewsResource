@@ -1,13 +1,15 @@
-import { Response, NextFunction } from 'express';
+import { boundClass } from 'autobind-decorator';
+import { NextFunction, Response } from 'express';
 
-import { ApiError } from '../../exceptions';
+import { ApiError } from '@/exceptions';
 import {
   AuthorsService,
   FileService,
   PostsDraftsService,
   PostsService,
-} from '../../services/index';
-import paginator from '../../shared/paginator';
+} from '@/services';
+import paginator from '@/shared/paginator';
+
 import {
   RequestWithParams,
   RequestWithParamsAndBody,
@@ -15,8 +17,16 @@ import {
 } from '../types';
 import PostsDraftsDto, { IPostDrafts } from './posts-drafts.dto';
 
+@boundClass
 class PostsDraftsController {
-  static async create(
+  constructor(
+    private authorsService: typeof AuthorsService,
+    private fileService: typeof FileService,
+    private postsDraftsService: typeof PostsDraftsService,
+    private postsService: typeof PostsService,
+  ) {}
+
+  async create(
     req: RequestWithParamsAndBody<{ id: string }, IPostDrafts>,
     res: Response,
     next: NextFunction,
@@ -32,10 +42,10 @@ class PostsDraftsController {
     if (author instanceof ApiError) {
       return next(ApiError.NotFound());
     }
-    const [mainNameImg] = FileService.savePostImage(mainImg) || [];
-    const otherNameImgs = FileService.savePostImage(otherImgs) || [];
+    const [mainNameImg] = this.fileService.savePostImage(mainImg) || [];
+    const otherNameImgs = this.fileService.savePostImage(otherImgs) || [];
 
-    const draft = await PostsDraftsService.create({
+    const draft = await this.postsDraftsService.create({
       ...value,
       postId: Number(id),
       authorId: author.id,
@@ -46,7 +56,7 @@ class PostsDraftsController {
     return res.send(draft);
   }
 
-  static async update(
+  async update(
     req: RequestWithParamsAndBody<{ id: string; did: string }, IPostDrafts>,
     res: Response,
     next: NextFunction,
@@ -59,8 +69,10 @@ class PostsDraftsController {
     const main = req.files;
     const { mainImg, otherImgs } = main || {};
 
-    const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
-    const post = await PostsService.getOne({ id });
+    const author = await this.authorsService.getByUserId({
+      id: req.locals.user.id,
+    });
+    const post = await this.postsService.getOne({ id });
 
     if (author instanceof ApiError) {
       return next(author);
@@ -69,10 +81,10 @@ class PostsDraftsController {
     if (author === null || post.author.id !== author.id) {
       return next(ApiError.NotFound());
     }
-    const [mainNameImg] = FileService.savePostImage(mainImg) || [];
-    const otherNameImgs = FileService.savePostImage(otherImgs) || [];
+    const [mainNameImg] = this.fileService.savePostImage(mainImg) || [];
+    const otherNameImgs = this.fileService.savePostImage(otherImgs) || [];
 
-    const result = await PostsDraftsService.update({
+    const result = await this.postsDraftsService.update({
       ...value,
       postId: Number(id),
       draftId: Number(did),
@@ -84,7 +96,7 @@ class PostsDraftsController {
     return res.send(result);
   }
 
-  static async getAll(
+  async getAll(
     req: RequestWithParamsAnQuery<
       { id: string },
       { per_page: string; page: string }
@@ -99,7 +111,7 @@ class PostsDraftsController {
       next(author);
     } else {
       const { totalCount, count, drafts } =
-        await PostsDraftsService.getDraftsPost(
+        await this.postsDraftsService.getDraftsPost(
           {
             postId: Number(id),
             authorId: author.id,
@@ -121,7 +133,7 @@ class PostsDraftsController {
     }
   }
 
-  static async getOne(
+  async getOne(
     req: RequestWithParams<{ id: string; did: string }>,
     res: Response,
     next: NextFunction,
@@ -132,7 +144,7 @@ class PostsDraftsController {
     if (author instanceof ApiError) {
       next(author);
     } else {
-      const result = await PostsDraftsService.getOne({
+      const result = await this.postsDraftsService.getOne({
         postId: Number(id),
         draftId: Number(did),
         authorId: author.id,
@@ -142,13 +154,13 @@ class PostsDraftsController {
     }
   }
 
-  static async delete(
+  async delete(
     req: RequestWithParams<{ id: string; did: string }>,
     res: Response,
   ) {
     const { id, did } = req.params;
     await PostsDraftsController.authorValidate(req);
-    const result = await PostsDraftsService.delete({
+    const result = await this.postsDraftsService.delete({
       postId: Number(id),
       draftId: Number(did),
     });
@@ -156,7 +168,7 @@ class PostsDraftsController {
     res.send(result);
   }
 
-  static async publish(
+  async publish(
     req: RequestWithParams<{ id: string; did: string }>,
     res: Response,
     next: NextFunction,
@@ -166,7 +178,7 @@ class PostsDraftsController {
     if (author instanceof ApiError) {
       next(author);
     } else {
-      const result = await PostsDraftsService.publish({
+      const result = await this.postsDraftsService.publish({
         postId: Number(id),
         draftId: Number(did),
       });
@@ -175,14 +187,16 @@ class PostsDraftsController {
     }
   }
 
-  private static async authorValidate(req: RequestWithParams<{ id: string }>) {
+  private async authorValidate(req: RequestWithParams<{ id: string }>) {
     const { id } = req.params;
 
     if (req.locals.user.id !== id) {
       return ApiError.NotFound();
     }
 
-    const author = await AuthorsService.getByUserId({ id: req.locals.user.id });
+    const author = await this.authorsService.getByUserId({
+      id: req.locals.user.id,
+    });
 
     if (author instanceof ApiError) {
       return author;

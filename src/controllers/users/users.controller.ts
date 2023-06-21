@@ -1,10 +1,14 @@
+import { boundClass } from 'autobind-decorator';
 import { NextFunction, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
+import ms from 'ms';
 
-import { ApiError } from '../../exceptions';
-import { FileService, TokensService, UsersService } from '../../services/index';
-import getAuthorizationToken from '../../shared/get-authorization-token';
-import paginator from '../../shared/paginator';
+import config from '@/config';
+import { ApiError } from '@/exceptions';
+import { FileService, TokensService, UsersService } from '@/services';
+import getAuthorizationToken from '@/shared/get-authorization-token';
+import paginator from '@/shared/paginator';
+
 import {
   RequestWithBody,
   RequestWithParams,
@@ -13,14 +17,15 @@ import {
 } from '../types';
 import UserDto, { IUser } from './users.dto';
 
+@boundClass
 class UsersController {
-  private static maxAge = 30 * 24 * 60 * 60;
+  constructor(
+    private fileService: typeof FileService,
+    private tokensService: typeof TokensService,
+    private usersService: typeof UsersService,
+  ) {}
 
-  static async create(
-    req: RequestWithBody<IUser>,
-    res: Response,
-    next: NextFunction,
-  ) {
+  async create(req: RequestWithBody<IUser>, res: Response, next: NextFunction) {
     const { error, value } = new UserDto(req.body).validate();
     if (error) {
       return next(error);
@@ -29,9 +34,9 @@ class UsersController {
     const ava = req.files;
 
     const file = ava?.avatar;
-    const avatar = FileService.saveAvatar(file);
+    const avatar = this.fileService.saveAvatar(file);
 
-    const userData = await UsersService.registration({
+    const userData = await this.usersService.registration({
       password,
       login,
       avatar,
@@ -44,14 +49,14 @@ class UsersController {
       return next(userData);
     }
     res.cookie('refreshToken', userData.refreshToken, {
-      maxAge: UsersController.maxAge,
+      maxAge: ms(config.jwtRefreshExpireIn as string),
       httpOnly: true,
     });
 
     return res.send({ result: userData });
   }
 
-  static async update(
+  async update(
     req: RequestWithParamsAndBody<{ id: string }, IUser>,
     res: Response,
     next: NextFunction,
@@ -61,12 +66,12 @@ class UsersController {
     if (error) {
       return next(error);
     }
-    const result = await UsersService.update({ ...value, id });
+    const result = await this.usersService.update({ ...value, id });
 
     return res.send(result);
   }
 
-  static async partialUpdate(
+  async partialUpdate(
     req: RequestWithParamsAndBody<{ login: string }, Partial<IUser>>,
     res: Response,
   ) {
@@ -74,7 +79,7 @@ class UsersController {
 
     const { login } = req.params;
 
-    const result = await UsersService.partialUpdate({
+    const result = await this.usersService.partialUpdate({
       ...bodyValues,
       login,
     });
@@ -82,13 +87,13 @@ class UsersController {
     res.send(result);
   }
 
-  static async getAll(
+  async getAll(
     req: RequestWithQuery<{ per_page: string; page: string }>,
     res: Response,
   ) {
     const { per_page: perPage = 20, page = 0 } = req.query;
 
-    const { totalCount, users, count } = await UsersService.getAll({
+    const { totalCount, users, count } = await this.usersService.getAll({
       page: Number(page),
       perPage: Number(perPage),
     });
@@ -105,13 +110,13 @@ class UsersController {
     res.send({ ...pagination, data: users });
   }
 
-  static async getOne(
+  async getOne(
     req: RequestWithParams<{ login: string }>,
     res: Response,
     next: NextFunction,
   ) {
     const { login } = req.params;
-    const result = await UsersService.getOne({ login });
+    const result = await this.usersService.getOne({ login });
     if (result === null) {
       next(ApiError.BadRequest(`User ${login} not found`));
     } else {
@@ -119,20 +124,20 @@ class UsersController {
     }
   }
 
-  static async getCurrentAuth(
+  async getCurrentAuth(
     req: RequestWithParams<{ login: string }>,
     res: Response,
     next: NextFunction,
   ) {
     const accessToken = getAuthorizationToken(req);
-    const tokenData = TokensService.validateAccess(accessToken);
+    const tokenData = this.tokensService.validateAccess(accessToken);
 
     if (tokenData === null || typeof tokenData === 'string') {
       next(ApiError.BadRequest('Invalid Authorization token'));
     }
 
     const { id } = tokenData as JwtPayload;
-    const result = await UsersService.getById({ id });
+    const result = await this.usersService.getById({ id });
 
     if (result === null) {
       next(ApiError.BadRequest(`User ${id} not found`));
@@ -141,12 +146,12 @@ class UsersController {
     }
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  async delete(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
 
-    const result = await UsersService.delete({ id });
+    const result = await this.usersService.delete({ id });
 
     res.send(result);
   }
 }
-export default UsersController;
+export default new UsersController(FileService, TokensService, UsersService);

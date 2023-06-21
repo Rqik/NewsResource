@@ -1,16 +1,18 @@
-import { QueryResult } from 'pg';
-import bcrypt from 'bcrypt';
-import { v4 as uuid } from 'uuid';
 import { User } from '@prisma/client';
+import { boundClass } from 'autobind-decorator';
+import bcrypt from 'bcrypt';
+import { QueryResult } from 'pg';
+import { v4 as uuid } from 'uuid';
 
-import db from '../../db';
-import UserDto from '../../dtos/UserDto';
-import { ApiError } from '../../exceptions/index';
-import AuthorsService from '../authors/Authors.service';
+import prisma from '@/client';
+import db from '@/db';
+import UserDto from '@/dtos/UserDto';
+import { ApiError } from '@/exceptions';
+
+import { AuthorsService } from '../authors';
+import { MailService } from '../mail';
+import { TokensService } from '../tokens';
 import { PropsWithId } from '../types';
-import MailService from '../mail/Mail.service';
-import TokensService from '../tokens/Tokens.service';
-import prisma from '../../client';
 
 const tableName = 'users';
 
@@ -64,8 +66,17 @@ type UserConverted = {
   isActivated: boolean;
 };
 const adminEmail = ['tabasaranec96@mail.ru'];
+
+@boundClass
 class UsersService {
-  static async registration({
+  constructor(
+    private prismaClient: typeof prisma,
+    private authorsService: typeof AuthorsService,
+    private mailService: typeof MailService,
+    private tokensService: typeof TokensService,
+  ) {}
+
+  async registration({
     firstName,
     lastName,
     login,
@@ -75,7 +86,7 @@ class UsersService {
   }: UserProp) {
     const isAdmin = adminEmail.includes(email);
 
-    const candidate = await UsersService.getOne({ login });
+    const candidate = await this.getOne({ login });
 
     if (candidate !== null) {
       return ApiError.BadRequest(`User with this login ${login} exists`);
@@ -84,9 +95,12 @@ class UsersService {
     const hashPassword = bcrypt.hashSync(password, 7);
     const activateLink = uuid();
     try {
-      await MailService.sendActivationMail({ to: email, link: activateLink });
+      await this.mailService.sendActivationMail({
+        to: email,
+        link: activateLink,
+      });
 
-      const user = await prisma.user.create({
+      const user = await this.prismaClient.user.create({
         data: {
           first_name: firstName,
           last_name: lastName,
@@ -99,14 +113,14 @@ class UsersService {
         },
       });
 
-      const userDto = new UserDto(UsersService.convertCase(user));
-      const tokens = TokensService.generateTokens({ ...userDto });
-      await TokensService.create({
+      const userDto = new UserDto(this.convertCase(user));
+      const tokens = this.tokensService.generateTokens({ ...userDto });
+      await this.tokensService.create({
         userId: userDto.id,
         refreshToken: tokens.refreshToken,
       });
 
-      return { ...UsersService.convertCase(user), ...tokens };
+      return { ...this.convertCase(user), ...tokens };
     } catch (error) {
       console.log(error);
     }
@@ -114,8 +128,8 @@ class UsersService {
     return {} as any;
   }
 
-  static async activate(activateLink: string) {
-    const user = await prisma.user.findFirst({
+  async activate(activateLink: string) {
+    const user = await this.prismaClient.user.findFirst({
       where: {
         activate_link: { equals: activateLink },
         is_activated: false,
@@ -124,7 +138,7 @@ class UsersService {
     if (!user) {
       return user;
     }
-    const userUpdated = await prisma.user.update({
+    const userUpdated = await this.prismaClient.user.update({
       where: {
         user_id: user.user_id,
       },
@@ -133,11 +147,11 @@ class UsersService {
       },
     });
 
-    return UsersService.convertCase(userUpdated);
+    return this.convertCase(userUpdated);
   }
 
-  static async login({ login, password }: { login: string; password: string }) {
-    const user = await UsersService.getOne({ login });
+  async login({ login, password }: { login: string; password: string }) {
+    const user = await this.getOne({ login });
 
     if (user === null) {
       return ApiError.BadRequest(`User ${login} not found`);
@@ -149,8 +163,8 @@ class UsersService {
     }
 
     const userDto = new UserDto(user);
-    const tokens = TokensService.generateTokens({ ...userDto });
-    await TokensService.create({
+    const tokens = this.tokensService.generateTokens({ ...userDto });
+    await this.tokensService.create({
       userId: userDto.id,
       refreshToken: tokens.refreshToken,
     });
@@ -158,19 +172,19 @@ class UsersService {
     return { ...user, ...tokens };
   }
 
-  static async logout(refreshToken: string) {
-    const token = await TokensService.delete({ refreshToken });
+  async logout(refreshToken: string) {
+    const token = await this.tokensService.delete({ refreshToken });
 
     return token;
   }
 
-  static async refresh(refreshToken: string) {
+  async refresh(refreshToken: string) {
     if (!refreshToken) {
       return ApiError.UnauthorizeError();
     }
 
-    const userData = TokensService.validateRefresh(refreshToken);
-    const tokenFromDb = await TokensService.getOne({ refreshToken });
+    const userData = this.tokensService.validateRefresh(refreshToken);
+    const tokenFromDb = await this.tokensService.getOne({ refreshToken });
 
     if (!userData && !tokenFromDb) {
       return ApiError.UnauthorizeError();
@@ -180,16 +194,16 @@ class UsersService {
       return ApiError.UnauthorizeError();
     }
 
-    const user = await UsersService.getById({ id: userData.id });
+    const user = await this.getById({ id: userData.id });
 
     if (!user) {
       return ApiError.UnauthorizeError();
     }
 
     const userDto = new UserDto(user);
-    const tokens = TokensService.generateTokens({ ...userDto });
+    const tokens = this.tokensService.generateTokens({ ...userDto });
 
-    await TokensService.create({
+    await this.tokensService.create({
       userId: userDto.id,
       refreshToken: tokens.refreshToken,
     });
@@ -198,7 +212,7 @@ class UsersService {
   }
 
   // TODO: реализовать изменение admin
-  static async update({
+  async update({
     id,
     firstName,
     lastName,
@@ -206,7 +220,7 @@ class UsersService {
     login,
     password,
   }: PropsWithId<UserProp>) {
-    const user = await UsersService.getOne({ login });
+    const user = await this.getOne({ login });
 
     if (user === null) {
       return ApiError.BadRequest(`User ${login} not found`);
@@ -218,7 +232,7 @@ class UsersService {
       return ApiError.BadRequest('Wrong password');
     }
 
-    const userUpdated = await prisma.user.update({
+    const userUpdated = await this.prismaClient.user.update({
       where: {
         user_id: Number(id),
       },
@@ -230,10 +244,10 @@ class UsersService {
       },
     });
 
-    return UsersService.convertCase(userUpdated);
+    return this.convertCase(userUpdated);
   }
 
-  static async partialUpdate(body: Partial<UserProp>) {
+  async partialUpdate(body: Partial<UserProp>) {
     const bodyProps = Object.keys(body);
     const bodyValues = Object.values(body);
     const snakeReg = /([a-z0–9])([A-Z])/g;
@@ -251,17 +265,17 @@ class UsersService {
     ]);
     const data = rows[0];
 
-    return UsersService.convertCase(data);
+    return this.convertCase(data);
   }
 
-  static async getAll({ page, perPage }: { page: number; perPage: number }) {
+  async getAll({ page, perPage }: { page: number; perPage: number }) {
     console.log('totalCount');
-    const [totalCount, data] = await prisma.$transaction([
-      prisma.user.count(),
-      prisma.user.findMany({ skip: page * perPage, take: perPage }),
+    const [totalCount, data] = await this.prismaClient.$transaction([
+      this.prismaClient.user.count(),
+      this.prismaClient.user.findMany({ skip: page * perPage, take: perPage }),
     ]);
 
-    const users = data.map((user) => UsersService.convertCase(user));
+    const users = data.map((user) => this.convertCase(user));
 
     return {
       count: data.length,
@@ -270,32 +284,33 @@ class UsersService {
     };
   }
 
-  static async getOne({ login }: { login: string }) {
-    const user = await prisma.user.findUnique({
+  async getOne({ login }: { login: string }) {
+    const user = await this.prismaClient.user.findUnique({
       where: { login },
     });
 
-    return user ? UsersService.convertCase(user) : user;
+    return user ? this.convertCase(user) : user;
   }
 
-  static async getById({ id }: { id: number }) {
-    const user = await prisma.user.findUnique({
-      where: { user_id: id },
-    });
-
-    return user ? UsersService.convertCase(user) : user;
-  }
-
-  static async delete({ id }: PropsWithId) {
-    await AuthorsService.deleteUserAuthors({ id });
-    const user = await prisma.user.delete({
+  async getById({ id }: PropsWithId) {
+    const user = await this.prismaClient.user.findUnique({
       where: { user_id: Number(id) },
     });
 
-    return UsersService.convertCase(user);
+    return user ? this.convertCase(user) : user;
   }
 
-  static convertCase(user: UsersRow | User): UserConverted {
+  async delete({ id }: PropsWithId) {
+    await this.authorsService.deleteUserAuthors({ id });
+    const user = await this.prismaClient.user.delete({
+      where: { user_id: Number(id) },
+    });
+
+    return this.convertCase(user);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  convertCase(user: UsersRow | User): UserConverted {
     return {
       id: user.user_id,
       firstName: user.first_name,
@@ -312,4 +327,9 @@ class UsersService {
   }
 }
 
-export default UsersService;
+export default new UsersService(
+  prisma,
+  AuthorsService,
+  MailService,
+  TokensService,
+);

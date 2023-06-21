@@ -1,26 +1,26 @@
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
 import fileUpload from 'express-fileupload';
-import cookieParser from 'cookie-parser';
 import path from 'path';
-import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 
+import config from './config';
+import specification from './config/specification';
+import Tables from './database/Tables';
+import db from './db';
+import { errorMiddleware, loggerMiddleware } from './middleware';
 import {
   auth,
   authors,
-  postR,
-  users,
-  drafts,
-  comments,
   categories,
+  comments,
+  drafts,
+  postR,
   tags,
+  users,
 } from './routes';
-import { errorMiddleware, loggerMiddleware } from './middleware';
 import HttpStatuses from './shared/HttpStatuses';
-import Tables from './database/Tables';
-import specification from './config/specification';
-import db from './db';
-import config from './config';
 
 const app = express();
 const { port } = config;

@@ -1,8 +1,7 @@
 import express from 'express';
 
-import { PostsCommentsController } from '../controllers';
-import authMiddleware from '../middleware/auth-middleware';
-import { errorHandler } from '../middleware';
+import { PostsCommentsController } from '@/controllers';
+import { authMiddleware, errorHandler } from '@/middleware';
 
 const router = express.Router();
 

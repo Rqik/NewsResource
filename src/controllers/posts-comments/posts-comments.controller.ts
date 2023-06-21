@@ -1,13 +1,15 @@
-import { Response, NextFunction } from 'express';
+import { boundClass } from 'autobind-decorator';
+import { NextFunction, Response } from 'express';
 
-import { ApiError } from '../../exceptions';
+import { ApiError } from '@/exceptions';
 import {
   CommentsService,
   PostsCommentsService,
   TokensService,
-} from '../../services/index';
-import getAuthorizationToken from '../../shared/get-authorization-token';
-import paginator from '../../shared/paginator';
+} from '@/services';
+import getAuthorizationToken from '@/shared/get-authorization-token';
+import paginator from '@/shared/paginator';
+
 import {
   RequestWithParams,
   RequestWithParamsAndBody,
@@ -15,8 +17,15 @@ import {
 } from '../types';
 import PostsCommentsDto, { IPostsComments } from './posts-comments.dto';
 
+@boundClass
 class PostsCommentsController {
-  static async create(
+  constructor(
+    private postsCommentsService: typeof PostsCommentsService,
+    private commentsService: typeof CommentsService,
+    private tokensService: typeof TokensService,
+  ) {}
+
+  async create(
     req: RequestWithParamsAndBody<{ id: string }, IPostsComments>,
     res: Response,
     next: NextFunction,
@@ -30,17 +39,17 @@ class PostsCommentsController {
     }
 
     // TODO:
-    const tokenData = TokensService.validateAccess(accessToken);
+    const tokenData = this.tokensService.validateAccess(accessToken);
 
     if (tokenData === null || typeof tokenData === 'string') {
       return next(ApiError.BadRequest('Invalid Authorization token'));
     }
     const { id: userId } = tokenData;
-    const comment = await CommentsService.create({
+    const comment = await this.commentsService.create({
       userId,
       ...value,
     });
-    await PostsCommentsService.create({
+    await this.postsCommentsService.create({
       postId: Number(postId),
       commentId: comment.id,
     });
@@ -48,7 +57,7 @@ class PostsCommentsController {
     return res.send(comment);
   }
 
-  static async getCommentsPost(
+  async getCommentsPost(
     req: RequestWithParamsAnQuery<
       { id: string },
       { per_page: string; page: string }
@@ -59,7 +68,7 @@ class PostsCommentsController {
 
     const { id } = req.params;
     const { totalCount, count, comments } =
-      await PostsCommentsService.getPostComments(
+      await this.postsCommentsService.getPostComments(
         { id },
         {
           page: Number(page),
@@ -79,12 +88,12 @@ class PostsCommentsController {
     res.send({ ...pagination, comments });
   }
 
-  static async delete(
+  async delete(
     req: RequestWithParams<{ id: string; cid: string }>,
     res: Response,
   ) {
     const { id: postId, cid: commentId } = req.params;
-    const comment = await PostsCommentsService.delete({
+    const comment = await this.postsCommentsService.delete({
       postId: Number(postId),
       commentId: Number(commentId),
     });
@@ -92,4 +101,8 @@ class PostsCommentsController {
   }
 }
 
-export default PostsCommentsController;
+export default new PostsCommentsController(
+  PostsCommentsService,
+  CommentsService,
+  TokensService,
+);

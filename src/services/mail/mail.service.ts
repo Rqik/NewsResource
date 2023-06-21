@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import config from '../../config';
+
+import config from '@/config';
 
 class MailService {
   transporter: ReturnType<typeof nodemailer.createTransport>;

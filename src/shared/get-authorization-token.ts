@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-import { ApiError } from '../exceptions';
+import { ApiError } from '@/exceptions';
 
 const getAuthorizationToken = (req: Request) => {
   if (typeof req.headers.authorization === 'undefined') {

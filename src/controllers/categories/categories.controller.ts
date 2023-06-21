@@ -1,7 +1,9 @@
+import { boundClass } from 'autobind-decorator';
 import { NextFunction, Response } from 'express';
 
-import { CategoriesService } from '../../services/index';
-import paginator from '../../shared/paginator';
+import { CategoriesService } from '@/services';
+import { paginator } from '@/shared';
+
 import {
   RequestWithBody,
   RequestWithParams,
@@ -10,8 +12,11 @@ import {
 } from '../types';
 import CategoriesDto, { ICategory } from './categories.dto';
 
+@boundClass
 class CategoriesController {
-  static async create(
+  constructor(private categoriesService: typeof CategoriesService) {}
+
+  async create(
     req: RequestWithBody<ICategory>,
     res: Response,
     next: NextFunction,
@@ -22,12 +27,12 @@ class CategoriesController {
       return next(error);
     }
 
-    const newCategory = await CategoriesService.create(value);
+    const newCategory = await this.categoriesService.create(value);
 
     return res.send(newCategory);
   }
 
-  static async update(
+  async update(
     req: RequestWithParamsAndBody<{ id: string }, ICategory>,
     res: Response,
     next: NextFunction,
@@ -39,7 +44,7 @@ class CategoriesController {
       return next(error);
     }
 
-    const categoryUpdated = await CategoriesService.update({
+    const categoryUpdated = await this.categoriesService.update({
       id: Number(id),
       ...value,
     });
@@ -47,16 +52,17 @@ class CategoriesController {
     return res.send(categoryUpdated);
   }
 
-  static async getAll(
+  async getAll(
     req: RequestWithQuery<{ per_page: string; page: string }>,
     res: Response,
   ) {
     const { per_page: perPage = 10, page = 0 } = req.query;
 
-    const { totalCount, count, categories } = await CategoriesService.getAll({
-      page: Number(page),
-      perPage: Number(perPage),
-    });
+    const { totalCount, count, categories } =
+      await this.categoriesService.getAll({
+        page: Number(page),
+        perPage: Number(perPage),
+      });
 
     const pagination = paginator({
       totalCount,
@@ -69,19 +75,19 @@ class CategoriesController {
     res.send({ ...pagination, data: categories });
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
-    const category = await CategoriesService.getOne({ id: Number(id) });
+    const category = await this.categoriesService.getOne({ id: Number(id) });
 
     res.send(category);
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  async delete(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
 
-    const category = await CategoriesService.delete({ id: Number(id) });
+    const category = await this.categoriesService.delete({ id: Number(id) });
     res.send(category);
   }
 }
 
-export default CategoriesController;
+export default new CategoriesController(CategoriesService);

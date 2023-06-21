@@ -1,13 +1,12 @@
 import express from 'express';
 
-import { PostsDraftsController } from '../controllers';
-import { authMiddleware, errorHandler } from '../middleware';
+import { PostsDraftsController } from '@/controllers';
+import { authMiddleware, errorHandler } from '@/middleware';
 
 const router = express.Router();
 
 const postPath = '/posts';
 const draftsPath = '/drafts';
-
 const drafts = `${postPath}/:id${draftsPath}`;
 const draft = `${postPath}/:id${draftsPath}/:did`;
 

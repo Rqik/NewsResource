@@ -1,12 +1,14 @@
+import { boundClass } from 'autobind-decorator';
 import { QueryResult } from 'pg';
 
-import db from '../../db';
-import { ApiError } from '../../exceptions/index';
-import { queryCategoriesRecursive } from '../categories/Categories.service';
-import CommentsService, { CommentRow } from '../comments/Comments.service';
-import PostsCommentsService from '../posts-comments/PostsComments.service';
-import PostsTagsService from '../posts-tags/PostsTags.service';
-import TagsService, { TagsRow } from '../tags/Tags.service';
+import dataBase from '@/db';
+import { ApiError } from '@/exceptions';
+
+import { queryCategoriesRecursive } from '../categories/categories.service';
+import CommentsService, { CommentRow } from '../comments/comments.service';
+import { PostsCommentsService } from '../posts-comments';
+import { PostsTagsService } from '../posts-tags';
+import TagsService, { TagsRow } from '../tags/tags.service';
 import { PropsWithId } from '../types';
 
 const tableName = 'posts';
@@ -79,8 +81,18 @@ const filter: Record<string, string> = {
 
 const queryTags = ` COALESCE(jsonb_agg(t) FILTER (WHERE t.tag_id IS NOT NULL), '[]')`;
 const queryComments = `COALESCE(jsonb_agg(cm) FILTER (WHERE cm.comment_id IS NOT NULL), '[]')`;
+
+@boundClass
 class PostsService {
-  static async create({
+  constructor(
+    private db: typeof dataBase,
+    private commentsService: typeof CommentsService,
+    private tagsService: typeof TagsService,
+    private postsCommentsService: typeof PostsCommentsService,
+    private postsTagsService: typeof PostsTagsService,
+  ) {}
+
+  async create({
     title,
     authorId,
     categoryId,
@@ -93,7 +105,7 @@ class PostsService {
                         VALUES ($1, $2, $3, $4, $5, $6)
                      RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
-    const { rows }: QueryResult<PostRow> = await db.query(query, [
+    const { rows }: QueryResult<PostRow> = await this.db.query(query, [
       title,
       authorId,
       categoryId,
@@ -111,7 +123,7 @@ class PostsService {
       tagsParse = tags;
     }
     const setTags = tagsParse.map(async (tagId) =>
-      PostsTagsService.create({ postId, tagId }),
+      this.postsTagsService.create({ postId, tagId }),
     );
 
     await Promise.allSettled(setTags);
@@ -125,7 +137,7 @@ class PostsService {
     };
   }
 
-  static async update({
+  async update({
     id,
     title,
     authorId,
@@ -152,7 +164,7 @@ class PostsService {
                     WHERE post_id = $7
                 RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
-    const { rows }: QueryResult<PostRow> = await db.query(query, [
+    const { rows }: QueryResult<PostRow> = await this.db.query(query, [
       title,
       authorId,
       categoryId,
@@ -167,7 +179,7 @@ class PostsService {
     return data;
   }
 
-  static async partialUpdate(body: PropsWithId<Partial<PostProp>>) {
+  async partialUpdate(body: PropsWithId<Partial<PostProp>>) {
     const bodyProps = Object.keys(body);
     const bodyValues = Object.values(body);
     const snakeReg = /([a-z0–9])([A-Z])/g;
@@ -182,7 +194,7 @@ class PostsService {
                     WHERE user_id = $${setParams.length + 1}
                 RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
 
-    const { rows }: QueryResult<PostRow> = await db.query(query, [
+    const { rows }: QueryResult<PostRow> = await this.db.query(query, [
       ...bodyValues,
       body.id,
     ]);
@@ -194,7 +206,7 @@ class PostsService {
     };
   }
 
-  static async getAll(
+  async getAll(
     query: {
       created_at?: string;
       created_at__lt?: string;
@@ -331,10 +343,8 @@ class PostsService {
          OFFSET $${(counterFilters += 1)}
     `;
 
-    const { rows, rowCount: count }: QueryResult<PostFullRow> = await db.query(
-      querySelect,
-      [...values, perPage, page * perPage],
-    );
+    const { rows, rowCount: count }: QueryResult<PostFullRow> =
+      await this.db.query(querySelect, [...values, perPage, page * perPage]);
     const totalCount = rows[0]?.total_count || null;
     const posts = rows.map((post) => PostsService.convertPosts(post));
 
@@ -345,7 +355,7 @@ class PostsService {
     };
   }
 
-  static async getOne({ id }: PropsWithId) {
+  async getOne({ id }: PropsWithId) {
     const q2 = `${queryCategoriesRecursive('catR')}
        SELECT p.*,
               array_agg(t.tag_id ORDER BY t.tag_id) tag_ids,
@@ -365,27 +375,27 @@ class PostsService {
      GROUP BY p.post_id, a.author_id, u.user_id, root_category,
               c.arr_categories, c.arr_category_id
     `;
-    const { rows }: QueryResult<PostRowSimple> = await db.query(q2, [id]);
+    const { rows }: QueryResult<PostRowSimple> = await this.db.query(q2, [id]);
     const data = rows[0];
 
-    const comments = await PostsCommentsService.getPostComments(
+    const comments = await this.postsCommentsService.getPostComments(
       { id },
       { perPage: 0, page: 0 },
     );
-    const tags = await PostsTagsService.getPostTags({ id });
+    const tags = await this.postsTagsService.getPostTags({ id });
 
     return {
-      ...PostsService.convertPosts({ ...data, tags: [], comments: [] }),
+      ...this.convertPosts({ ...data, tags: [], comments: [] }),
       tags,
       comments,
     };
   }
 
-  static async delete({ id }: PropsWithId) {
+  async delete({ id }: PropsWithId) {
     const query = `DELETE FROM ${tableName}
                     WHERE post_id = $1
                 RETURNING post_id, title, created_at, fk_author_id, fk_category_id, body, main_img, other_imgs`;
-    const selectData: QueryResult<PostRow> = await db.query(
+    const selectData: QueryResult<PostRow> = await this.db.query(
       `SELECT * FROM ${tableName}
         WHERE post_id = $1
       `,
@@ -393,7 +403,7 @@ class PostsService {
     );
 
     if (selectData.rows.length > 0) {
-      const { rows }: QueryResult<PostRow> = await db.query(query, [id]);
+      const { rows }: QueryResult<PostRow> = await this.db.query(query, [id]);
       const data = rows[0];
 
       return {
@@ -405,7 +415,7 @@ class PostsService {
     return ApiError.BadRequest('Post not found');
   }
 
-  private static convertPosts(post: PostFullRow) {
+  private convertPosts(post: PostFullRow) {
     const {
       post_id: id,
       title,
@@ -429,8 +439,8 @@ class PostsService {
       fk_category_id: rootCategoryId,
     } = post;
 
-    const comments = cm.map((c) => CommentsService.convertComment(c));
-    const tags = ts.map((t) => TagsService.convertTag(t));
+    const comments = cm.map((c) => this.commentsService.convertComment(c));
+    const tags = ts.map((t) => this.tagsService.convertTag(t));
 
     return {
       id,
@@ -464,4 +474,10 @@ class PostsService {
 }
 
 export type { TagFilters };
-export default PostsService;
+export default new PostsService(
+  dataBase,
+  CommentsService,
+  TagsService,
+  PostsCommentsService,
+  PostsTagsService,
+);

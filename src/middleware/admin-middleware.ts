@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
-import { ApiError } from '../exceptions';
-import { TokensService } from '../services/index';
-import getAuthorizationToken from '../shared/get-authorization-token';
+import { ApiError } from '@/exceptions';
+import { TokensService } from '@/services';
+import { getAuthorizationToken } from '@/shared';
 
 const adminMiddleware = (req: Request, _: Response, next: NextFunction) => {
   try {

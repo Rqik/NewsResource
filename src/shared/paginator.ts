@@ -1,6 +1,7 @@
-import querystring from 'querystring';
 import { Request } from 'express';
-import config from '../config';
+import querystring from 'querystring';
+
+import config from '@/config';
 
 const paginator = ({
   totalCount,
@@ -18,12 +19,15 @@ const paginator = ({
   perPage: number;
 }) => {
   const pagination: {
-    nextPage?: string;
+    prevPage: string | null;
+    nextPage: string | null;
     totalCount: number | null;
     count: number;
   } = {
     totalCount,
     count,
+    nextPage: null,
+    prevPage: null,
   };
 
   const addNextPageUrl =
@@ -32,7 +36,16 @@ const paginator = ({
   if (addNextPageUrl) {
     pagination.nextPage = `${config.apiUrl}${route}?${querystring.stringify({
       ...req.query,
-      page: Number(page) + 1,
+      per_page: perPage,
+      page: page + 1,
+    })}`;
+  }
+
+  if (page > 0) {
+    pagination.prevPage = `${config.apiUrl}${route}?${querystring.stringify({
+      ...req.query,
+      per_page: perPage,
+      page: page - 1,
     })}`;
   }
 

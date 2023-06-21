@@ -1,7 +1,8 @@
 import type { Author } from '@prisma/client';
 
-import { ApiError } from '../../exceptions/index';
-import prisma from '../../client';
+import prisma from '@/client';
+import { ApiError } from '@/exceptions';
+
 import { PropsWithId } from '../types';
 
 type AuthorsRow = {
@@ -19,8 +20,10 @@ type AuthorConverted = {
 
 type AuthorProp = { description: string; userId: number };
 class AuthorsService {
-  static async create({ description, userId }: AuthorProp) {
-    const author = await prisma.author.create({
+  constructor(private prismaClient: typeof prisma) {}
+
+  async create({ description, userId }: AuthorProp) {
+    const author = await this.prismaClient.author.create({
       data: {
         description,
         fk_user_id: userId,
@@ -30,8 +33,8 @@ class AuthorsService {
     return AuthorsService.convertCase(author);
   }
 
-  static async update({ id, description, userId }: PropsWithId<AuthorProp>) {
-    const author = await prisma.author.update({
+  async update({ id, description, userId }: PropsWithId<AuthorProp>) {
+    const author = await this.prismaClient.author.update({
       where: {
         author_id: Number(id),
       },
@@ -44,10 +47,10 @@ class AuthorsService {
     return AuthorsService.convertCase(author);
   }
 
-  static async getAll({ page, perPage }: { page: number; perPage: number }) {
-    const [totalCount, data] = await prisma.$transaction([
-      prisma.author.count(),
-      prisma.author.findMany({
+  async getAll({ page, perPage }: { page: number; perPage: number }) {
+    const [totalCount, data] = await this.prismaClient.$transaction([
+      this.prismaClient.author.count(),
+      this.prismaClient.author.findMany({
         skip: page * perPage,
         take: perPage,
       }),
@@ -57,8 +60,8 @@ class AuthorsService {
     return { authors, count: data.length, totalCount };
   }
 
-  static async getOne({ id }: PropsWithId) {
-    const author = await prisma.author.findUnique({
+  async getOne({ id }: PropsWithId) {
+    const author = await this.prismaClient.author.findUnique({
       where: {
         author_id: Number(id),
       },
@@ -71,9 +74,9 @@ class AuthorsService {
     return AuthorsService.convertCase(author);
   }
 
-  static async getByUserId({ id }: PropsWithId) {
+  async getByUserId({ id }: PropsWithId) {
     try {
-      const author = await prisma.author.findFirst({
+      const author = await this.prismaClient.author.findFirst({
         where: {
           fk_user_id: Number(id),
         },
@@ -89,8 +92,8 @@ class AuthorsService {
     }
   }
 
-  static async deleteUserAuthors({ id }: PropsWithId) {
-    const author = await prisma.author.delete({
+  async deleteUserAuthors({ id }: PropsWithId) {
+    const author = await this.prismaClient.author.delete({
       where: {
         fk_user_id: Number(id),
       },
@@ -99,8 +102,8 @@ class AuthorsService {
     return AuthorsService.convertCase(author);
   }
 
-  static async delete({ id }: PropsWithId) {
-    const author = await prisma.author.delete({
+  async delete({ id }: PropsWithId) {
+    const author = await this.prismaClient.author.delete({
       where: {
         author_id: Number(id),
       },
@@ -109,7 +112,7 @@ class AuthorsService {
     return AuthorsService.convertCase(author);
   }
 
-  static convertCase(author: AuthorsRow | Author): AuthorConverted {
+  convertCase(author: AuthorsRow | Author): AuthorConverted {
     return {
       id: author.author_id,
       description: author.description,
@@ -118,4 +121,4 @@ class AuthorsService {
   }
 }
 
-export default AuthorsService;
+export default new AuthorsService(prisma);

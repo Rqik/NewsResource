@@ -1,7 +1,9 @@
-import { Response, NextFunction } from 'express';
+import { boundClass } from 'autobind-decorator';
+import { NextFunction, Response } from 'express';
 
-import { TagsService } from '../../services/index';
-import paginator from '../../shared/paginator';
+import { TagsService } from '@/services';
+import paginator from '@/shared/paginator';
+
 import {
   RequestWithBody,
   RequestWithParams,
@@ -10,8 +12,11 @@ import {
 } from '../types';
 import TagDto from './tags.dto';
 
+@boundClass
 class TagsController {
-  static async create(
+  constructor(private tagsService: typeof TagsService) {}
+
+  async create(
     req: RequestWithBody<{ title: string }>,
     res: Response,
     next: NextFunction,
@@ -20,12 +25,12 @@ class TagsController {
     if (error) {
       return next(error);
     }
-    const tag = await TagsService.create(value);
+    const tag = await this.tagsService.create(value);
 
     return res.send(tag);
   }
 
-  static async update(
+  async update(
     req: RequestWithParamsAndBody<{ id: string }, { title: string }>,
     res: Response,
     next: NextFunction,
@@ -35,18 +40,18 @@ class TagsController {
     if (error) {
       return next(error);
     }
-    const tag = await TagsService.update({ ...value, id });
+    const tag = await this.tagsService.update({ ...value, id });
 
     return res.send(tag);
   }
 
-  static async getAll(
+  async getAll(
     req: RequestWithQuery<{ per_page: string; page: string }>,
     res: Response,
   ) {
     const { per_page: perPage = 10, page = 0 } = req.query;
 
-    const { totalCount, tags, count } = await TagsService.getAll({
+    const { totalCount, tags, count } = await this.tagsService.getAll({
       page: Number(page),
       perPage: Number(perPage),
     });
@@ -62,20 +67,20 @@ class TagsController {
     res.send({ ...pagination, data: tags });
   }
 
-  static async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
+  async getOne(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
-    const tag = await TagsService.getOne({ id });
+    const tag = await this.tagsService.getOne({ id });
 
     res.send(tag);
   }
 
-  static async delete(req: RequestWithParams<{ id: string }>, res: Response) {
+  async delete(req: RequestWithParams<{ id: string }>, res: Response) {
     const { id } = req.params;
 
-    const removedTag = await TagsService.delete({ id });
+    const removedTag = await this.tagsService.delete({ id });
 
     res.send(removedTag);
   }
 }
 
-export default TagsController;
+export default new TagsController(TagsService);

@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import UsersService from './Users.service';
+import UsersService from './users.service';
 
 describe('Users service', () => {
   const password = 'secret_pass_232';

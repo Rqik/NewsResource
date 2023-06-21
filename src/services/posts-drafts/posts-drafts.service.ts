@@ -1,10 +1,12 @@
+import { boundClass } from 'autobind-decorator';
 import { QueryResult } from 'pg';
 
-import db from '../../db';
-import { ApiError } from '../../exceptions/index';
-import prisma from '../../client';
-import DraftsService from '../drafts/Drafts.service';
-import PostsService from '../posts/Posts.service';
+import prisma from '@/client';
+import db from '@/db';
+import { ApiError } from '@/exceptions';
+
+import { DraftsService } from '../drafts';
+import { PostsService } from '../posts';
 
 type PostDraftRow = {
   fk_draft_id: number;
@@ -15,8 +17,15 @@ type PostDraftRow = {
 const tableName = 'posts_drafts';
 const returnCols = 'fk_post_id, fk_draft_id';
 
+@boundClass
 class PostsDraftsService {
-  static async create({
+  constructor(
+    private prismaClient: typeof prisma,
+    private draftsService: typeof DraftsService,
+    private postsService: typeof PostsService,
+  ) {}
+
+  async create({
     postId,
     authorId,
     body,
@@ -33,7 +42,7 @@ class PostsDraftsService {
     mainImg: string;
     otherImgs: string[];
   }) {
-    const draft = await DraftsService.create({
+    const draft = await this.draftsService.create({
       body,
       authorId,
       title,
@@ -42,7 +51,7 @@ class PostsDraftsService {
       otherImgs,
     });
 
-    await prisma.postsOnDrafts.create({
+    await this.prismaClient.postsOnDrafts.create({
       data: {
         fk_draft_id: draft.id,
         fk_post_id: postId,
@@ -52,7 +61,7 @@ class PostsDraftsService {
     return draft;
   }
 
-  static async getDraftsPost(
+  async getDraftsPost(
     { postId, authorId }: { postId: number; authorId: number },
     { page, perPage }: { page: number; perPage: number },
   ) {
@@ -64,7 +73,7 @@ class PostsDraftsService {
 
     const dIds = rows.map((el) => el.fk_draft_id);
 
-    const { totalCount, count, drafts } = await DraftsService.getDrafts(
+    const { totalCount, count, drafts } = await this.draftsService.getDrafts(
       { dIds, authorId },
       { page, perPage },
     );
@@ -72,13 +81,7 @@ class PostsDraftsService {
     return { totalCount, count, drafts };
   }
 
-  static async delete({
-    postId,
-    draftId,
-  }: {
-    postId: number;
-    draftId: number;
-  }) {
+  async delete({ postId, draftId }: { postId: number; draftId: number }) {
     const queryPostTags = `DELETE
                              FROM post_${tableName}
                             WHERE fk_post_id = $1 AND fk_draft_id = $2
@@ -87,7 +90,7 @@ class PostsDraftsService {
 
     if (isBelongs) {
       await db.query(queryPostTags, [postId, draftId]);
-      const removedDraft = await DraftsService.delete({ id: draftId });
+      const removedDraft = await this.draftsService.delete({ id: draftId });
 
       return removedDraft;
     }
@@ -95,7 +98,7 @@ class PostsDraftsService {
     return ApiError.BadRequest('Tag not found');
   }
 
-  static async update({
+  async update({
     postId,
     draftId,
     body,
@@ -117,7 +120,7 @@ class PostsDraftsService {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftsService.update({
+      const draft = await this.draftsService.update({
         id: draftId,
         body,
         authorId,
@@ -133,7 +136,7 @@ class PostsDraftsService {
     return ApiError.BadRequest('Not found drafts');
   }
 
-  static async getOne({
+  async getOne({
     postId,
     draftId,
   }: {
@@ -144,7 +147,7 @@ class PostsDraftsService {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (isBelongs) {
-      const draft = await DraftsService.getOne({ id: draftId });
+      const draft = await this.draftsService.getOne({ id: draftId });
 
       return draft;
     }
@@ -152,37 +155,31 @@ class PostsDraftsService {
     return ApiError.BadRequest('Not found drafts');
   }
 
-  static async publish({
-    postId,
-    draftId,
-  }: {
-    postId: number;
-    draftId: number;
-  }) {
+  async publish({ postId, draftId }: { postId: number; draftId: number }) {
     const isBelongs = await this.checkPostBelongsDraft({ postId, draftId });
 
     if (!isBelongs) {
       return ApiError.BadRequest('Not found drafts');
     }
-    const draft = await DraftsService.getOne({ id: draftId });
+    const draft = await this.draftsService.getOne({ id: draftId });
 
     if (draft === null) {
       return ApiError.BadRequest('Not found drafts');
     }
 
-    await PostsService.update({ ...draft, id: postId });
+    await this.postsService.update({ ...draft, id: postId });
 
     return draft;
   }
 
-  private static async checkPostBelongsDraft({
+  private async checkPostBelongsDraft({
     postId,
     draftId,
   }: {
     postId: number;
     draftId: number;
   }) {
-    const data = await prisma.postsOnDrafts.findMany({
+    const data = await this.prismaClient.postsOnDrafts.findMany({
       where: {
         fk_draft_id: draftId,
         fk_post_id: postId,
@@ -193,4 +190,4 @@ class PostsDraftsService {
   }
 }
 
-export default PostsDraftsService;
+export default new PostsDraftsService(prisma, DraftsService, PostsService);
