@@ -38,18 +38,27 @@ class PostsDraftsController {
     if (error) {
       return next(error);
     }
-    const author = await PostsDraftsController.authorValidate(req);
+    const author = await this.authorValidate(req, res);
+
     if (author instanceof ApiError) {
       return next(ApiError.NotFound());
     }
-    const [mainNameImg] = this.fileService.savePostImage(mainImg) || [];
+    const mainNameImg = this.fileService.savePostImage(mainImg) || [];
+
+    if (mainNameImg instanceof ApiError) {
+      return next(mainNameImg);
+    }
     const otherNameImgs = this.fileService.savePostImage(otherImgs) || [];
+
+    if (otherNameImgs instanceof ApiError) {
+      return next(otherNameImgs);
+    }
 
     const draft = await this.postsDraftsService.create({
       ...value,
       postId: Number(id),
       authorId: author.id,
-      mainImg: mainNameImg,
+      mainImg: mainNameImg[0],
       otherImgs: otherNameImgs,
     });
 
@@ -70,7 +79,7 @@ class PostsDraftsController {
     const { mainImg, otherImgs } = main || {};
 
     const author = await this.authorsService.getByUserId({
-      id: req.locals.user.id,
+      id: res.locals.user.id,
     });
     const post = await this.postsService.getOne({ id });
 
@@ -81,15 +90,24 @@ class PostsDraftsController {
     if (author === null || post.author.id !== author.id) {
       return next(ApiError.NotFound());
     }
-    const [mainNameImg] = this.fileService.savePostImage(mainImg) || [];
+    const mainNameImg = this.fileService.savePostImage(mainImg) || [];
+
+    if (mainNameImg instanceof ApiError) {
+      return next(mainNameImg);
+    }
+
     const otherNameImgs = this.fileService.savePostImage(otherImgs) || [];
+
+    if (otherNameImgs instanceof ApiError) {
+      return next(otherNameImgs);
+    }
 
     const result = await this.postsDraftsService.update({
       ...value,
       postId: Number(id),
       draftId: Number(did),
       authorId: author.id,
-      mainImg: mainNameImg,
+      mainImg: mainNameImg[0],
       otherImgs: otherNameImgs,
     });
 
@@ -106,7 +124,7 @@ class PostsDraftsController {
   ) {
     const { per_page: perPage = 10, page = 0 } = req.query;
     const { id } = req.params;
-    const author = await PostsDraftsController.authorValidate(req);
+    const author = await this.authorValidate(req, res);
     if (author instanceof ApiError) {
       next(author);
     } else {
@@ -139,7 +157,7 @@ class PostsDraftsController {
     next: NextFunction,
   ) {
     const { id, did } = req.params;
-    const author = await PostsDraftsController.authorValidate(req);
+    const author = await this.authorValidate(req, res);
 
     if (author instanceof ApiError) {
       next(author);
@@ -159,7 +177,7 @@ class PostsDraftsController {
     res: Response,
   ) {
     const { id, did } = req.params;
-    await PostsDraftsController.authorValidate(req);
+    await this.authorValidate(req, res);
     const result = await this.postsDraftsService.delete({
       postId: Number(id),
       draftId: Number(did),
@@ -174,7 +192,7 @@ class PostsDraftsController {
     next: NextFunction,
   ) {
     const { id, did } = req.params;
-    const author = await PostsDraftsController.authorValidate(req);
+    const author = await this.authorValidate(req, res);
     if (author instanceof ApiError) {
       next(author);
     } else {
@@ -187,15 +205,18 @@ class PostsDraftsController {
     }
   }
 
-  private async authorValidate(req: RequestWithParams<{ id: string }>) {
+  private async authorValidate(
+    req: RequestWithParams<{ id: string }>,
+    res: Response,
+  ) {
     const { id } = req.params;
 
-    if (req.locals.user.id !== id) {
+    if (res.locals.user.id !== id) {
       return ApiError.NotFound();
     }
 
     const author = await this.authorsService.getByUserId({
-      id: req.locals.user.id,
+      id: res.locals.user.id,
     });
 
     if (author instanceof ApiError) {
@@ -210,4 +231,9 @@ class PostsDraftsController {
   }
 }
 
-export default PostsDraftsController;
+export default new PostsDraftsController(
+  AuthorsService,
+  FileService,
+  PostsDraftsService,
+  PostsService,
+);

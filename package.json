@@ -8,15 +8,15 @@
   "scripts": {
     "test": "jest",
     "start": "npm run watch && npm run dev",
-    "start2": "npm run watch && npm run dev",
+    "start2": "node ./dist/src/index.js",
     "watch": "tsc -w",
     "dev": "nodemon --inspect ./dist/index.js",
-    "build": "rimraf ./dist && npx tsc && tsc-alias",
+    "dev2": "node ./dist/src/index.js --exitcrash",
+    "build": "rimraf ./dist && tsc && tsc-alias",
     "prisma": "npx prisma generate",
     "lint": "npx eslint ./src",
     "lint:fix": "npm run lint --fix",
-    "seed": "npx prisma db seed",
-    "dev2": "node ./dist/src/index.js --exitcrash"
+    "seed": "npx prisma db seed"
   },
   "keywords": [
     "API",

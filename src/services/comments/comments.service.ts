@@ -72,7 +72,7 @@ class CommentsService {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  private convertCase(comment: CommentRow | Comment): CommentConverted {
+  convertCase(comment: CommentRow | Comment): CommentConverted {
     return {
       id: comment.comment_id,
       userId: comment.fk_user_id,

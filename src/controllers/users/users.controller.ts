@@ -36,6 +36,10 @@ class UsersController {
     const file = ava?.avatar;
     const avatar = this.fileService.saveAvatar(file);
 
+    if (avatar instanceof ApiError) {
+      return next(avatar);
+    }
+
     const userData = await this.usersService.registration({
       password,
       login,

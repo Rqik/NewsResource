@@ -4,24 +4,24 @@ import { ApiError } from '@/exceptions';
 import { TokensService } from '@/services';
 import { getAuthorizationToken } from '@/shared';
 
-const authMiddleware = (req: Request, _: Response, next: NextFunction) => {
+const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (req.method === 'OPTIONS') {
     return next();
   }
 
   try {
-    const token = getAuthorizationToken(req);
+    const accessToken = getAuthorizationToken(req);
 
-    if (!token) {
+    if (!accessToken) {
       return next(ApiError.UnauthorizeError());
     }
 
-    const decodeData = TokensService.validateAccess(token);
+    const decodeData = TokensService.validateAccess(accessToken);
     if (decodeData === null) {
       return next(ApiError.UnauthorizeError());
     }
 
-    req.locals.user = decodeData;
+    res.locals.user = decodeData;
 
     return next();
   } catch (e) {

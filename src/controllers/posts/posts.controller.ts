@@ -34,10 +34,16 @@ class PostsController {
       return next(error);
     }
 
-    const [mainNameImg] = this.fileService.savePostImage(mainImg) || [];
+    const mainNameImg = this.fileService.savePostImage(mainImg) || [];
+    if (mainNameImg instanceof ApiError) {
+      return next(mainNameImg);
+    }
     const otherNameImgs = this.fileService.savePostImage(otherImgs) || [];
+    if (otherNameImgs instanceof ApiError) {
+      return next(mainNameImg);
+    }
     const author = await this.authorsService.getByUserId({
-      id: req.locals.user.id,
+      id: res.locals.user.id,
     });
     if (author instanceof ApiError) {
       return next(author);
@@ -47,7 +53,7 @@ class PostsController {
     }
     const post = await this.postsService.create({
       ...value,
-      mainImg: mainNameImg,
+      mainImg: mainNameImg[0],
       otherImgs: otherNameImgs,
     });
 
@@ -66,13 +72,18 @@ class PostsController {
     const { id } = req.params;
     const main = req.files;
     const { mainImg, otherImgs } = main || {};
-    const [mainNameImg] = this.fileService.savePostImage(mainImg) || [];
+    const mainNameImg = this.fileService.savePostImage(mainImg) || [];
+    if (mainNameImg instanceof ApiError) {
+      return next(mainNameImg);
+    }
     const otherNameImgs = this.fileService.savePostImage(otherImgs) || [];
-
+    if (otherNameImgs instanceof ApiError) {
+      return next(otherNameImgs);
+    }
     const post = await this.postsService.update({
       ...value,
       id: Number(id),
-      mainImg: mainNameImg,
+      mainImg: mainNameImg[0],
       otherImgs: otherNameImgs,
     });
 
@@ -156,4 +167,4 @@ class PostsController {
   }
 }
 
-export default new PostsController(PostsService, AuthorsService);
+export default new PostsController(PostsService, AuthorsService, FileService);
