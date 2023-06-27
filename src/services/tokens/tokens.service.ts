@@ -23,10 +23,10 @@ class TokensService {
 
   generateTokens(payload: UserDto) {
     const accessToken = this.jwt.sign(payload, config.jwtAccessSecret, {
-      expiresIn: '30m',
+      expiresIn: config.jwtAccessExpireIn,
     });
     const refreshToken = this.jwt.sign(payload, config.jwtRefreshSecret, {
-      expiresIn: '30d',
+      expiresIn: config.jwtRefreshExpireIn,
     });
 
     return { accessToken, refreshToken };

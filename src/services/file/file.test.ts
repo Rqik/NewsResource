@@ -1,56 +1,129 @@
-import { boundClass } from 'autobind-decorator';
 import fileUpload from 'express-fileupload';
 import path from 'path';
-import { v4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
-import { ApiError } from '@/exceptions';
+import FileService from './file.service';
 
-@boundClass
-class FileService {
-  private imgAllowType = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
+jest.mock('uuid');
+jest.mock('express-fileupload', () => ({
+  UploadedFile: jest.fn(),
+}));
 
-  savePostImage<T extends fileUpload.UploadedFile>(file: T | T[]) {
-    if (!file) return null;
-    if (!(file instanceof Array)) {
-      if (!this.imgAllowType.includes(file.mimetype)) {
-        return ApiError.BadRequest('File type');
-      }
+describe('FileService', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-      const nameImg = `${v4()}.jpg`;
+  describe('savePostImage', () => {
+    const mockFile: fileUpload.UploadedFile = {
+      name: 'image.jpg',
+      mimetype: 'image/jpeg',
+      mv: jest.fn(),
+    };
 
-      file.mv(path.resolve(__dirname, '@/ ', 'images', 'posts', nameImg));
+    const mockFileArray: fileUpload.UploadedFile[] = [
+      {
+        name: 'image1.jpg',
+        mimetype: 'image/jpeg',
+        mv: jest.fn(),
+      },
+      {
+        name: 'image2.jpg',
+        mimetype: 'image/jpeg',
+        mv: jest.fn(),
+      },
+    ];
 
-      return [nameImg];
-    }
-    if (file instanceof Array) {
-      const namesImgs: string[] = [];
+    it('should save a single post image', () => {
+      const mockUuid = 'uuid';
+      const mockName = `${mockUuid}.jpg`;
+      uuidv4.mockReturnValue(mockUuid);
 
-      file.forEach((picture) => {
-        const nameImg = `${v4()}.jpg`;
-        namesImgs.push(nameImg);
-        picture.mv(path.resolve(__dirname, '@/ ', 'images', 'posts', nameImg));
-      });
+      const result = FileService.savePostImage(mockFile);
 
-      return namesImgs;
-    }
+      expect(result).toEqual([mockName]);
+      expect(uuidv4).toHaveBeenCalledTimes(1);
+      expect(mockFile.mv).toHaveBeenCalledWith(
+        path.resolve(__dirname, '@/ ', 'images', 'posts', mockName),
+      );
+    });
 
-    return null;
-  }
+    it('should save multiple post images', () => {
+      const mockUuid = 'uuid';
+      const mockName1 = `${mockUuid}_1.jpg`;
+      const mockName2 = `${mockUuid}_2.jpg`;
+      uuidv4.mockReturnValue(mockUuid);
 
-  saveAvatar<T extends fileUpload.UploadedFile>(file?: T | T[]) {
-    const nameImg = `${v4()}.jpg`;
+      const result = FileService.savePostImage(mockFileArray);
 
-    if (file && !(file instanceof Array)) {
-      if (!this.imgAllowType.includes(file.mimetype)) {
-        return ApiError.BadRequest('File type');
-      }
-      file.mv(path.resolve(__dirname, '@/ ', 'images', 'avatars', nameImg));
+      expect(result).toEqual([mockName1, mockName2]);
+      expect(uuidv4).toHaveBeenCalledTimes(2);
+      expect(mockFileArray[0].mv).toHaveBeenCalledWith(
+        path.resolve(__dirname, '@/ ', 'images', 'posts', mockName1),
+      );
+      expect(mockFileArray[1].mv).toHaveBeenCalledWith(
+        path.resolve(__dirname, '@/ ', 'images', 'posts', mockName2),
+      );
+    });
 
-      return nameImg;
-    }
+    it('should return null if file is not provided', () => {
+      const result = FileService.savePostImage(null);
 
-    return null;
-  }
-}
+      expect(result).toBeNull();
+    });
 
-export default new FileService();
+    it('should return ApiError if file type is not allowed', () => {
+      const mockFileInvalid: fileUpload.UploadedFile = {
+        name: 'document.pdf',
+        mimetype: 'application/pdf',
+        mv: jest.fn(),
+      };
+
+      const result = FileService.savePostImage(mockFileInvalid);
+
+      expect(result).toBeInstanceOf(ApiError);
+      expect(result?.message).toBe('File type');
+    });
+  });
+
+  describe('saveAvatar', () => {
+    const mockFile: fileUpload.UploadedFile = {
+      name: 'avatar.jpg',
+      mimetype: 'image/jpeg',
+      mv: jest.fn(),
+    };
+
+    it('should save an avatar image', () => {
+      const mockUuid = 'uuid';
+      const mockName = `${mockUuid}.jpg`;
+      uuidv4.mockReturnValue(mockUuid);
+
+      const result = FileService.saveAvatar(mockFile);
+
+      expect(result).toEqual(mockName);
+      expect(uuidv4).toHaveBeenCalledTimes(1);
+      expect(mockFile.mv).toHaveBeenCalledWith(
+        path.resolve(__dirname, '@/ ', 'images', 'avatars', mockName),
+      );
+    });
+
+    it('should return null if file is not provided', () => {
+      const result = FileService.saveAvatar(null);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return ApiError if file type is not allowed', () => {
+      const mockFileInvalid: fileUpload.UploadedFile = {
+        name: 'document.pdf',
+        mimetype: 'application/pdf',
+        mv: jest.fn(),
+      };
+
+      const result = FileService.saveAvatar(mockFileInvalid);
+
+      expect(result).toBeInstanceOf(ApiError);
+      expect(result?.message).toBe('File type');
+    });
+  });
+});
